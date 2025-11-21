@@ -45,6 +45,13 @@ class MainActivity : AppCompatActivity() {
                 .setAnchorView(R.id.fab).show()
         }
 
+        // 打印日志实现
+        LogUtils.i(
+            this,
+            "MainActivity",
+            "应用已启动，执行onCreate方法"
+        )
+
         //检查权限
         checkPermissions()
         //开启第二个服务

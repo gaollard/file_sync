@@ -33,6 +33,31 @@ class SecondFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.buttonSecond.setOnClickListener {
+            val context = requireContext()
+            // 显示日志文件路径，方便调试
+            val logPath = LogUtils.getLogFilePath(context)
+            android.util.Log.d("SecondFragment", "日志文件路径: $logPath")
+            
+            LogUtils.i(
+                context,
+                "SecondFragment",
+                "应用已启动，执行onCreate方法"
+            )
+            LogUtils.i(
+                context,
+                "SecondFragment",
+                "应用已启动，执行onCreate方法"
+            )
+            LogUtils.i(
+                context,
+                "SecondFragment",
+                "应用已启动，执行onCreate方法"
+            )
+            LogUtils.i(
+                context,
+                "SecondFragment",
+                "应用已启动，执行onCreate方法"
+            )
             findNavController().navigate(R.id.action_SecondFragment_to_FirstFragment)
         }
     }

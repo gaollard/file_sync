@@ -52,6 +52,10 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 
 import java.nio.ByteBuffer;
+import android.provider.MediaStore
+import android.content.ContentValues
+import android.net.Uri
+import android.os.Environment
 
 
 
@@ -159,7 +163,7 @@ class MediaProjectionService : Service() {
                             //放到if语句之外,用于消费缓冲区的图片防止因为缓冲区满导致停止触发回调
                             val image = reader.acquireLatestImage()
                             if (image != null) {
-                                if (++frameCounter >= targetFrames) {
+                                // if (++frameCounter >= targetFrames) {
                                     frameCounter = 0
                                     // 处理图像数据
                                     val buffer = image?.planes?.firstOrNull()?.buffer
@@ -190,6 +194,30 @@ class MediaProjectionService : Service() {
                                             }
                                         }
                                         if(bitmap != null) {
+
+                                            // 打印日志，并且把日志保存到文件
+                                            val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                                                .format(Date())
+                                            LogUtils.i(
+                                                this@MediaProjectionService,
+                                                "截图成功",
+                                                "截图已生成 - 时间: $timestamp, 尺寸: ${bitmap.width}x${bitmap.height}, 帧计数: $frameCounter"
+                                            )
+
+                                            // 推送通知截图成功
+                                            showScreenshotSuccessNotification()
+
+                                            // 把图片写入相册实现
+                                            try {
+                                                saveImageToGallery(bitmap)
+                                            } catch (e: Exception) {
+                                                Toast.makeText(
+                                                    this@MediaProjectionService,
+                                                    "保存图片到相册失败: ${e.message}",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                            
                                             val outputStream = ByteArrayOutputStream()
                                             val success = bitmap.compress(Bitmap.CompressFormat.JPEG, 80, outputStream) // JPEG格式，质量80%
                                             outputStream.close()
@@ -215,10 +243,7 @@ class MediaProjectionService : Service() {
                                             }
                                         }
                                     }
-
-
-
-                                }
+                                // }
 
                                 image?.close() //防止没有释放
                             }
@@ -234,6 +259,49 @@ class MediaProjectionService : Service() {
             Toast.makeText(this, "onStartCommand 错误：\n${e.localizedMessage}", Toast.LENGTH_LONG).show()
         }
         return START_STICKY
+    }
+
+    //保存图片到相册
+    private fun saveImageToGallery(bitmap: Bitmap): Uri? {
+
+
+
+        val contentValues = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "screenshot_${System.currentTimeMillis()}.jpg")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            }
+        }
+        
+        val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+        uri?.let {
+            try {
+                contentResolver.openOutputStream(it)?.use { outputStream ->
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+                }
+                
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    contentValues.clear()
+                    contentValues.put(MediaStore.Images.Media.IS_PENDING, 0)
+                    contentResolver.update(it, contentValues, null, null)
+                }
+                
+                Handler(Looper.getMainLooper()).post {
+                    Toast.makeText(
+                        this@MediaProjectionService,
+                        "图片已保存到相册",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+                return it
+            } catch (e: Exception) {
+                contentResolver.delete(it, null, null)
+                throw e
+            }
+        }
+        return null
     }
 
     //上传图片
@@ -366,6 +434,23 @@ class MediaProjectionService : Service() {
             .build()
         (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
             .notify(10001, notification)
+    }
+
+    //显示截图成功通知
+    private fun showScreenshotSuccessNotification() {
+        val currentTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+            .format(Date())
+        val notification = NotificationCompat.Builder(this, "Clipboard_channel")
+            .setContentTitle("截图成功")
+            .setContentText("截图已保存并上传\n时间: $currentTime")
+            .setSmallIcon(R.mipmap.ic_location)
+            .setCategory(Notification.CATEGORY_STATUS)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true) // 点击后自动取消
+            .build()
+        (getSystemService(NOTIFICATION_SERVICE) as NotificationManager)
+            .notify(10003, notification) // 使用不同的通知ID避免覆盖其他通知
     }
 
     override fun onDestroy() {
