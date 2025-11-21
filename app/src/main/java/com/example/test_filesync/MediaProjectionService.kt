@@ -178,7 +178,7 @@ class MediaProjectionService : Service() {
                                         // 交换字节顺序：RGBA -> ARGB
                                         //buffer.rewind()  // 重置指针
                                         val newBuffer = ByteBuffer.wrap(byteArray)
-                                        val bitmap = Bitmap.createBitmap(1224, 2700, Bitmap.Config.ARGB_8888)
+                                        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
                                         // 多于了 bitmap.copyPixelsFromBuffer(newBuffer) // 直接复用原始Buffer,将 newBuffer 的原始像素数据复制到 bitmap
                                         // 带stride处理的像素转换
                                         for (y in 0 until height) {
