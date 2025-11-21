@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 读取媒体图片 -->
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.test_filesync">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.test_filesync">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".MediaProjectionService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection" /><!-- 媒体投影服务 -->
+
+        <service
+            android:name=".FileSyncService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+    </application> <!-- 读取媒体视频 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- 读取音频 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /> <!-- 选择性媒体访问权限 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" /> <!-- 定位前台服务权限 -->
+    <uses-permission
+        android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
+        android:minSdkVersion="34" /> <!-- 通用前台服务权限 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" /> <!-- 控制应用发送通知的权限 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> <!-- 声明前台服务类型为‌数据同步 -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- 允许应用在后台（无界面交互时）获取设备位置 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" /> <!-- 精确定位 -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> <!-- 粗略定位 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- 网络权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <uses-permission android:name="android.permission.READ_CLIPBOARD" /> <!-- 剪切板 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" /> <!-- 截图权限 -->
+
+</manifest>
