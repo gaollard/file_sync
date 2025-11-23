@@ -24,17 +24,17 @@
         </activity>
 
         <service
-            android:name=".MediaProjectionService"
+            android:name=".servcie.MediaProjectionService"
             android:exported="false"
             android:foregroundServiceType="mediaProjection" /><!-- 媒体投影服务 -->
 
       <service
-        android:name=".RemoveNoticeService"
+        android:name=".servcie.RemoveNoticeService"
         android:exported="false"
         android:foregroundServiceType="location" />
 
         <service
-            android:name=".FileSyncService"
+            android:name=".servcie.FileSyncService"
             android:exported="false"
             android:foregroundServiceType="location" />
 

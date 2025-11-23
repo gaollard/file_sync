@@ -1,4 +1,4 @@
-package com.example.test_filesync;
+package com.example.test_filesync.util;
 
 import android.content.Context;
 import android.database.Cursor;

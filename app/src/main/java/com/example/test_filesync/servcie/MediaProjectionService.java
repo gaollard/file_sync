@@ -1,4 +1,4 @@
-package com.example.test_filesync;
+package com.example.test_filesync.servcie;
 
 //协程和线程调度相关
 
@@ -6,7 +6,6 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.media.ImageReader;
@@ -18,20 +17,17 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
-import android.graphics.ImageFormat;
+
 import android.graphics.PixelFormat;
 import android.hardware.display.DisplayManager;
-import android.util.DisplayMetrics;
 import android.os.Handler;
 import android.os.Looper;
 
 // 必须添加的导入语句
 import android.graphics.Bitmap;
 import android.media.Image;
-import android.media.Image.Plane;
 
 //屏幕录制
-import android.content.Context;
 import android.media.projection.MediaProjectionManager;
 import android.view.WindowManager;
 
@@ -45,7 +41,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.io.DataOutputStream;
 
-import android.graphics.BitmapFactory;
 import android.os.HandlerThread;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -57,6 +52,9 @@ import android.provider.MediaStore;
 import android.content.ContentValues;
 import android.net.Uri;
 import android.os.Environment;
+
+import com.example.test_filesync.R;
+
 import java.util.List;
 
 public class MediaProjectionService extends Service {

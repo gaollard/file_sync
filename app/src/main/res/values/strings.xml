@@ -10,4 +10,9 @@
     <string name="lorem_ipsum">
         test_filesync
     </string>
+    
+    <!-- Bottom Navigation Tab Labels -->
+    <string name="tab_home">首页</string>
+    <string name="tab_record">记录</string>
+    <string name="tab_profile">我的</string>
 </resources>

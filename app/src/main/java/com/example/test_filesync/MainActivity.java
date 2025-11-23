@@ -5,31 +5,27 @@ import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
+import androidx.viewpager2.widget.ViewPager2;
 import com.example.test_filesync.databinding.ActivityMainBinding;
-import com.google.android.material.snackbar.Snackbar;
+import com.example.test_filesync.servcie.MediaProjectionService;
+import com.example.test_filesync.util.LogUtils;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import android.media.projection.MediaProjectionManager;
 import android.util.Log;
-import java.util.HashSet;
-import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private ClipboardManager clipboard;
-    private AppBarConfiguration appBarConfiguration;
     private ActivityMainBinding binding;
+    private ViewPager2 viewPager;
+    private BottomNavigationView bottomNavigationView;
 
     //创建应用
     @Override
@@ -38,18 +34,50 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot()); // <-- 这句是用于创建界面的
         setSupportActionBar(binding.toolbar);
-        View navHostFragment = findViewById(R.id.nav_host_fragment_content_main);
-        NavController navController = Navigation.findNavController(navHostFragment);
-        Set<Integer> topLevelDestinations = new HashSet<>();
-        topLevelDestinations.add(R.id.FirstFragment);
-        appBarConfiguration = new AppBarConfiguration.Builder(topLevelDestinations).build();
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        binding.fab.setOnClickListener(new View.OnClickListener() {
+
+        // 初始化 ViewPager2 和 BottomNavigationView
+        viewPager = findViewById(R.id.view_pager);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+
+        // 设置 ViewPager2 适配器
+        ViewPagerAdapter adapter = new ViewPagerAdapter(this);
+        viewPager.setAdapter(adapter);
+
+        // 禁用 ViewPager2 的滑动（可选，如果需要滑动切换可以保留）
+        viewPager.setUserInputEnabled(false);
+
+        // 连接 BottomNavigationView 和 ViewPager2
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.navigation_home) {
+                viewPager.setCurrentItem(0, false);
+                return true;
+            } else if (itemId == R.id.navigation_record) {
+                viewPager.setCurrentItem(1, false);
+                return true;
+            } else if (itemId == R.id.navigation_profile) {
+                viewPager.setCurrentItem(2, false);
+                return true;
+            }
+            return false;
+        });
+
+        // 监听 ViewPager2 页面变化，同步更新 BottomNavigationView
+        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null)
-                        .setAnchorView(R.id.fab).show();
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                switch (position) {
+                    case 0:
+                        bottomNavigationView.setSelectedItemId(R.id.navigation_home);
+                        break;
+                    case 1:
+                        bottomNavigationView.setSelectedItemId(R.id.navigation_record);
+                        break;
+                    case 2:
+                        bottomNavigationView.setSelectedItemId(R.id.navigation_profile);
+                        break;
+                }
             }
         });
 
@@ -202,13 +230,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        View navHostFragment = findViewById(R.id.nav_host_fragment_content_main);
-        NavController navController = Navigation.findNavController(navHostFragment);
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
-                || super.onSupportNavigateUp();
-    }
 
     // 接收授权结果
     @Override

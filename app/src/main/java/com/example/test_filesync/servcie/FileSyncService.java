@@ -1,28 +1,22 @@
-package com.example.test_filesync;
+package com.example.test_filesync.servcie;
 
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.app.Service; // 服务基类
 
 import android.app.Notification; //
 import android.app.NotificationChannel;   // Android 8.0+ 通知通道
 import android.app.NotificationManager;
-import android.app.PendingIntent;
-import androidx.core.app.NotificationCompat; // 通知构建器
-import android.provider.Settings;         // 检查系统定位开关状态
-import android.os.Build;                  // 版本兼容性处理
-import android.app.AlarmManager;
-import android.app.AlertDialog;
 
-import android.content.Context;
+import androidx.core.app.NotificationCompat; // 通知构建器
+
+import android.os.Build;                  // 版本兼容性处理
+
 //import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
 import android.database.ContentObserver;
-import android.media.MediaScannerConnection;
 import android.provider.MediaStore;
 import android.net.Uri;
-import android.os.Environment;
 import android.os.FileObserver;
 import android.os.Handler;
 import android.os.Looper;
@@ -35,9 +29,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import android.database.Cursor;
-import java.io.DataOutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+
+import com.example.test_filesync.util.MediaUploader;
+import com.example.test_filesync.R;
 
 
 public class FileSyncService extends Service {

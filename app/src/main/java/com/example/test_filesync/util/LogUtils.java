@@ -1,4 +1,4 @@
-package com.example.test_filesync;
+package com.example.test_filesync.util;
 
 import android.content.Context;
 import android.util.Log;
@@ -19,7 +19,7 @@ public class LogUtils {
     private static final String LOG_FILE_NAME = "screenshot_log.txt";
     private static final long MAX_LOG_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     private static final ReentrantLock lock = new ReentrantLock();
-    
+
     private static File getLogFile(Context context) {
         // 优先使用外部存储目录，如果不可用则回退到内部存储
         // 外部存储路径：/storage/emulated/0/Android/data/com.example.test_filesync/files/logs/
@@ -38,18 +38,18 @@ public class LogUtils {
         }
         return new File(logDir, LOG_FILE_NAME);
     }
-    
+
     private static String formatLogMessage(String level, String tag, String message) {
         String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
                 .format(new Date());
         return "[" + timestamp + "] [" + level + "] [" + tag + "] " + message + "\n";
     }
-    
+
     private static void writeToFile(Context context, String level, String tag, String message) {
         lock.lock();
         try {
             File logFile = getLogFile(context);
-            
+
             // 检查文件大小，如果超过限制则清空文件
             if (logFile.exists() && logFile.length() > MAX_LOG_FILE_SIZE) {
                 boolean deleted = logFile.delete();
@@ -57,7 +57,7 @@ public class LogUtils {
                     Log.w(TAG, "无法删除旧的日志文件");
                 }
             }
-            
+
             String logMessage = formatLogMessage(level, tag, message);
             try (FileOutputStream fos = new FileOutputStream(logFile, true)) {
                 fos.write(logMessage.getBytes(StandardCharsets.UTF_8));
@@ -85,46 +85,46 @@ public class LogUtils {
             lock.unlock();
         }
     }
-    
+
     public static void d(Context context, String message) {
         d(context, TAG, message);
     }
-    
+
     public static void d(Context context, String tag, String message) {
         Log.d(tag, message);
         writeToFile(context, "DEBUG", tag, message);
     }
-    
+
     public static void i(Context context, String message) {
         i(context, TAG, message);
     }
-    
+
     public static void i(Context context, String tag, String message) {
         Log.i(tag, message);
         writeToFile(context, "INFO", tag, message);
     }
-    
+
     public static void w(Context context, String message) {
         w(context, TAG, message);
     }
-    
+
     public static void w(Context context, String tag, String message) {
         Log.w(tag, message);
         writeToFile(context, "WARN", tag, message);
     }
-    
+
     public static void e(Context context, String message) {
         e(context, TAG, message, null);
     }
-    
+
     public static void e(Context context, String message, Throwable throwable) {
         e(context, TAG, message, throwable);
     }
-    
+
     public static void e(Context context, String tag, String message) {
         e(context, tag, message, null);
     }
-    
+
     public static void e(Context context, String tag, String message, Throwable throwable) {
         Log.e(tag, message, throwable);
         String errorMessage;
@@ -138,7 +138,7 @@ public class LogUtils {
         }
         writeToFile(context, "ERROR", tag, errorMessage);
     }
-    
+
     /**
      * 获取日志文件的完整路径，用于调试
      */

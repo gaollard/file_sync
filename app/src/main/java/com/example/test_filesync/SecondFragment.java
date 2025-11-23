@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 import com.example.test_filesync.databinding.FragmentSecondBinding;
+import com.example.test_filesync.util.LogUtils;
 
 /**
  * A simple {@link Fragment} subclass as the second destination in the navigation.
