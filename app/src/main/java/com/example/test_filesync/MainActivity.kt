@@ -26,8 +26,6 @@ import android.util.Log
 
 class MainActivity : AppCompatActivity() {
     private lateinit var clipboard: ClipboardManager
-
-
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
 
@@ -55,16 +53,15 @@ class MainActivity : AppCompatActivity() {
             "应用已启动，执行onCreate方法"
         )
 
-        //检查权限
+        // 检查权限
         checkPermissions()
-        //开启第二个服务
-        //屏幕录制涉及跨应用数据捕获，属于最高级别的敏感权限（PROTECTION_FLAG_APPOP），需要用户显式交互确认
-        //相比存储权限等普通危险权限，系统会优先处理这类特殊权限的授权流程。
-        //所以会先弹出 屏幕录制 的权限选项
+
+        // 开启第二个服务
+        // 屏幕录制涉及跨应用数据捕获，属于最高级别的敏感权限（PROTECTION_FLAG_APPOP），需要用户显式交互确认
+        // 相比存储权限等普通危险权限，系统会优先处理这类特殊权限的授权流程。
+        // 所以会先弹出 屏幕录制 的权限选项
         val manager = getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         startActivityForResult(manager.createScreenCaptureIntent(), 1001)
-
-
     }
 
     //检查权限
@@ -150,6 +147,7 @@ class MainActivity : AppCompatActivity() {
 //            startService(serviceIntent)
 //        }
     }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
