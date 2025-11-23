@@ -2,13 +2,16 @@ package com.example.test_filesync;
 
 import android.Manifest;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,6 +29,13 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private ViewPager2 viewPager;
     private BottomNavigationView bottomNavigationView;
+    
+    // 用户模式常量
+    private static final String PREF_NAME = "user_mode_prefs";
+    private static final String KEY_USER_MODE = "user_mode";
+    public static final String MODE_PARENT = "parent";  // 家长模式
+    public static final String MODE_CHILD = "child";    // 孩子模式
+    public static final String EXTRA_USER_MODE = "extra_user_mode";  // Intent 传递用户模式的 key
 
     //创建应用
     @Override
@@ -35,51 +45,63 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot()); // <-- 这句是用于创建界面的
         setSupportActionBar(binding.toolbar);
 
+        // 获取用户模式（优先从 Intent 获取，否则从 SharedPreferences 获取）
+        String userMode = getUserMode();
+        
         // 初始化 ViewPager2 和 BottomNavigationView
         viewPager = findViewById(R.id.view_pager);
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        // 设置 ViewPager2 适配器
-        ViewPagerAdapter adapter = new ViewPagerAdapter(this);
+        // 设置 ViewPager2 适配器（两种模式都需要，传入用户模式）
+        ViewPagerAdapter adapter = new ViewPagerAdapter(this, userMode);
         viewPager.setAdapter(adapter);
-
-        // 禁用 ViewPager2 的滑动（可选，如果需要滑动切换可以保留）
         viewPager.setUserInputEnabled(false);
 
-        // 连接 BottomNavigationView 和 ViewPager2
-        bottomNavigationView.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.navigation_home) {
-                viewPager.setCurrentItem(0, false);
-                return true;
-            } else if (itemId == R.id.navigation_record) {
-                viewPager.setCurrentItem(1, false);
-                return true;
-            } else if (itemId == R.id.navigation_profile) {
-                viewPager.setCurrentItem(2, false);
-                return true;
-            }
-            return false;
-        });
-
-        // 监听 ViewPager2 页面变化，同步更新 BottomNavigationView
-        viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override
-            public void onPageSelected(int position) {
-                super.onPageSelected(position);
-                switch (position) {
-                    case 0:
-                        bottomNavigationView.setSelectedItemId(R.id.navigation_home);
-                        break;
-                    case 1:
-                        bottomNavigationView.setSelectedItemId(R.id.navigation_record);
-                        break;
-                    case 2:
-                        bottomNavigationView.setSelectedItemId(R.id.navigation_profile);
-                        break;
+        // 根据用户模式决定是否显示底部导航栏
+        if (MODE_CHILD.equals(userMode)) {
+            // 孩子模式：隐藏底部导航栏
+            bottomNavigationView.setVisibility(View.GONE);
+            // 默认显示第一个页面
+            viewPager.setCurrentItem(0, false);
+        } else {
+            // 家长模式：显示底部导航栏
+            bottomNavigationView.setVisibility(View.VISIBLE);
+            
+            // 连接 BottomNavigationView 和 ViewPager2
+            bottomNavigationView.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.navigation_home) {
+                    viewPager.setCurrentItem(0, false);
+                    return true;
+                } else if (itemId == R.id.navigation_record) {
+                    viewPager.setCurrentItem(1, false);
+                    return true;
+                } else if (itemId == R.id.navigation_profile) {
+                    viewPager.setCurrentItem(2, false);
+                    return true;
                 }
-            }
-        });
+                return false;
+            });
+
+            // 监听 ViewPager2 页面变化，同步更新 BottomNavigationView
+            viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+                @Override
+                public void onPageSelected(int position) {
+                    super.onPageSelected(position);
+                    switch (position) {
+                        case 0:
+                            bottomNavigationView.setSelectedItemId(R.id.navigation_home);
+                            break;
+                        case 1:
+                            bottomNavigationView.setSelectedItemId(R.id.navigation_record);
+                            break;
+                        case 2:
+                            bottomNavigationView.setSelectedItemId(R.id.navigation_profile);
+                            break;
+                    }
+                }
+            });
+        }
 
         Log.e("hello", "world");
 
@@ -250,6 +272,52 @@ public class MainActivity extends AppCompatActivity {
                 //     startService(serviceIntent);
                 // }
             }
+        }
+    }
+
+    /**
+     * 获取用户模式
+     * 优先从 Intent 获取，如果没有则从 SharedPreferences 获取，默认返回家长模式
+     */
+    private String getUserMode() {
+
+        return MODE_CHILD;
+
+        // // 优先从 Intent 获取
+        // Intent intent = getIntent();
+        // if (intent != null && intent.hasExtra(EXTRA_USER_MODE)) {
+        //     String mode = intent.getStringExtra(EXTRA_USER_MODE);
+        //     if (MODE_PARENT.equals(mode) || MODE_CHILD.equals(mode)) {
+        //         // 保存到 SharedPreferences
+        //         saveUserMode(mode);
+        //         return mode;
+        //     }
+        // }
+        
+        // // 从 SharedPreferences 获取
+        // SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        // String mode = prefs.getString(KEY_USER_MODE, MODE_PARENT); // 默认为家长模式
+        // return mode;
+    }
+    
+    /**
+     * 保存用户模式到 SharedPreferences
+     */
+    private void saveUserMode(String mode) {
+        SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(KEY_USER_MODE, mode);
+        editor.apply();
+    }
+    
+    /**
+     * 设置用户模式（供外部调用）
+     */
+    public void setUserMode(String mode) {
+        if (MODE_PARENT.equals(mode) || MODE_CHILD.equals(mode)) {
+            saveUserMode(mode);
+            // 重新创建 Activity 以应用新的模式
+            recreate();
         }
     }
 
