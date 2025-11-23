@@ -1,4 +1,4 @@
-package com.example.test_filesync;
+package com.example.test_filesync.fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -7,16 +7,16 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import com.example.test_filesync.databinding.FragmentRecordBinding;
+import com.example.test_filesync.databinding.FragmentProfileBinding;
 
-public class RecordFragment extends Fragment {
+public class ProfileFragment extends Fragment {
 
-    private FragmentRecordBinding binding;
+    private FragmentProfileBinding binding;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        binding = FragmentRecordBinding.inflate(inflater, container, false);
+        binding = FragmentProfileBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

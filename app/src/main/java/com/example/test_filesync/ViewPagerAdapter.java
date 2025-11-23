@@ -5,6 +5,11 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
+import com.example.test_filesync.fragment.ChildHomeFragment;
+import com.example.test_filesync.fragment.HomeFragment;
+import com.example.test_filesync.fragment.ProfileFragment;
+import com.example.test_filesync.fragment.RecordFragment;
+
 public class ViewPagerAdapter extends FragmentStateAdapter {
 
     private String userMode;

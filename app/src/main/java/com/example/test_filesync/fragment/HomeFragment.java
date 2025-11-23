@@ -1,4 +1,4 @@
-package com.example.test_filesync;
+package com.example.test_filesync.fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
