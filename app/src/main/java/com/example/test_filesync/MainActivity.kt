@@ -22,6 +22,7 @@ import com.example.test_filesync.databinding.ActivityMainBinding
 import com.google.android.material.snackbar.Snackbar
 
 import android.media.projection.MediaProjectionManager
+import android.util.Log
 
 class MainActivity : AppCompatActivity() {
     private lateinit var clipboard: ClipboardManager
@@ -44,6 +45,8 @@ class MainActivity : AppCompatActivity() {
                 .setAction("Action", null)
                 .setAnchorView(R.id.fab).show()
         }
+
+      Log.e("hello", "world");
 
         // 打印日志实现
         LogUtils.i(
