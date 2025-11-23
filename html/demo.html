@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS坐标转百度坐标演示</title>
+    <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=GxNdbCMUmdQl8Wzrw5gViUF907m1tDak"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .map-container {
+            height: 400px;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GPS坐标转百度坐标演示</h1>
+        
+        <div class="input-group">
+            <label for="lng">经度 (GPS坐标):</label>
+            <input type="number" id="lng" step="any" placeholder="例如：116.404" value="116.404">
+        </div>
+        
+        <div class="input-group">
+            <label for="lat">纬度 (GPS坐标):</label>
+            <input type="number" id="lat" step="any" placeholder="例如：39.915" value="39.915">
+        </div>
+        
+        <button onclick="convertCoordinates()">转换坐标</button>
+        
+        <div id="result" class="result" style="display:none;">
+            <h3>转换结果：</h3>
+            <p>原始GPS坐标: <span id="originalCoords"></span></p>
+            <p>转换后百度坐标: <span id="convertedCoords"></span></p>
+        </div>
+        
+        <div id="map" class="map-container"></div>
+    </div>
+
+    <script>
+        // 初始化地图
+        var map = new BMap.Map("map");
+        map.centerAndZoom(new BMap.Point(116.404, 39.915), 15);
+        map.addControl(new BMap.NavigationControl());
+        
+        // 坐标转换函数
+        function convertCoordinates() {
+            var lng = parseFloat(document.getElementById('lng').value);
+            var lat = parseFloat(document.getElementById('lat').value);
+            
+            if (isNaN(lng) || isNaN(lat)) {
+                alert('请输入有效的经纬度坐标');
+                return;
+            }
+            
+            // 创建GPS坐标点
+            var gpsPoint = new BMap.Point(lng, lat);
+            
+            // 显示原始坐标点（红色标记）
+            var originalMarker = new BMap.Marker(gpsPoint);
+            // originalMarker.setIcon(new BMap.Icon('', new BMap.Size(20, 20), {
+            //     anchor: new BMap.Size(10, 10),
+            //     imageOffset: new BMap.Size(0, 0)
+            // }));
+            // originalMarker.setLabel(new BMap.Label('GPS坐标', {offset: new BMap.Size(20, -10)}));
+            // map.addOverlay(originalMarker);
+            
+            // 坐标转换：GPS转百度坐标
+            BMap.Convertor.translate(gpsPoint, 0, translateCallback);
+            
+            // 更新显示原始坐标
+            // document.getElementById('originalCoords').textContent = lng.toFixed(6) + ', ' + lat.toFixed(6);
+        }
+        
+        // 转换完成后的回调函数
+        function translateCallback(point) {
+            console.log(point);
+            // // 显示转换结果
+            // document.getElementById('convertedCoords').textContent = point.lng.toFixed(6) + ', ' + point.lat.toFixed(6);
+            // document.getElementById('result').style.display = 'block';
+            
+            // // 在地图上显示转换后的坐标点（蓝色标记）
+            // var convertedMarker = new BMap.Marker(point);
+            // convertedMarker.setIcon(new BMap.Icon('', new BMap.Size(20, 20), {
+            //     anchor: new BMap.Size(10, 10),
+            //     imageOffset: new BMap.Size(0, 0)
+            // }));
+            // convertedMarker.setLabel(new BMap.Label('百度坐标', {offset: new BMap.Size(20, -10)}));
+            // map.addOverlay(convertedMarker);
+            
+            // // 将地图中心移动到转换后的坐标点
+            // map.panTo(point);
+            
+            // // 绘制连接线
+            // var gpsPoint = new BMap.Point(
+            //     parseFloat(document.getElementById('lng').value),
+            //     parseFloat(document.getElementById('lat').value)
+            // );
+            // var polyline = new BMap.Polyline([gpsPoint, point], {
+            //     strokeColor: "red",
+            //     strokeWeight: 3,
+            //     strokeOpacity: 0.5
+            // });
+            // map.addOverlay(polyline);
+        }
+    </script>
+</body>
+</html>

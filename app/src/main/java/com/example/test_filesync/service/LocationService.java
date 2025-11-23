@@ -104,19 +104,23 @@ public class LocationService extends Service {
             }
 
             Location location = null;
+            
 
             // 优先使用 GPS 定位
             if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                Toast.makeText(this, "使用 GPS 定位", Toast.LENGTH_SHORT).show();
                 location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             }
 
             // 如果 GPS 不可用，使用网络定位
             if (location == null && locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                Toast.makeText(this, "使用网络定位", Toast.LENGTH_SHORT).show();
                 location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
             }
 
             // 如果网络定位也不可用，使用被动定位
             if (location == null && locationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER)) {
+                Toast.makeText(this, "使用被动定位", Toast.LENGTH_SHORT).show();
                 location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
             }
 
@@ -144,6 +148,13 @@ public class LocationService extends Service {
         double altitude = location.getAltitude();
         float speed = location.getSpeed();
         long time = location.getTime();
+
+        // 这个位置为何和百度地图不一致？
+        // 因为百度地图使用的是高德地图的API，而高德地图的API使用的是百度地图的API，所以位置不一致。
+        // 所以需要使用百度地图的API来获取位置信息。
+        // 但是百度地图的API需要收费，所以需要使用高德地图的API来获取位置信息。
+        // 所以需要使用高德地图的API来获取位置信息。
+        // 所以需要使用高德地图的API来获取位置信息。
 
         String locationInfo = String.format(
             Locale.getDefault(),

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS坐标转百度坐标</title>
+    <!-- <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=YOUR_API_KEY"></script> -->
+    <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=GxNdbCMUmdQl8Wzrw5gViUF907m1tDak"></script>
+    <!-- <script type="text/javascript" src="https://api.map.baidu.com/library/Convertor/1.2/src/Convertor_min.js"></script> -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3385ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #2d78e4;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-left: 4px solid #3385ff;
+            border-radius: 4px;
+            display: none;
+        }
+        .result.show {
+            display: block;
+        }
+        .result h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .result p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .error {
+            background-color: #ffe6e6;
+            border-left-color: #ff3333;
+        }
+        .error h3 {
+            color: #cc0000;
+        }
+        .note {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff9e6;
+            border-left: 4px solid #ffcc00;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GPS坐标转百度坐标</h1>
+        
+        <div class="input-group">
+            <label for="lng">经度 (Longitude):</label>
+            <input type="number" id="lng" step="any" placeholder="例如: 116.397128" />
+        </div>
+        
+        <div class="input-group">
+            <label for="lat">纬度 (Latitude):</label>
+            <input type="number" id="lat" step="any" placeholder="例如: 39.916527" />
+        </div>
+        
+        <button id="convertBtn" onclick="convertCoordinate()">转换为百度坐标</button>
+        
+        <div id="result" class="result">
+            <h3>转换结果</h3>
+            <p><strong>经度:</strong> <span id="resultLng"></span></p>
+            <p><strong>纬度:</strong> <span id="resultLat"></span></p>
+        </div>
+        
+        <div class="note">
+            <strong>注意:</strong> 请将代码中的 YOUR_API_KEY 替换为您的百度地图 API Key。
+            您可以在 <a href="http://lbsyun.baidu.com/apiconsole/key" target="_blank">百度地图开放平台</a> 申请 API Key。
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        // 坐标转换函数
+        function convertCoordinate() {
+            // 获取输入的坐标
+            const lng = parseFloat(document.getElementById('lng').value);
+            const lat = parseFloat(document.getElementById('lat').value);
+            const resultDiv = document.getElementById('result');
+            const convertBtn = document.getElementById('convertBtn');
+            
+            // 验证输入
+            if (isNaN(lng) || isNaN(lat)) {
+                showError('请输入有效的经度和纬度！');
+                return;
+            }
+            
+            if (lng < -180 || lng > 180 || lat < -90 || lat > 90) {
+                showError('坐标范围无效！经度范围：-180 到 180，纬度范围：-90 到 90');
+                return;
+            }
+            
+            // 检查百度地图 API 是否加载
+            if (typeof BMap === 'undefined' || typeof BMap.Convertor === 'undefined') {
+                showError('百度地图 API 未加载，请检查 API Key 是否正确！');
+                return;
+            }
+            
+            // 禁用按钮，防止重复点击
+            convertBtn.disabled = true;
+            convertBtn.textContent = '转换中...';
+            
+            // 创建 GPS 坐标点（WGS-84）
+            const gpsPoint = new BMap.Point(lng, lat);
+            
+            // 调用坐标转换接口
+            // 参数说明：
+            // 1. 坐标点数组
+            // 2. 源坐标系类型：1 表示 WGS-84 (GPS坐标)
+            // 3. 目标坐标系类型：5 表示 BD-09 (百度坐标)
+            // 4. 回调函数
+            BMap.Convertor.translate(
+                [gpsPoint],
+                1,  // WGS-84
+                5,  // BD-09
+                function(points) {
+                    // 转换成功
+                    if (points && points.length > 0) {
+                        const baiduPoint = points[0];
+                        document.getElementById('resultLng').textContent = baiduPoint.lng.toFixed(6);
+                        document.getElementById('resultLat').textContent = baiduPoint.lat.toFixed(6);
+                        
+                        resultDiv.className = 'result show';
+                        resultDiv.classList.remove('error');
+                    } else {
+                        showError('坐标转换失败，未返回结果！');
+                    }
+                    
+                    // 恢复按钮状态
+                    convertBtn.disabled = false;
+                    convertBtn.textContent = '转换为百度坐标';
+                }
+            );
+        }
+        
+        // 显示错误信息
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            const resultLng = document.getElementById('resultLng');
+            const resultLat = document.getElementById('resultLat');
+            
+            resultLng.textContent = '';
+            resultLat.textContent = '';
+            resultDiv.innerHTML = '<h3>错误</h3><p>' + message + '</p>';
+            resultDiv.className = 'result show error';
+            
+            const convertBtn = document.getElementById('convertBtn');
+            convertBtn.disabled = false;
+            convertBtn.textContent = '转换为百度坐标';
+        }
+        
+        // 支持回车键触发转换
+        document.getElementById('lng').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                convertCoordinate();
+            }
+        });
+        
+        document.getElementById('lat').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                convertCoordinate();
+            }
+        });
+    </script>
+</body>
+</html>
+
