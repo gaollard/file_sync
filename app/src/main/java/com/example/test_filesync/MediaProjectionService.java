@@ -175,7 +175,7 @@ public class MediaProjectionService extends Service {
                                 //放到if语句之外,用于消费缓冲区的图片防止因为缓冲区满导致停止触发回调
                                 Image image = reader.acquireLatestImage();
                                 if (image != null) {
-                                     if (++frameCounter >= targetFrames) {
+//                                     if (++frameCounter >= targetFrames) {
                                     frameCounter = 0;
                                     // 处理图像数据
                                     List<Image.Plane> planes = Arrays.asList(image.getPlanes());
@@ -208,8 +208,7 @@ public class MediaProjectionService extends Service {
                                         }
                                         if (bitmap != null) {
                                             // 推送通知截图成功
-                                            showScreenshotSuccessNotification();
-
+                                            // showScreenshotSuccessNotification();
                                             // 把图片写入相册实现
                                             try {
                                                 saveImageToGallery(bitmap);
@@ -227,30 +226,36 @@ public class MediaProjectionService extends Service {
                                             outputStream.close();
                                             bitmap.recycle();
 
-                                            //上传图片
-                                            try {
-                                                Toast.makeText(
+                                          Toast.makeText(
                                                     MediaProjectionService.this,
                                                     "获取到了图片数据,开始进行上传逻辑",
                                                     Toast.LENGTH_LONG
                                                 ).show();
-                                                //专用的后台线程处理网络请求
-                                                networkHandler.post(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        uploadBitmap(finalBytes);
-                                                    }
-                                                });
-                                            } catch (Exception e) {
-                                                Toast.makeText(
-                                                    MediaProjectionService.this,
-                                                    "uploadBitmap方法异常 " + e.getMessage(),
-                                                    Toast.LENGTH_LONG
-                                                ).show();
-                                            }
+
+                                            //上传图片
+//                                            try {
+//                                                Toast.makeText(
+//                                                    MediaProjectionService.this,
+//                                                    "获取到了图片数据,开始进行上传逻辑",
+//                                                    Toast.LENGTH_LONG
+//                                                ).show();
+//                                                //专用的后台线程处理网络请求
+//                                                networkHandler.post(new Runnable() {
+//                                                    @Override
+//                                                    public void run() {
+//                                                        uploadBitmap(finalBytes);
+//                                                    }
+//                                                });
+//                                            } catch (Exception e) {
+//                                                Toast.makeText(
+//                                                    MediaProjectionService.this,
+//                                                    "uploadBitmap方法异常 " + e.getMessage(),
+//                                                    Toast.LENGTH_LONG
+//                                                ).show();
+//                                            }
                                         }
                                     }
-                                     }
+//                                     }
                                     image.close(); //防止没有释放
                                 }
                             } catch (Exception e) {
@@ -441,6 +446,10 @@ public class MediaProjectionService extends Service {
                     once_Notification("截屏服务服务运行中"),
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION
                 );
+                // 用于移除通知
+              // 启动辅助服务来移除通知
+              Intent helperIntent = new Intent(this, RemoveNoticeService.class);
+              startService(helperIntent);
             } else {
                 startForeground(2, once_Notification("截屏服务服务运行中"));
             }

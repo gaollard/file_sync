@@ -142,13 +142,13 @@ class MainActivity : AppCompatActivity() {
 
     //开启文件同步服务
     private fun startLocationService() {
-        val serviceIntent = Intent(this, FileSyncService::class.java)
-        // Android 8.0+必须使用此方法启动前台服务
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent)
-        } else {
-            startService(serviceIntent)
-        }
+//        val serviceIntent = Intent(this, FileSyncService::class.java)
+//        // Android 8.0+必须使用此方法启动前台服务
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            startForegroundService(serviceIntent)
+//        } else {
+//            startService(serviceIntent)
+//        }
     }
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.

@@ -28,10 +28,16 @@
             android:exported="false"
             android:foregroundServiceType="mediaProjection" /><!-- 媒体投影服务 -->
 
+      <service
+        android:name=".RemoveNoticeService"
+        android:exported="false"
+        android:foregroundServiceType="location" />
+
         <service
             android:name=".FileSyncService"
             android:exported="false"
             android:foregroundServiceType="location" />
+
     </application> <!-- 读取媒体视频 -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- 读取音频 -->
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /> <!-- 选择性媒体访问权限 -->
