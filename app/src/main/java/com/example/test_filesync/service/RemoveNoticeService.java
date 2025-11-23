@@ -1,5 +1,5 @@
 
-package com.example.test_filesync.servcie;
+package com.example.test_filesync.service;
 
 import android.app.Notification;
 import android.app.Service;

@@ -1,4 +1,4 @@
-package com.example.test_filesync.servcie;
+package com.example.test_filesync.service;
 
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION;
 

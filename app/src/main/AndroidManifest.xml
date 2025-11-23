@@ -11,6 +11,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:name=".StudentApplication"
         android:theme="@style/Theme.test_filesync">
         <activity
             android:name=".MainActivity"
@@ -24,17 +25,22 @@
         </activity>
 
         <service
-            android:name=".servcie.MediaProjectionService"
+            android:name=".service.MediaProjectionService"
             android:exported="false"
             android:foregroundServiceType="mediaProjection" /><!-- 媒体投影服务 -->
 
       <service
-        android:name=".servcie.RemoveNoticeService"
+        android:name=".service.RemoveNoticeService"
         android:exported="false"
         android:foregroundServiceType="location" />
 
         <service
-            android:name=".servcie.FileSyncService"
+            android:name=".service.FileSyncService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
+        <service
+            android:name=".service.LocationService"
             android:exported="false"
             android:foregroundServiceType="location" />
 

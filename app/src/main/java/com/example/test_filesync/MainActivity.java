@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Menu;
@@ -17,7 +18,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 import com.example.test_filesync.databinding.ActivityMainBinding;
-import com.example.test_filesync.servcie.MediaProjectionService;
+import com.example.test_filesync.service.LocationService;
+import com.example.test_filesync.service.MediaProjectionService;
 import com.example.test_filesync.util.LogUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -29,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private ViewPager2 viewPager;
     private BottomNavigationView bottomNavigationView;
-    
+
     // 用户模式常量
     private static final String PREF_NAME = "user_mode_prefs";
     private static final String KEY_USER_MODE = "user_mode";
@@ -47,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
         // 获取用户模式（优先从 Intent 获取，否则从 SharedPreferences 获取）
         String userMode = getUserMode();
-        
+
         // 初始化 ViewPager2 和 BottomNavigationView
         viewPager = findViewById(R.id.view_pager);
         bottomNavigationView = findViewById(R.id.bottom_navigation);
@@ -66,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // 家长模式：显示底部导航栏
             bottomNavigationView.setVisibility(View.VISIBLE);
-            
+
             // 连接 BottomNavigationView 和 ViewPager2
             bottomNavigationView.setOnItemSelectedListener(item -> {
                 int itemId = item.getItemId();
@@ -223,15 +225,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //开启文件同步服务
+    //开启位置服务
     private void startLocationService() {
-//        Intent serviceIntent = new Intent(this, FileSyncService.class);
-//        // Android 8.0+必须使用此方法启动前台服务
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            startForegroundService(serviceIntent);
-//        } else {
-//            startService(serviceIntent);
-//        }
+        Intent serviceIntent = new Intent(this, com.example.test_filesync.service.LocationService.class);
+        // Android 8.0+必须使用此方法启动前台服务
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
     }
 
     @Override
@@ -293,13 +295,13 @@ public class MainActivity extends AppCompatActivity {
         //         return mode;
         //     }
         // }
-        
+
         // // 从 SharedPreferences 获取
         // SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         // String mode = prefs.getString(KEY_USER_MODE, MODE_PARENT); // 默认为家长模式
         // return mode;
     }
-    
+
     /**
      * 保存用户模式到 SharedPreferences
      */
@@ -309,7 +311,7 @@ public class MainActivity extends AppCompatActivity {
         editor.putString(KEY_USER_MODE, mode);
         editor.apply();
     }
-    
+
     /**
      * 设置用户模式（供外部调用）
      */
