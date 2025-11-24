@@ -8,20 +8,27 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 import androidx.core.app.NotificationCompat;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 
+import com.baidu.location.BDAbstractLocationListener;
+import com.baidu.location.BDLocation;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
 import com.example.test_filesync.R;
 import com.example.test_filesync.util.LogUtils;
 
@@ -30,17 +37,63 @@ public class LocationService extends Service {
     private static final long LOCATION_UPDATE_INTERVAL = 5000; // 5秒
 
     private Handler handler = new Handler(Looper.getMainLooper());
-    private LocationManager locationManager;
-    private LocationListener locationListener;
+    private LocationClient locationClient;
     private NotificationManager notificationManager;
+    private boolean isLocationClientStarted = false;
+    private int startCheckRetryCount = 0;
+    private static final int MAX_START_CHECK_RETRY = 10; // 最大重试次数
 
-    // 定时任务
-    private Runnable locationTask = new Runnable() {
+    // 百度定位监听器
+    private BDAbstractLocationListener locationListener = new BDAbstractLocationListener() {
         @Override
-        public void run() {
-            getCurrentLocation();
-            // 重新调度下一次任务
-            handler.postDelayed(this, LOCATION_UPDATE_INTERVAL);
+        public void onReceiveLocation(BDLocation location) {
+            if (location != null) {
+                int locType = location.getLocType();
+                // 检查定位类型，判断是否为错误
+                // 61: GPS定位结果 (TypeGpsLocation)
+                // 66: 离线定位结果 (TypeOffLineLocation)
+                // 161: 网络定位结果 (TypeNetWorkLocation)
+                // 其他值通常表示错误
+                if (locType == 61 || locType == 66 || locType == 161 ||
+                    locType == BDLocation.TypeGpsLocation ||
+                    locType == BDLocation.TypeNetWorkLocation ||
+                    locType == BDLocation.TypeOffLineLocation ||
+                    locType == BDLocation.TypeCacheLocation) {
+                    // 定位成功
+                    printLocationInfo(location);
+                } else {
+                    // 定位失败，记录错误信息
+                    String locTypeDesc = location.getLocTypeDescription();
+                    String errorMsg = String.format(Locale.getDefault(),
+                        "定位失败，错误代码: %d (%s)", locType, locTypeDesc);
+                    LogUtils.e(LocationService.this, errorMsg);
+                    Toast.makeText(LocationService.this, errorMsg, Toast.LENGTH_LONG).show();
+
+                    // 特别处理 API Key 校验失败的错误 (错误码 167)
+                    if (locType == 167 ||
+                        (locTypeDesc != null && locTypeDesc.contains("TypeServerCheckKeyError"))) {
+                        String detailedError = "API Key 校验失败，请检查：\n" +
+                            "1. AndroidManifest.xml 中的 API Key 是否正确\n" +
+                            "2. 百度开发者控制台中该 API Key 是否已启用定位服务\n" +
+                            "3. 应用的包名是否与百度控制台配置的包名一致\n" +
+                            "4. 应用的 SHA1 签名是否与百度控制台配置的签名一致\n" +
+                            "5. API Key 是否已正确绑定到当前应用";
+                        LogUtils.e(LocationService.this, detailedError);
+                        Toast.makeText(LocationService.this, "API Key 校验失败，请查看日志", Toast.LENGTH_LONG).show();
+                    }
+                    // 特别处理网络定位解密失败的错误
+                    else if (locType == 62 || locType == 63 || locType == 67 || locType == 68) {
+                        String detailedError = "网络定位失败，可能原因：\n" +
+                            "1. API Key 无效或未启用网络定位服务\n" +
+                            "2. 网络连接问题\n" +
+                            "3. 请求参数解密失败";
+                        LogUtils.e(LocationService.this, detailedError);
+                    }
+                }
+            } else {
+                Toast.makeText(LocationService.this, "无法获取位置信息", Toast.LENGTH_SHORT).show();
+                Log.w(TAG, "无法获取位置信息");
+            }
         }
     };
 
@@ -48,12 +101,10 @@ public class LocationService extends Service {
     public void onCreate() {
         super.onCreate();
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         try {
             startForegroundService();
-            initializeLocationListener();
-            startPeriodicLocationTask();
+            initializeBaiduLocation();
         } catch (Exception e) {
             Toast.makeText(this, "LocationService 初始化错误：" + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             Log.e(TAG, "onCreate error", e);
@@ -65,32 +116,17 @@ public class LocationService extends Service {
         return START_STICKY; // 服务被关闭后自动重新启动
     }
 
-    // 初始化位置监听器
-    private void initializeLocationListener() {
-        locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                // 位置更新时的回调（这里不使用，因为我们使用定时主动获取）
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-            @Override
-            public void onProviderEnabled(String provider) {}
-
-            @Override
-            public void onProviderDisabled(String provider) {}
-        };
-    }
-
-    // 开始定时获取位置任务
-    private void startPeriodicLocationTask() {
-        handler.post(locationTask);
-    }
-
-    // 获取当前位置
-    private void getCurrentLocation() {
+    // 初始化百度定位
+    // 注意：如果遇到以下错误，请检查：
+    // 1. "TypeServerCheckKeyError" (错误码 167) - API Key 校验失败：
+    //    - AndroidManifest.xml 中的 API Key 是否正确
+    //    - 百度开发者控制台中该 API Key 是否已启用定位服务
+    //    - 应用的包名是否与百度控制台配置的包名一致
+    //    - 应用的 SHA1 签名是否与百度控制台配置的签名一致
+    // 2. "网络定位失败，无法解密请求" (错误码 62/63/67/68)：
+    //    - API Key 是否已启用"网络定位"服务
+    //    - 网络连接是否正常
+    private void initializeBaiduLocation() {
         try {
             // 检查位置权限
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -99,91 +135,138 @@ public class LocationService extends Service {
                     checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) !=
                     android.content.pm.PackageManager.PERMISSION_GRANTED) {
                     Log.w(TAG, "位置权限未授予");
+                    LogUtils.e(this, "位置权限未授予，无法使用定位服务");
+                    Toast.makeText(this, "位置权限未授予，无法使用定位服务", Toast.LENGTH_LONG).show();
                     return;
                 }
             }
 
-            Location location = null;
-            
-
-            // 优先使用 GPS 定位
-            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                Toast.makeText(this, "使用 GPS 定位", Toast.LENGTH_SHORT).show();
-                location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            }
-
-            // 如果 GPS 不可用，使用网络定位
-            if (location == null && locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                Toast.makeText(this, "使用网络定位", Toast.LENGTH_SHORT).show();
-                location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-            }
-
-            // 如果网络定位也不可用，使用被动定位
-            if (location == null && locationManager.isProviderEnabled(LocationManager.PASSIVE_PROVIDER)) {
-                Toast.makeText(this, "使用被动定位", Toast.LENGTH_SHORT).show();
-                location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-            }
-
-            if (location != null) {
-                // 打印位置信息
-                printLocationInfo(location);
+            // 记录应用信息，用于调试 API Key 问题
+            String packageName = getApplicationContext().getPackageName();
+            String sha1 = getSHA1Signature();
+            LogUtils.i(this, "========== 百度定位配置信息 ==========");
+            LogUtils.i(this, "包名 (Package Name): " + packageName);
+            if (sha1 != null) {
+                LogUtils.i(this, "SHA1 签名: " + sha1);
+                LogUtils.i(this, "请将以上信息配置到百度开发者控制台");
             } else {
-                Toast.makeText(this, "无法获取位置信息，可能定位服务未开启或位置数据不可用", Toast.LENGTH_SHORT).show();
-                Log.w(TAG, "无法获取位置信息，可能定位服务未开启或位置数据不可用");
+                LogUtils.w(this, "无法获取 SHA1 签名，请使用命令行工具获取");
             }
+            LogUtils.i(this, "=====================================");
 
+            // 初始化定位客户端
+            locationClient = new LocationClient(getApplicationContext());
+            locationClient.registerLocationListener(locationListener);
+
+            // 配置定位参数
+            LocationClientOption option = new LocationClientOption();
+            // 设置定位模式
+            option.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy); // 高精度模式
+            // 设置返回的定位结果坐标系类型
+            option.setCoorType("bd09ll"); // 返回百度经纬度坐标系
+            // 设置是否需要地址信息
+            option.setIsNeedAddress(true);
+            // 设置是否需要返回位置的语义化信息
+            option.setIsNeedLocationDescribe(true);
+            // 设置是否需要返回位置的POI信息
+            option.setIsNeedLocationPoiList(true);
+            // 设置定位间隔，单位毫秒
+            option.setScanSpan((int) LOCATION_UPDATE_INTERVAL);
+            // 设置是否打开GPS
+            option.setOpenGps(true);
+            // 设置是否使用默认定位结果
+            option.setIgnoreKillProcess(false);
+            // 设置是否需要设备方向结果
+            option.setNeedDeviceDirect(false);
+            // 设置是否当GPS有效时按照1S/1次频率输出GPS结果
+            option.setLocationNotify(true);
+            // 设置是否允许模拟位置
+            option.setEnableSimulateGps(false);
+
+            // 应用定位参数
+            locationClient.setLocOption(option);
+
+            // 启动定位（异步操作，需要等待启动完成）
+            locationClient.start();
+
+            // 延迟检查启动状态，给定位客户端一些启动时间
+            startCheckRetryCount = 0;
+
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (locationClient != null) {
+                        isLocationClientStarted = locationClient.isStarted();
+                        if (isLocationClientStarted) {
+                            Toast.makeText(LocationService.this, "百度定位服务已启动", Toast.LENGTH_SHORT).show();
+                            Log.i(TAG, "百度定位服务已启动，isStarted: " + isLocationClientStarted);
+                        } else {
+                            startCheckRetryCount++;
+                            if (startCheckRetryCount < MAX_START_CHECK_RETRY) {
+                                Log.w(TAG, "定位客户端启动中，重试检查 (" + startCheckRetryCount + "/" + MAX_START_CHECK_RETRY + ")");
+                                // 如果还未启动，再等待一段时间后重试检查
+                                handler.postDelayed(this, 1000);
+                                Toast.makeText(LocationService.this, "定位客户端启动中，重试检查 (" + startCheckRetryCount + "/" + MAX_START_CHECK_RETRY + ")", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(LocationService.this, "定位客户端启动超时，已达到最大重试次数", Toast.LENGTH_SHORT).show();
+                                LogUtils.e(LocationService.this, "定位客户端启动超时，已达到最大重试次数");
+                            }
+                        }
+                    }
+                }
+            }, 500);
+
+            LogUtils.i(this, "正在启动百度定位服务...");
         } catch (Exception e) {
-            Log.e(TAG, "获取位置信息时出错", e);
+            Toast.makeText(this, "初始化百度定位失败：" + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            LogUtils.e(this, "初始化百度定位失败：" + e.getLocalizedMessage(), e);
         }
     }
 
     // 打印位置信息
-    private void printLocationInfo(Location location) {
+    private void printLocationInfo(BDLocation location) {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
         String timeStr = sdf.format(new Date());
 
         double latitude = location.getLatitude();
         double longitude = location.getLongitude();
-        float accuracy = location.getAccuracy();
+        float radius = location.getRadius(); // 定位精度
         double altitude = location.getAltitude();
         float speed = location.getSpeed();
-        long time = location.getTime();
+        int locType = location.getLocType(); // 定位类型
+        String locTypeDescription = location.getLocTypeDescription(); // 定位类型描述
+        String address = location.getAddrStr(); // 地址信息
+        String locationDescribe = location.getLocationDescribe(); // 位置语义化信息
 
-        // 这个位置为何和百度地图不一致？
-        // 因为百度地图使用的是高德地图的API，而高德地图的API使用的是百度地图的API，所以位置不一致。
-        // 所以需要使用百度地图的API来获取位置信息。
-        // 但是百度地图的API需要收费，所以需要使用高德地图的API来获取位置信息。
-        // 所以需要使用高德地图的API来获取位置信息。
-        // 所以需要使用高德地图的API来获取位置信息。
+        // 构建位置信息字符串
+        StringBuilder locationInfo = new StringBuilder();
+        locationInfo.append(String.format(Locale.getDefault(), "时间: %s\n", timeStr));
+        locationInfo.append(String.format(Locale.getDefault(), "纬度: %.6f\n", latitude));
+        locationInfo.append(String.format(Locale.getDefault(), "经度: %.6f\n", longitude));
+        locationInfo.append(String.format(Locale.getDefault(), "精度: %.2f 米\n", radius));
+        locationInfo.append(String.format(Locale.getDefault(), "海拔: %.2f 米\n", altitude));
+        locationInfo.append(String.format(Locale.getDefault(), "速度: %.2f m/s\n", speed));
+        locationInfo.append(String.format(Locale.getDefault(), "定位类型: %d (%s)\n", locType, locTypeDescription));
+        if (address != null && !address.isEmpty()) {
+            locationInfo.append(String.format(Locale.getDefault(), "地址: %s\n", address));
+        }
+        if (locationDescribe != null && !locationDescribe.isEmpty()) {
+            locationInfo.append(String.format(Locale.getDefault(), "位置描述: %s\n", locationDescribe));
+        }
 
-        String locationInfo = String.format(
-            Locale.getDefault(),
-            "时间: %s\n" +
-            "纬度: %.6f\n" +
-            "经度: %.6f\n" +
-            "精度: %.2f 米\n" +
-            "海拔: %.2f 米\n" +
-            "速度: %.2f m/s\n" +
-            "定位时间: %s",
-            timeStr,
-            latitude,
-            longitude,
-            accuracy,
-            altitude,
-            speed,
-            sdf.format(new Date(time))
-        );
+        String locationInfoStr = locationInfo.toString();
 
-        Toast.makeText(this, "位置信息: " + locationInfo, Toast.LENGTH_SHORT).show();
+        LogUtils.i(this, "位置信息: " + locationInfoStr);
 
+        Toast.makeText(this, "百度定位成功", Toast.LENGTH_SHORT).show();
 
         // 使用 Log 打印
-        Log.i(TAG, "========== 位置信息 ==========");
-        Log.i(TAG, locationInfo);
-        Log.i(TAG, "============================");
+        LogUtils.i(this, "========== 百度定位信息 ==========");
+        LogUtils.i(this, locationInfoStr);
+        LogUtils.i(this, "================================");
 
-        // 也可以更新通知显示位置信息
-        updateNotification(locationInfo);
+        // 更新通知显示位置信息
+        updateNotification(locationInfoStr);
     }
 
     // 创建通知渠道并启动前台服务
@@ -233,6 +316,34 @@ public class LocationService extends Service {
             .build();
     }
 
+    // 获取应用的 SHA1 签名
+    private String getSHA1Signature() {
+        try {
+            PackageInfo packageInfo = getPackageManager().getPackageInfo(
+                getPackageName(),
+                PackageManager.GET_SIGNATURES
+            );
+            Signature[] signatures = packageInfo.signatures;
+            if (signatures != null && signatures.length > 0) {
+                MessageDigest md = MessageDigest.getInstance("SHA1");
+                md.update(signatures[0].toByteArray());
+                byte[] digest = md.digest();
+
+                // 转换为十六进制字符串
+                StringBuilder sb = new StringBuilder();
+                for (byte b : digest) {
+                    sb.append(String.format("%02X", b));
+                }
+                return sb.toString();
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "获取包信息失败", e);
+        } catch (NoSuchAlgorithmException e) {
+            Log.e(TAG, "SHA1 算法不可用", e);
+        }
+        return null;
+    }
+
     // 更新通知显示位置信息
     private void updateNotification(String locationInfo) {
         String currentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
@@ -254,24 +365,18 @@ public class LocationService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        // 移除定时任务
-        handler.removeCallbacks(locationTask);
+        // 移除所有待执行的任务
+        handler.removeCallbacksAndMessages(null);
 
-        // 移除位置监听器
-        if (locationManager != null && locationListener != null) {
+        // 停止百度定位服务
+        if (locationClient != null) {
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) ==
-                        android.content.pm.PackageManager.PERMISSION_GRANTED ||
-                        checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) ==
-                        android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                        locationManager.removeUpdates(locationListener);
-                    }
-                } else {
-                    locationManager.removeUpdates(locationListener);
-                }
+                locationClient.stop();
+                locationClient.unRegisterLocationListener(locationListener);
+                locationClient = null;
+                isLocationClientStarted = false;
             } catch (Exception e) {
-                Log.e(TAG, "移除位置监听器时出错", e);
+                Log.e(TAG, "停止百度定位服务时出错", e);
             }
         }
 

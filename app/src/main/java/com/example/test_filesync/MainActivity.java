@@ -136,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 Manifest.permission.FOREGROUND_SERVICE_LOCATION, //定位前台服务权限
                 Manifest.permission.ACCESS_COARSE_LOCATION,  // 粗略定位
                 Manifest.permission.ACCESS_FINE_LOCATION,   // 精确定位
+                Manifest.permission.ACCESS_WIFI_STATE, // 获取WIFI状态
                 //Manifest.permission.SCHEDULE_EXACT_ALARM, //定时器
                 //Manifest.permission.SYSTEM_ALERT_WINDOW,
                 Manifest.permission.FOREGROUND_SERVICE, // 适配Android 9+ 通用前台服务权限

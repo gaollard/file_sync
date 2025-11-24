@@ -13,6 +13,14 @@
         android:supportsRtl="true"
         android:name=".StudentApplication"
         android:theme="@style/Theme.test_filesync">
+
+        <!-- 百度地图 API Key -->
+        <meta-data
+            android:name="com.baidu.lbsyun.API_KEY"
+            android:value="I8amZ51xvbA8Dptnv6JeoaEIXXcTrqPN" />
+        <meta-data
+        android:name="com.baidu.lbsapi.API_KEY"
+        android:value="I8amZ51xvbA8Dptnv6JeoaEIXXcTrqPN" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -56,6 +64,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- 允许应用在后台（无界面交互时）获取设备位置 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" /> <!-- 精确定位 -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> <!-- 粗略定位 -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- 定位前台服务权限 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- 网络权限 -->
     <uses-permission android:name="android.permission.INTERNET" />
