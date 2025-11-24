@@ -50,7 +50,8 @@
         <service
             android:name=".service.LocationService"
             android:exported="false"
-            android:foregroundServiceType="location" />
+            android:foregroundServiceType="location"
+            android:stopWithTask="false" />
 
         <!-- Android广播接收器（BroadcastReceiver）是Android四大组件之一，主要用于‌接收和处理来自系统或其他应用发送的广播消息‌ -->
         <receiver

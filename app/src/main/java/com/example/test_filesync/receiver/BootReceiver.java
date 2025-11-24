@@ -17,6 +17,8 @@ public class BootReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
 
+        LogUtils.i(context, TAG, "BootReceiver 被触发，action: " + action);
+
         if (Intent.ACTION_BOOT_COMPLETED.equals(action) ||
             "android.intent.action.QUICKBOOT_POWERON".equals(action)) {
             LogUtils.i(context, TAG, "设备启动完成，准备启动 LocationService");
