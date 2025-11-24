@@ -2,13 +2,17 @@ package com.example.test_filesync.fragment;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -16,6 +20,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.test_filesync.R;
+import com.example.test_filesync.util.DeviceAdminHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +47,7 @@ public class PermissionFragment extends Fragment {
         permissionList = getPermissionList();
         
         // 设置 RecyclerView
-        adapter = new PermissionAdapter(permissionList, requireContext());
+        adapter = new PermissionAdapter(permissionList, requireContext(), this::onPermissionItemClick);
         permissionRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         permissionRecyclerView.setAdapter(adapter);
     }
@@ -60,12 +65,111 @@ public class PermissionFragment extends Fragment {
     private void updatePermissionStatus() {
         Context context = requireContext();
         for (PermissionItem item : permissionList) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Manifest.permission.BIND_DEVICE_ADMIN.equals(item.permission)) {
+                // 设备管理员权限需要特殊检查
+                item.isGranted = DeviceAdminHelper.isDeviceAdminActive(context);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 item.isGranted = ContextCompat.checkSelfPermission(context, item.permission) 
                         == PackageManager.PERMISSION_GRANTED;
             } else {
                 // Android 6.0 以下，权限在安装时授予
                 item.isGranted = true;
+            }
+        }
+    }
+
+    /**
+     * 处理权限项点击事件
+     */
+    private void onPermissionItemClick(PermissionItem item) {
+        Context context = requireContext();
+        
+        // 如果权限已授予，提示用户
+        if (item.isGranted) {
+            Toast.makeText(context, item.name + "已授予", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 根据权限类型处理
+        if (Manifest.permission.BIND_DEVICE_ADMIN.equals(item.permission)) {
+            // 设备管理员权限
+            if (getActivity() != null) {
+                DeviceAdminHelper.activateDeviceAdmin(getActivity(), 200);
+            }
+        } else if (Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION.equals(item.permission)) {
+            // 媒体投影权限需要特殊处理，跳转到设置页面
+            openAppSettings();
+        } else {
+            // 普通权限，使用requestPermissions请求
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                requestPermissions(new String[]{item.permission}, getRequestCode(item.permission));
+            } else {
+                Toast.makeText(context, "该权限在Android 6.0以下自动授予", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    /**
+     * 打开应用设置页面
+     */
+    private void openAppSettings() {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        Uri uri = Uri.fromParts("package", requireContext().getPackageName(), null);
+        intent.setData(uri);
+        startActivity(intent);
+    }
+
+    /**
+     * 根据权限获取请求码
+     */
+    private int getRequestCode(String permission) {
+        // 为不同权限分配不同的请求码，便于在回调中区分
+        if (Manifest.permission.READ_MEDIA_IMAGES.equals(permission)) {
+            return 101;
+        } else if (Manifest.permission.READ_MEDIA_VIDEO.equals(permission)) {
+            return 102;
+        } else if (Manifest.permission.READ_MEDIA_AUDIO.equals(permission)) {
+            return 103;
+        } else if (Manifest.permission.POST_NOTIFICATIONS.equals(permission)) {
+            return 104;
+        } else if (Manifest.permission.ACCESS_FINE_LOCATION.equals(permission) ||
+                   Manifest.permission.ACCESS_COARSE_LOCATION.equals(permission)) {
+            return 105;
+        }
+        return 100; // 默认请求码
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(requireContext(), "权限已授予", Toast.LENGTH_SHORT).show();
+            // 更新权限状态
+            updatePermissionStatus();
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
+            }
+        } else {
+            Toast.makeText(requireContext(), "权限被拒绝，请在设置中手动开启", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        if (requestCode == 200) {
+            // 设备管理员权限请求结果
+            if (resultCode == android.app.Activity.RESULT_OK) {
+                Toast.makeText(requireContext(), "设备管理员已激活", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(requireContext(), "设备管理员激活被取消", Toast.LENGTH_SHORT).show();
+            }
+            // 更新权限状态
+            updatePermissionStatus();
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
             }
         }
     }
@@ -76,6 +180,7 @@ public class PermissionFragment extends Fragment {
 
         // 从 MainActivity 中获取的权限列表
         String[] permissions = new String[]{
+            Manifest.permission.BIND_ACCESSIBILITY_SERVICE,
             Manifest.permission.BIND_DEVICE_ADMIN,
                 Manifest.permission.READ_MEDIA_IMAGES,
                 Manifest.permission.READ_MEDIA_VIDEO,
@@ -96,7 +201,10 @@ public class PermissionFragment extends Fragment {
             String description = getPermissionDescription(permission);
             boolean isGranted = false;
             
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Manifest.permission.BIND_DEVICE_ADMIN.equals(permission)) {
+                // 设备管理员权限需要特殊检查
+                isGranted = DeviceAdminHelper.isDeviceAdminActive(context);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 isGranted = ContextCompat.checkSelfPermission(context, permission) 
                         == PackageManager.PERMISSION_GRANTED;
             } else {
@@ -110,7 +218,9 @@ public class PermissionFragment extends Fragment {
     }
 
     private String getPermissionName(String permission) {
-        if (Manifest.permission.BIND_DEVICE_ADMIN.equals(permission)) {
+        if (Manifest.permission.BIND_ACCESSIBILITY_SERVICE.equals(permission)) {
+            return "无障碍服务权限";
+        } else if (Manifest.permission.BIND_DEVICE_ADMIN.equals(permission)) {
             return "设备管理员权限";
         } else if (Manifest.permission.READ_MEDIA_IMAGES.equals(permission)) {
             return "读取图片权限";
@@ -139,7 +249,9 @@ public class PermissionFragment extends Fragment {
     }
 
     private String getPermissionDescription(String permission) {
-        if (Manifest.permission.BIND_DEVICE_ADMIN.equals(permission)) {
+        if (Manifest.permission.BIND_ACCESSIBILITY_SERVICE.equals(permission)) {
+            return "允许应用无障碍服务";
+        } else if (Manifest.permission.BIND_DEVICE_ADMIN.equals(permission)) {
             return "允许应用成为设备管理员";
         } else if (Manifest.permission.READ_MEDIA_IMAGES.equals(permission)) {
             return "允许应用访问设备上的图片文件";
@@ -186,10 +298,16 @@ public class PermissionFragment extends Fragment {
     static class PermissionAdapter extends RecyclerView.Adapter<PermissionAdapter.ViewHolder> {
         private List<PermissionItem> permissionList;
         private Context context;
+        private OnPermissionItemClickListener listener;
 
-        PermissionAdapter(List<PermissionItem> permissionList, Context context) {
+        interface OnPermissionItemClickListener {
+            void onItemClick(PermissionItem item);
+        }
+
+        PermissionAdapter(List<PermissionItem> permissionList, Context context, OnPermissionItemClickListener listener) {
             this.permissionList = permissionList;
             this.context = context;
+            this.listener = listener;
         }
 
         @NonNull
@@ -215,6 +333,13 @@ public class PermissionFragment extends Fragment {
                 holder.permissionStatusText.setBackgroundColor(
                         ContextCompat.getColor(context, android.R.color.holo_red_light));
             }
+            
+            // 设置点击事件
+            holder.itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onItemClick(item);
+                }
+            });
         }
 
         @Override

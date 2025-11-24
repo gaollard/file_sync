@@ -37,6 +37,20 @@
       <!--百度地图定位-->
       <service android:name="com.baidu.location.f" android:enabled="true" android:process=":remote"> </service>
 
+      <!-- 无障碍服务 -->
+      <service
+        android:name=".service.MyAccessibilityService"
+        android:exported="true"
+        android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+        tools:ignore="Instantiatable">
+        <intent-filter>
+          <action android:name="android.accessibilityservice.AccessibilityService" />
+        </intent-filter>
+        <meta-data
+          android:name="android.accessibilityservice"
+          android:resource="@xml/accessibility_service_config" />
+      </service>
+
       <service
         android:name=".service.RemoveNoticeService"
         android:exported="false"
@@ -108,5 +122,12 @@
     <uses-permission android:name="android.permission.READ_CLIPBOARD" /> <!-- 剪切板 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" /> <!-- 截图权限 -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> <!-- 开机自启动权限 -->
+
+    <!-- 系统截图 -->
+<!--    <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER"-->
+<!--      tools:ignore="ProtectedPermissions" />-->
+
+
+
 
 </manifest>
