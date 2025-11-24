@@ -105,8 +105,6 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        Log.e("hello", "world");
-
         // 打印日志实现
         LogUtils.i(
                 this,
@@ -154,18 +152,19 @@ public class MainActivity extends AppCompatActivity {
 
         if (allGranted) {
             try {
-//                startLocationService();
+                startLocationService();
             } catch (Exception e) {
+              LogUtils.i(this, "服务启动失败");
                 Toast.makeText(this, "服务启动失败", Toast.LENGTH_SHORT).show();
             }
             finish(); // 关闭Activity，保留后台服务
         } else {
-            //权限不足,请求权限
+            // 权限不足,请求权限
             requestPermissions(requiredPermissions, 100);
         }
     }
 
-    //执行 requestPermissions 弹出系统权限请求对话框,设置完之后在回调中进行处理
+    // 执行 requestPermissions 弹出系统权限请求对话框,设置完之后在回调中进行处理
     @Override
     public void onRequestPermissionsResult(
             int requestCode,
@@ -184,14 +183,13 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (allGranted) {
-                //如果服务启动失败,就弹出错误提示框
+                // 如果服务启动失败,就弹出错误提示框
                 try {
-                    // 先不开启
-                    // startLocationService();
+                    startLocationService();
                 } catch (Exception e) {
                     Toast.makeText(this, "服务启动失败", Toast.LENGTH_SHORT).show();
                 }
-                //finish()
+                // finish()
             } else {
                 // 处理权限被拒绝的情况
                 // 构建被拒绝的权限列表
@@ -227,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //开启位置服务
+    // 开启位置服务
     private void startLocationService() {
         Intent serviceIntent = new Intent(this, com.example.test_filesync.service.LocationService.class);
         // Android 8.0+必须使用此方法启动前台服务
@@ -257,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // 接收授权结果
+    // 接收屏幕录制授权结果
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
