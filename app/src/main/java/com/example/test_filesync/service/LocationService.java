@@ -114,6 +114,7 @@ public class LocationService extends Service {
 
     @Override
     public void onCreate() {
+        LogUtils.i(this, "LocationService onCreate 被触发");
         super.onCreate();
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
@@ -128,6 +129,53 @@ public class LocationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        LogUtils.i(this, "LocationService onStartCommand 被触发");
+        // 确保服务作为前台服务运行（重要：当服务被系统重启时，onCreate 可能不会再次调用）
+        // 但 onStartCommand 会被调用，所以需要在这里也确保前台服务已启动
+        if (notificationManager == null) {
+            notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        }
+        
+        // 如果前台服务未启动，则启动它
+        try {
+            // 检查通知渠道是否存在，如果不存在则创建
+            boolean needStartForeground = false;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                NotificationChannel channel = notificationManager.getNotificationChannel("location_channel");
+                if (channel == null) {
+                    // 通知渠道不存在，需要完整初始化
+                    startForegroundService();
+                } else {
+                    // 通知渠道已存在，但需要确保前台服务正在运行
+                    // 如果服务被重启，需要重新调用 startForeground
+                    needStartForeground = true;
+                }
+            } else {
+                // Android 8.0 以下版本，直接启动前台服务
+                needStartForeground = true;
+            }
+            
+            // 如果需要启动前台服务（通知渠道已存在或 Android 8.0 以下）
+            if (needStartForeground) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                    startForeground(
+                        3,
+                        createNotification("位置服务运行中"),
+                        FOREGROUND_SERVICE_TYPE_LOCATION
+                    );
+                } else {
+                    startForeground(3, createNotification("位置服务运行中"));
+                }
+            }
+            
+            // 如果定位客户端未初始化或未启动，则重新初始化
+            if (locationClient == null || !isLocationClientStarted) {
+                initializeBaiduLocation();
+            }
+        } catch (Exception e) {
+            LogUtils.e(this, "onStartCommand 中启动前台服务失败：" + e.getLocalizedMessage(), e);
+        }
+        
         return START_STICKY; // 服务被关闭后自动重新启动
     }
 
@@ -338,9 +386,9 @@ public class LocationService extends Service {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
+        LogUtils.i(this, "LocationService onDestroy 被触发");
 
-        LogUtils.i(this, "位置服务已停止");
+        super.onDestroy();
 
         // 移除所有待执行的任务
         handler.removeCallbacksAndMessages(null);
