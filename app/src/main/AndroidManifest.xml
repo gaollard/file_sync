@@ -16,11 +16,9 @@
 
         <!-- 百度地图 API Key -->
         <meta-data
-            android:name="com.baidu.lbsyun.API_KEY"
-            android:value="I8amZ51xvbA8Dptnv6JeoaEIXXcTrqPN" />
-        <meta-data
         android:name="com.baidu.lbsapi.API_KEY"
         android:value="I8amZ51xvbA8Dptnv6JeoaEIXXcTrqPN" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
