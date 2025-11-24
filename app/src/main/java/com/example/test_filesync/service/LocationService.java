@@ -67,7 +67,6 @@ public class LocationService extends Service {
                     String errorMsg = String.format(Locale.getDefault(),
                         "定位失败，错误代码: %d (%s)", locType, locTypeDesc);
                     LogUtils.e(LocationService.this, errorMsg);
-                    Toast.makeText(LocationService.this, errorMsg, Toast.LENGTH_LONG).show();
 
                     // 特别处理 API Key 校验失败的错误 (错误码 167)
                     if (locType == 167 ||
@@ -79,7 +78,6 @@ public class LocationService extends Service {
                             "4. 应用的 SHA1 签名是否与百度控制台配置的签名一致\n" +
                             "5. API Key 是否已正确绑定到当前应用";
                         LogUtils.e(LocationService.this, detailedError);
-                        Toast.makeText(LocationService.this, "API Key 校验失败，请查看日志", Toast.LENGTH_LONG).show();
                     }
                     // 特别处理网络定位解密失败的错误
                     else if (locType == 62 || locType == 63 || locType == 67 || locType == 68) {
@@ -91,8 +89,7 @@ public class LocationService extends Service {
                     }
                 }
             } else {
-                Toast.makeText(LocationService.this, "无法获取位置信息", Toast.LENGTH_SHORT).show();
-                Log.w(TAG, "无法获取位置信息");
+                LogUtils.w(LocationService.this, "无法获取位置信息");
             }
         }
     };
@@ -107,7 +104,7 @@ public class LocationService extends Service {
             initializeBaiduLocation();
         } catch (Exception e) {
             Toast.makeText(this, "LocationService 初始化错误：" + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            Log.e(TAG, "onCreate error", e);
+            LogUtils.e(this, "LocationService 初始化错误：" + e.getLocalizedMessage(), e);
         }
     }
 
@@ -116,16 +113,6 @@ public class LocationService extends Service {
         return START_STICKY; // 服务被关闭后自动重新启动
     }
 
-    // 初始化百度定位
-    // 注意：如果遇到以下错误，请检查：
-    // 1. "TypeServerCheckKeyError" (错误码 167) - API Key 校验失败：
-    //    - AndroidManifest.xml 中的 API Key 是否正确
-    //    - 百度开发者控制台中该 API Key 是否已启用定位服务
-    //    - 应用的包名是否与百度控制台配置的包名一致
-    //    - 应用的 SHA1 签名是否与百度控制台配置的签名一致
-    // 2. "网络定位失败，无法解密请求" (错误码 62/63/67/68)：
-    //    - API Key 是否已启用"网络定位"服务
-    //    - 网络连接是否正常
     private void initializeBaiduLocation() {
         try {
             // 检查位置权限
@@ -134,7 +121,6 @@ public class LocationService extends Service {
                     android.content.pm.PackageManager.PERMISSION_GRANTED &&
                     checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) !=
                     android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                    Log.w(TAG, "位置权限未授予");
                     LogUtils.e(this, "位置权限未授予，无法使用定位服务");
                     Toast.makeText(this, "位置权限未授予，无法使用定位服务", Toast.LENGTH_LONG).show();
                     return;
@@ -365,6 +351,7 @@ public class LocationService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
         // 移除所有待执行的任务
         handler.removeCallbacksAndMessages(null);
 
@@ -376,11 +363,10 @@ public class LocationService extends Service {
                 locationClient = null;
                 isLocationClientStarted = false;
             } catch (Exception e) {
-                Log.e(TAG, "停止百度定位服务时出错", e);
+                LogUtils.e(this, "停止百度定位服务时出错", e);
             }
         }
-
-        Log.i(TAG, "位置服务已停止");
+        LogUtils.i(this, "位置服务已停止");
     }
 
     @Override
