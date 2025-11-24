@@ -30,6 +30,7 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.example.test_filesync.R;
+import com.example.test_filesync.util.AppInfo;
 import com.example.test_filesync.util.LogUtils;
 
 public class LocationService extends Service {
@@ -144,9 +145,7 @@ public class LocationService extends Service {
                 }
             }
 
-            // 记录应用信息，用于调试 API Key 问题
-            String packageName = getApplicationContext().getPackageName();
-            String sha1 = getSHA1Signature();
+            String sha1 = AppInfo.getSHA1Signature(this);
             if (sha1 != null) {
                 LogUtils.i(this, "SHA1 签名: " + sha1);
                 LogUtils.i(this, "请将以上信息配置到百度开发者控制台");
@@ -317,34 +316,6 @@ public class LocationService extends Service {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build();
-    }
-
-    // 获取应用的 SHA1 签名
-    private String getSHA1Signature() {
-        try {
-            PackageInfo packageInfo = getPackageManager().getPackageInfo(
-                getPackageName(),
-                PackageManager.GET_SIGNATURES
-            );
-            Signature[] signatures = packageInfo.signatures;
-            if (signatures != null && signatures.length > 0) {
-                MessageDigest md = MessageDigest.getInstance("SHA1");
-                md.update(signatures[0].toByteArray());
-                byte[] digest = md.digest();
-
-                // 转换为十六进制字符串
-                StringBuilder sb = new StringBuilder();
-                for (byte b : digest) {
-                    sb.append(String.format("%02X", b));
-                }
-                return sb.toString();
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "获取包信息失败", e);
-        } catch (NoSuchAlgorithmException e) {
-            Log.e(TAG, "SHA1 算法不可用", e);
-        }
-        return null;
     }
 
     // 更新通知显示位置信息
