@@ -9,14 +9,14 @@ import com.example.test_filesync.util.LogUtils;
 /**
  * 设备管理员接收器
  * 用于接收设备管理员相关的系统广播
- * 
+ *
  * BIND_DEVICE_ADMIN 权限说明：
  * - 这是一个签名权限（signature permission），只有系统应用才能使用
  * - 用于绑定设备管理员服务，允许应用成为设备管理员
  * - 必须在 AndroidManifest.xml 中声明在 receiver 的 permission 属性中
  */
 public class PolicyReceiver extends DeviceAdminReceiver {
-    
+
     private static final String TAG = "PolicyReceiver";
 
     /**
@@ -52,9 +52,8 @@ public class PolicyReceiver extends DeviceAdminReceiver {
     /**
      * 当设备管理员被禁用时调用（用户确认后）
      */
-    @Override
     public void onDisabled(Context context, Intent intent, CharSequence reason) {
-      super.onDisabled(context, intent, reason);
+      super.onDisabled(context, intent);
       LogUtils.i(context, TAG, "设备管理员已被用户禁用: " + reason);
     }
 
