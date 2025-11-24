@@ -25,7 +25,6 @@
             android:theme="@style/Theme.test_filesync">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -34,6 +33,9 @@
             android:name=".service.MediaProjectionService"
             android:exported="false"
             android:foregroundServiceType="mediaProjection" /><!-- 媒体投影服务 -->
+
+      <!--百度地图定位-->
+      <service android:name="com.baidu.location.f" android:enabled="true" android:process=":remote"> </service>
 
       <service
         android:name=".service.RemoveNoticeService"
@@ -69,8 +71,8 @@
                 <action android:name="android.intent.action.PACKAGE_REMOVED" />
             </intent-filter>
         </receiver>
-    </application> 
-    
+    </application>
+
     <!-- 读取媒体视频 -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- 读取音频 -->
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /> <!-- 选择性媒体访问权限 -->

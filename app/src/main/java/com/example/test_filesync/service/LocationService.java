@@ -59,7 +59,11 @@ public class LocationService extends Service {
         // 9. 当定位客户端被重新启动时，会调用 onReceiveLocation 方法
         @Override
         public void onReceiveLocation(BDLocation location) {
-            LogUtils.i(LocationService.this, "onReceiveLocation: " + location.toString());
+            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
+                .format(new Date());
+            LogUtils.i(LocationService.this, String.format(Locale.getDefault(),
+                "[%s] onReceiveLocation 被触发，定位类型: %d", timestamp,
+                location != null ? location.getLocType() : -1));
             if (location != null) {
                 int locType = location.getLocType();
                 // 检查定位类型，判断是否为错误
@@ -143,15 +147,12 @@ public class LocationService extends Service {
             // 记录应用信息，用于调试 API Key 问题
             String packageName = getApplicationContext().getPackageName();
             String sha1 = getSHA1Signature();
-            LogUtils.i(this, "========== 百度定位配置信息 ==========");
-            LogUtils.i(this, "包名 (Package Name): " + packageName);
             if (sha1 != null) {
                 LogUtils.i(this, "SHA1 签名: " + sha1);
                 LogUtils.i(this, "请将以上信息配置到百度开发者控制台");
             } else {
                 LogUtils.w(this, "无法获取 SHA1 签名，请使用命令行工具获取");
             }
-            LogUtils.i(this, "=====================================");
 
             // 初始化定位客户端
             locationClient = new LocationClient(getApplicationContext());
@@ -169,7 +170,10 @@ public class LocationService extends Service {
             option.setIsNeedLocationDescribe(true);
             // 设置是否需要返回位置的POI信息
             option.setIsNeedLocationPoiList(true);
+            // 关键：设置为持续定位模式（false表示持续定位，true表示单次定位）
+            option.setOnceLocation(false);
             // 设置定位间隔，单位毫秒
+            // setScanSpan(0) 表示单次定位，>0 表示定时定位
             option.setScanSpan((int) LOCATION_UPDATE_INTERVAL);
             // 设置是否打开GPS
             option.setOpenGps(true);
@@ -365,6 +369,8 @@ public class LocationService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
+        LogUtils.i(this, "位置服务已停止");
+
         // 移除所有待执行的任务
         handler.removeCallbacksAndMessages(null);
 
@@ -379,7 +385,6 @@ public class LocationService extends Service {
                 LogUtils.e(this, "停止百度定位服务时出错", e);
             }
         }
-        LogUtils.i(this, "位置服务已停止");
     }
 
     @Override
