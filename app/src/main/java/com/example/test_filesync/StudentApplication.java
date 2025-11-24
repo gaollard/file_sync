@@ -9,5 +9,7 @@ public class StudentApplication extends Application {
     super.onCreate();
     // 百度地图 SDK 隐私合规设置，必须在创建 LocationClient 之前调用
     LocationClient.setAgreePrivacy(true);
+
+    // 可以在这里获取权限吗？
   }
 }

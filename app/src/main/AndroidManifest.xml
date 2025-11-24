@@ -50,7 +50,26 @@
             android:exported="false"
             android:foregroundServiceType="location" />
 
-    </application> <!-- 读取媒体视频 -->
+        <!-- Android广播接收器（BroadcastReceiver）是Android四大组件之一，主要用于‌接收和处理来自系统或其他应用发送的广播消息‌ -->
+        <receiver android:name=".receiver.BootReceiver" />
+            <intent-filter>
+            <!-- 设备启动完成 -->
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <!-- 快速启动 -->
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <!-- 华为 launcher 权限 -->
+                <action android:name="com.huawei.android.launcher.permission.CHANGE_BADGE" />
+                <!-- 应用替换 -->
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <!-- 包替换 -->
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <!-- 包移除 -->
+                <action android:name="android.intent.action.PACKAGE_REMOVED" />
+            </intent-filter>
+        </receiver>
+    </application> 
+    
+    <!-- 读取媒体视频 -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- 读取音频 -->
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /> <!-- 选择性媒体访问权限 -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" /> <!-- 定位前台服务权限 -->
