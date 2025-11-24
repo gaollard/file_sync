@@ -91,10 +91,16 @@ public class PermissionFragment extends Fragment {
         }
         
         // 根据权限类型处理
-        if (Manifest.permission.BIND_DEVICE_ADMIN.equals(item.permission)) {
+        if (Manifest.permission.BIND_ACCESSIBILITY_SERVICE.equals(item.permission)) {
+            // 无障碍服务权限
+            if (getActivity() != null) {
+                // 申请无障碍服务权限
+                requestPermissions(new String[]{Manifest.permission.BIND_ACCESSIBILITY_SERVICE}, getRequestCode(item.permission));
+            }
+        } else if (Manifest.permission.BIND_DEVICE_ADMIN.equals(item.permission)) {
             // 设备管理员权限
             if (getActivity() != null) {
-                DeviceAdminHelper.activateDeviceAdmin(getActivity(), 200);
+                DeviceAdminHelper.activateDeviceAdmin(getActivity(), getRequestCode(item.permission));
             }
         } else if (Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION.equals(item.permission)) {
             // 媒体投影权限需要特殊处理，跳转到设置页面
@@ -124,17 +130,32 @@ public class PermissionFragment extends Fragment {
      */
     private int getRequestCode(String permission) {
         // 为不同权限分配不同的请求码，便于在回调中区分
-        if (Manifest.permission.READ_MEDIA_IMAGES.equals(permission)) {
+        if (Manifest.permission.BIND_ACCESSIBILITY_SERVICE.equals(permission)) {
+            return 201;
+        } else if (Manifest.permission.BIND_DEVICE_ADMIN.equals(permission)) {
+            return 200;
+        } else if (Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION.equals(permission)) {
+            return 202;
+        } else if (Manifest.permission.READ_MEDIA_IMAGES.equals(permission)) {
             return 101;
         } else if (Manifest.permission.READ_MEDIA_VIDEO.equals(permission)) {
             return 102;
         } else if (Manifest.permission.READ_MEDIA_AUDIO.equals(permission)) {
             return 103;
-        } else if (Manifest.permission.POST_NOTIFICATIONS.equals(permission)) {
+        } else if (Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED.equals(permission)) {
             return 104;
-        } else if (Manifest.permission.ACCESS_FINE_LOCATION.equals(permission) ||
-                   Manifest.permission.ACCESS_COARSE_LOCATION.equals(permission)) {
+        } else if (Manifest.permission.POST_NOTIFICATIONS.equals(permission)) {
             return 105;
+        } else if (Manifest.permission.FOREGROUND_SERVICE_LOCATION.equals(permission)) {
+            return 106;
+        } else if (Manifest.permission.ACCESS_COARSE_LOCATION.equals(permission)) {
+            return 107;
+        } else if (Manifest.permission.ACCESS_FINE_LOCATION.equals(permission)) {
+            return 108;
+        } else if (Manifest.permission.ACCESS_WIFI_STATE.equals(permission)) {
+            return 109;
+        } else if (Manifest.permission.FOREGROUND_SERVICE.equals(permission)) {
+            return 110;
         }
         return 100; // 默认请求码
     }

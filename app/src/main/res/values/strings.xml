@@ -16,4 +16,7 @@
     <string name="tab_home">首页</string>
     <string name="tab_record">记录</string>
     <string name="tab_profile">我的</string>
+    
+    <!-- Accessibility Service -->
+    <string name="accessibility_service_description">辅助功能服务，用于系统交互和事件监听</string>
 </resources>
