@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot()); // <-- 这句是用于创建界面的
-        setSupportActionBar(binding.toolbar);
+        // setSupportActionBar(binding.toolbar);
 
         // 获取用户模式（优先从 Intent 获取，否则从 SharedPreferences 获取）
         String userMode = getUserMode();
