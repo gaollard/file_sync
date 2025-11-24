@@ -46,8 +46,6 @@ public class LocationService extends Service {
 
     // 百度定位监听器
     private BDAbstractLocationListener locationListener = new BDAbstractLocationListener() {
-
-
         // onReceiveLocation 什么时候被调用？
         // 1. 当定位成功时，会调用 onReceiveLocation 方法
         // 2. 当定位失败时，会调用 onReceiveLocation 方法
@@ -112,12 +110,27 @@ public class LocationService extends Service {
         }
     };
 
+    // onCreate 什么时候被调用？
+    // 1. 当服务被创建时，会调用 onCreate 方法
+    // 2. 当服务被重启时，会调用 onCreate 方法
+    // 3. 当服务被系统重启时，会调用 onCreate 方法
+    // 4. 当服务被用户手动启动时，会调用 onCreate 方法
+    // 5. 当服务被其他组件启动时，会调用 onCreate 方法
+    // 6. 当服务被系统服务启动时，会调用 onCreate 方法
+    // 7. 当服务被其他应用启动时，会调用 onCreate 方法
+    // onStartCommand 和 onCreate 的区别是什么？
+    // 1. onStartCommand 是当服务被启动时，会调用 onStartCommand 方法
+    // 2. onCreate 是当服务被创建时，会调用 onCreate 方法
+    // 3. onStartCommand 是当服务被重启时，会调用 onStartCommand 方法
+    // 4. onCreate 是当服务被系统重启时，会调用 onCreate 方法
+    // 5. onStartCommand 是当服务被用户手动启动时，会调用 onStartCommand 方法
+    // 6. onCreate 是当服务被其他组件启动时，会调用 onCreate 方法
+    // 7. onStartCommand 是当服务被系统服务启动时，会调用 onStartCommand 方法
     @Override
     public void onCreate() {
         LogUtils.i(this, "LocationService onCreate 被触发");
         super.onCreate();
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
         try {
             startForegroundService();
             initializeBaiduLocation();
@@ -127,6 +140,15 @@ public class LocationService extends Service {
         }
     }
 
+    // onStartCommand 什么时候被调用？
+    // 1. 当服务被启动时，会调用 onStartCommand 方法
+    // 2. 当服务被重启时，会调用 onStartCommand 方法
+    // 3. 当服务被系统重启时，会调用 onStartCommand 方法
+    // 4. 当服务被用户手动启动时，会调用 onStartCommand 方法
+    // 5. 当服务被其他组件启动时，会调用 onStartCommand 方法
+    // 6. 当服务被系统服务启动时，会调用 onStartCommand 方法
+    // 7. 当服务被其他应用启动时，会调用 onStartCommand 方法
+    // 8. 当服务被其他应用启动时，会调用 onStartCommand 方法
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         LogUtils.i(this, "LocationService onStartCommand 被触发");
@@ -307,13 +329,6 @@ public class LocationService extends Service {
         String locationInfoStr = locationInfo.toString();
 
         LogUtils.i(this, "位置信息: " + locationInfoStr);
-
-        Toast.makeText(this, "百度定位成功", Toast.LENGTH_SHORT).show();
-
-        // 使用 Log 打印
-        LogUtils.i(this, "========== 百度定位信息 ==========");
-        LogUtils.i(this, locationInfoStr);
-        LogUtils.i(this, "================================");
 
         // 更新通知显示位置信息
         updateNotification(locationInfoStr);
