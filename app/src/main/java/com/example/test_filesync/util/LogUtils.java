@@ -145,5 +145,12 @@ public class LogUtils {
     public static String getLogFilePath(Context context) {
         return getLogFile(context).getAbsolutePath();
     }
+
+    /**
+     * 获取日志文件对象，用于读取日志内容
+     */
+    public static File getLogFileForRead(Context context) {
+        return getLogFile(context);
+    }
 }
 
