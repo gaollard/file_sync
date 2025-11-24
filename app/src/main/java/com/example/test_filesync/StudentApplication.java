@@ -13,18 +13,19 @@ public class StudentApplication extends Application {
   @Override
   public void onCreate() {
     super.onCreate();
+
     // 百度地图 SDK 隐私合规设置，必须在创建 LocationClient 之前调用
-    LocationClient.setAgreePrivacy(true);
+    // LocationClient.setAgreePrivacy(true);
     
-    // 检查权限后再启动服务
-    if (checkRequiredPermissions()) {
-      LogUtils.i(this, "StudentApplication", "权限检查通过，启动 LocationService");
-      startLocationService();
-    } else {
-      LogUtils.w(this, "StudentApplication", "缺少必要权限，延迟启动 LocationService");
-      // 权限未授予时，服务会在用户授予权限后由其他组件启动
-      // 或者可以在 MainActivity 中请求权限后再启动服务
-    }
+    // // 检查权限后再启动服务
+    // if (checkRequiredPermissions()) {
+    //   LogUtils.i(this, "StudentApplication", "权限检查通过，启动 LocationService");
+    //   startLocationService();
+    // } else {
+    //   LogUtils.w(this, "StudentApplication", "缺少必要权限，延迟启动 LocationService");
+    //   // 权限未授予时，服务会在用户授予权限后由其他组件启动
+    //   // 或者可以在 MainActivity 中请求权限后再启动服务
+    // }
   }
   
   /**

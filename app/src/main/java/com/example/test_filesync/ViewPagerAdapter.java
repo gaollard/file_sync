@@ -7,6 +7,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.example.test_filesync.fragment.ChildHomeFragment;
 import com.example.test_filesync.fragment.HomeFragment;
+import com.example.test_filesync.fragment.PermissionFragment;
 import com.example.test_filesync.fragment.ProfileFragment;
 import com.example.test_filesync.fragment.RecordFragment;
 
@@ -32,13 +33,13 @@ public class ViewPagerAdapter extends FragmentStateAdapter {
             // 孩子模式
             switch (position) {
                 case 0:
-                    return new ChildHomeFragment();
+                    return new PermissionFragment();
                 case 1:
                     return new RecordFragment();
                 case 2:
                     return new ProfileFragment();
                 default:
-                    return new ChildHomeFragment();
+                    return new PermissionFragment();
             }
         } else {
             // 家长模式

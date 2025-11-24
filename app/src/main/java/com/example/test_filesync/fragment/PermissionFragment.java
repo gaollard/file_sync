@@ -76,6 +76,7 @@ public class PermissionFragment extends Fragment {
 
         // 从 MainActivity 中获取的权限列表
         String[] permissions = new String[]{
+            Manifest.permission.BIND_DEVICE_ADMIN,
                 Manifest.permission.READ_MEDIA_IMAGES,
                 Manifest.permission.READ_MEDIA_VIDEO,
                 Manifest.permission.READ_MEDIA_AUDIO,
@@ -109,7 +110,9 @@ public class PermissionFragment extends Fragment {
     }
 
     private String getPermissionName(String permission) {
-        if (Manifest.permission.READ_MEDIA_IMAGES.equals(permission)) {
+        if (Manifest.permission.BIND_DEVICE_ADMIN.equals(permission)) {
+            return "设备管理员权限";
+        } else if (Manifest.permission.READ_MEDIA_IMAGES.equals(permission)) {
             return "读取图片权限";
         } else if (Manifest.permission.READ_MEDIA_VIDEO.equals(permission)) {
             return "读取视频权限";
@@ -136,7 +139,9 @@ public class PermissionFragment extends Fragment {
     }
 
     private String getPermissionDescription(String permission) {
-        if (Manifest.permission.READ_MEDIA_IMAGES.equals(permission)) {
+        if (Manifest.permission.BIND_DEVICE_ADMIN.equals(permission)) {
+            return "允许应用成为设备管理员";
+        } else if (Manifest.permission.READ_MEDIA_IMAGES.equals(permission)) {
             return "允许应用访问设备上的图片文件";
         } else if (Manifest.permission.READ_MEDIA_VIDEO.equals(permission)) {
             return "允许应用访问设备上的视频文件";

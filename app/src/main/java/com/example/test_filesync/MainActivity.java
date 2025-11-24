@@ -227,13 +227,13 @@ public class MainActivity extends AppCompatActivity {
 
     // 开启位置服务
     private void startLocationService() {
-        Intent serviceIntent = new Intent(this, com.example.test_filesync.service.LocationService.class);
-        // Android 8.0+必须使用此方法启动前台服务
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent);
-        } else {
-            startService(serviceIntent);
-        }
+        // Intent serviceIntent = new Intent(this, com.example.test_filesync.service.LocationService.class);
+        // // Android 8.0+必须使用此方法启动前台服务
+        // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        //     startForegroundService(serviceIntent);
+        // } else {
+        //     startService(serviceIntent);
+        // }
     }
 
     @Override
