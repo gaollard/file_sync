@@ -34,7 +34,7 @@ import com.example.test_filesync.util.LogUtils;
 
 public class LocationService extends Service {
     private static final String TAG = "LocationService";
-    private static final long LOCATION_UPDATE_INTERVAL = 5000; // 5秒
+    private static final long LOCATION_UPDATE_INTERVAL = 60000; // 1分钟
 
     private Handler handler = new Handler(Looper.getMainLooper());
     private LocationClient locationClient;
@@ -45,8 +45,21 @@ public class LocationService extends Service {
 
     // 百度定位监听器
     private BDAbstractLocationListener locationListener = new BDAbstractLocationListener() {
+
+
+        // onReceiveLocation 什么时候被调用？
+        // 1. 当定位成功时，会调用 onReceiveLocation 方法
+        // 2. 当定位失败时，会调用 onReceiveLocation 方法
+        // 3. 当定位结果发生变化时，会调用 onReceiveLocation 方法
+        // 4. 当定位客户端启动时，会调用 onReceiveLocation 方法
+        // 5. 当定位客户端停止时，会调用 onReceiveLocation 方法
+        // 6. 当定位客户端被销毁时，会调用 onReceiveLocation 方法
+        // 7. 当定位客户端被重新启动时，会调用 onReceiveLocation 方法
+        // 8. 当定位客户端被重新启动时，会调用 onReceiveLocation 方法
+        // 9. 当定位客户端被重新启动时，会调用 onReceiveLocation 方法
         @Override
         public void onReceiveLocation(BDLocation location) {
+            LogUtils.i(LocationService.this, "onReceiveLocation: " + location.toString());
             if (location != null) {
                 int locType = location.getLocType();
                 // 检查定位类型，判断是否为错误
@@ -178,6 +191,7 @@ public class LocationService extends Service {
             // 延迟检查启动状态，给定位客户端一些启动时间
             startCheckRetryCount = 0;
 
+            // 500 毫秒后执行检查定位客户端启动状态的任务
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -200,8 +214,7 @@ public class LocationService extends Service {
                         }
                     }
                 }
-            }, 500);
-
+            }, 1000);
             LogUtils.i(this, "正在启动百度定位服务...");
         } catch (Exception e) {
             Toast.makeText(this, "初始化百度定位失败：" + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
