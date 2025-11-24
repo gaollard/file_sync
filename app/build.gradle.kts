@@ -50,4 +50,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.baidu.lbsyun:BaiduMapSDK_Location_All:9.6.4")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
