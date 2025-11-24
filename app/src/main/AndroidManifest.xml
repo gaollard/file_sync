@@ -16,8 +16,8 @@
 
         <!-- 百度地图 API Key -->
         <meta-data
-        android:name="com.baidu.lbsapi.API_KEY"
-        android:value="I8amZ51xvbA8Dptnv6JeoaEIXXcTrqPN" />
+            android:name="com.baidu.lbsapi.API_KEY"
+            android:value="I8amZ51xvbA8Dptnv6JeoaEIXXcTrqPN"/>
 
         <activity
             android:name=".MainActivity"
@@ -51,7 +51,9 @@
             android:foregroundServiceType="location" />
 
         <!-- Android广播接收器（BroadcastReceiver）是Android四大组件之一，主要用于‌接收和处理来自系统或其他应用发送的广播消息‌ -->
-        <receiver android:name=".receiver.BootReceiver" />
+        <receiver
+            android:name=".receiver.BootReceiver"
+            android:exported="true">
             <intent-filter>
             <!-- 设备启动完成 -->
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

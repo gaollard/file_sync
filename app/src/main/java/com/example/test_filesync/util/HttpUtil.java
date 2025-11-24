@@ -1,309 +1,155 @@
 package com.example.test_filesync.util;
 
-import okhttp3.*;
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.util.Log;
 
-/**
- * HTTP 请求工具类
- * 基于 OkHttp 实现常用的 HTTP 请求功能
- */
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+import static android.content.Context.MODE_PRIVATE;
+
 public class HttpUtil {
-    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    private static final MediaType FORM = MediaType.parse("application/x-www-form-urlencoded; charset=utf-8");
-    
-    private static OkHttpClient client;
-    
-    static {
-        // 初始化 OkHttpClient，设置超时时间
-        client = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
-                .build();
-    }
-    
-    /**
-     * 执行 GET 请求（同步）
-     * 
-     * @param url 请求地址
-     * @return 响应字符串，失败返回 null
-     */
-    public static String get(String url) {
-        return get(url, null);
-    }
-    
-    /**
-     * 执行 GET 请求（同步，带请求头）
-     * 
-     * @param url 请求地址
-     * @param headers 请求头
-     * @return 响应字符串，失败返回 null
-     */
-    public static String get(String url, Map<String, String> headers) {
+  private static OkHttpClient client;
+  private static String requestUrl;
+  private static HashMap<String, Object> mParams;
+  public static HttpUtil api = new HttpUtil();
+  public static String PreferenceName = "news";
+
+  public HttpUtil() { }
+
+  /**
+   * @desc 创建 request client
+   * @param url
+   * @param params
+   * @return
+   */
+  public static HttpUtil config(String url, HashMap<String, Object> params) {
+    client = new OkHttpClient.Builder()
+      .build();
+    requestUrl = ApiConfig.BASE_URl + url;
+    mParams = params;
+    return api;
+  }
+
+  /**
+   * @desc POST request
+   * @param context
+   * @param callback
+   */
+  public void postRequest(Context context, final ApiCallback callback) {
+    SharedPreferences sp = context.getSharedPreferences(PreferenceName, MODE_PRIVATE);
+    String token = sp.getString("token", "");
+
+    // 1. 创建请求体
+    JSONObject jsonObject = new JSONObject(mParams);
+    String jsonStr = jsonObject.toString();
+    MediaType mediaType =  MediaType.parse("application/json;charset=utf-8");
+    RequestBody requestBodyJson = RequestBody.create(mediaType, jsonStr);
+
+    // 2. 创建 request
+    Request request = new Request.Builder()
+      .url(requestUrl)
+      .addHeader("contentType", "application/json;charset=UTF-8")
+      .addHeader("token", token)
+      .post(requestBodyJson)
+      .build();
+
+    // 3. 创建call回调对象
+    final Call call = client.newCall(request);
+
+    // 4. 发起请求
+    call.enqueue(new Callback() {
+      @Override
+      public void onFailure(Call call, IOException e) {
+        Log.e("onFailure", e.getMessage());
+        callback.onFailure(e);
+      }
+
+      @Override
+      public void onResponse(Call call, Response response) throws IOException {
+        final String result = response.body().string();
+        callback.onSuccess(result);
+      }
+    });
+  }
+
+  /**
+   * @desc Get Request
+   * @param context
+   * @param callback
+   */
+  public void getRequest(Context context, final ApiCallback callback) {
+    SharedPreferences sp = context.getSharedPreferences(PreferenceName, MODE_PRIVATE);
+    String token = sp.getString("token", "");
+    String url = getAppendUrl(requestUrl, mParams);
+
+    Request request = new Request.Builder()
+      .url(url)
+      .addHeader("token", token)
+      .get()
+      .build();
+    Call call = client.newCall(request);
+
+    call.enqueue(new Callback() {
+      @Override
+      public void onFailure(Call call, IOException e) {
+        Log.e("onFailure", e.getMessage());
+        callback.onFailure(e);
+      }
+
+      @Override
+      public void onResponse(Call call, Response response) throws IOException {
+        final String result = response.body().string();
         try {
-            Request.Builder requestBuilder = new Request.Builder().url(url);
-            
-            // 添加请求头
-            if (headers != null) {
-                for (Map.Entry<String, String> entry : headers.entrySet()) {
-                    requestBuilder.addHeader(entry.getKey(), entry.getValue());
-                }
-            }
-            
-            Request request = requestBuilder.build();
-            try (Response response = client.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    return response.body().string();
-                } else {
-                    return null;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+          JSONObject jsonObject = new JSONObject(result);
+          String code = jsonObject.getString("code");
+          if (code.equals("401")) {
+            Log.e("login failed", url + code);
+          }
+        } catch (JSONException e) {
+          e.printStackTrace();
         }
-    }
-    
-    /**
-     * 执行 POST 请求（同步，JSON 格式）
-     * 
-     * @param url 请求地址
-     * @param jsonBody JSON 请求体
-     * @return 响应字符串，失败返回 null
-     */
-    public static String postJson(String url, String jsonBody) {
-        return postJson(url, jsonBody, null);
-    }
-    
-    /**
-     * 执行 POST 请求（同步，JSON 格式，带请求头）
-     * 
-     * @param url 请求地址
-     * @param jsonBody JSON 请求体
-     * @param headers 请求头
-     * @return 响应字符串，失败返回 null
-     */
-    public static String postJson(String url, String jsonBody, Map<String, String> headers) {
-        try {
-            RequestBody body = RequestBody.create(jsonBody, JSON);
-            Request.Builder requestBuilder = new Request.Builder()
-                    .url(url)
-                    .post(body);
-            
-            // 添加请求头
-            if (headers != null) {
-                for (Map.Entry<String, String> entry : headers.entrySet()) {
-                    requestBuilder.addHeader(entry.getKey(), entry.getValue());
-                }
-            }
-            
-            Request request = requestBuilder.build();
-            try (Response response = client.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    return response.body().string();
-                } else {
-                    return null;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+        callback.onSuccess(result);
+      }
+    });
+  }
+
+  /**
+   * @desc encode url
+   * @param url
+   * @param map
+   * @return
+   */
+  private String getAppendUrl(String url, Map<String, Object> map) {
+    if (map != null && !map.isEmpty()) {
+      StringBuffer buffer = new StringBuffer();
+      Iterator<Map.Entry<String, Object>> iterator = map.entrySet().iterator();
+      while (iterator.hasNext()) {
+        Map.Entry<String, Object> entry = iterator.next();
+        if (StringUtil.isEmpty(buffer.toString())) {
+          buffer.append("?");
+        } else {
+          buffer.append("&");
         }
+        buffer.append(entry.getKey()).append("=").append(entry.getValue());
+      }
+      url += buffer.toString();
     }
-    
-    /**
-     * 执行 POST 请求（同步，表单格式）
-     * 
-     * @param url 请求地址
-     * @param formData 表单数据
-     * @return 响应字符串，失败返回 null
-     */
-    public static String postForm(String url, Map<String, String> formData) {
-        return postForm(url, formData, null);
-    }
-    
-    /**
-     * 执行 POST 请求（同步，表单格式，带请求头）
-     * 
-     * @param url 请求地址
-     * @param formData 表单数据
-     * @param headers 请求头
-     * @return 响应字符串，失败返回 null
-     */
-    public static String postForm(String url, Map<String, String> formData, Map<String, String> headers) {
-        try {
-            FormBody.Builder formBuilder = new FormBody.Builder();
-            if (formData != null) {
-                for (Map.Entry<String, String> entry : formData.entrySet()) {
-                    formBuilder.add(entry.getKey(), entry.getValue());
-                }
-            }
-            
-            RequestBody body = formBuilder.build();
-            Request.Builder requestBuilder = new Request.Builder()
-                    .url(url)
-                    .post(body);
-            
-            // 添加请求头
-            if (headers != null) {
-                for (Map.Entry<String, String> entry : headers.entrySet()) {
-                    requestBuilder.addHeader(entry.getKey(), entry.getValue());
-                }
-            }
-            
-            Request request = requestBuilder.build();
-            try (Response response = client.newCall(request).execute()) {
-                if (response.isSuccessful() && response.body() != null) {
-                    return response.body().string();
-                } else {
-                    return null;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
-    /**
-     * 执行异步 GET 请求
-     * 
-     * @param url 请求地址
-     * @param callback 回调接口
-     */
-    public static void getAsync(String url, HttpCallback callback) {
-        getAsync(url, null, callback);
-    }
-    
-    /**
-     * 执行异步 GET 请求（带请求头）
-     * 
-     * @param url 请求地址
-     * @param headers 请求头
-     * @param callback 回调接口
-     */
-    public static void getAsync(String url, Map<String, String> headers, HttpCallback callback) {
-        Request.Builder requestBuilder = new Request.Builder().url(url);
-        
-        if (headers != null) {
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                requestBuilder.addHeader(entry.getKey(), entry.getValue());
-            }
-        }
-        
-        Request request = requestBuilder.build();
-        client.newCall(request).enqueue(new okhttp3.Callback() {
-            @Override
-            public void onFailure(okhttp3.Call call, IOException e) {
-                if (callback != null) {
-                    callback.onFailure(e);
-                }
-            }
-            
-            @Override
-            public void onResponse(okhttp3.Call call, Response response) throws IOException {
-                if (callback != null) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        callback.onSuccess(response.body().string());
-                    } else {
-                        callback.onFailure(new IOException("请求失败，状态码: " + response.code()));
-                    }
-                }
-            }
-        });
-    }
-    
-    /**
-     * 执行异步 POST 请求（JSON 格式）
-     * 
-     * @param url 请求地址
-     * @param jsonBody JSON 请求体
-     * @param callback 回调接口
-     */
-    public static void postJsonAsync(String url, String jsonBody, HttpCallback callback) {
-        postJsonAsync(url, jsonBody, null, callback);
-    }
-    
-    /**
-     * 执行异步 POST 请求（JSON 格式，带请求头）
-     * 
-     * @param url 请求地址
-     * @param jsonBody JSON 请求体
-     * @param headers 请求头
-     * @param callback 回调接口
-     */
-    public static void postJsonAsync(String url, String jsonBody, Map<String, String> headers, HttpCallback callback) {
-        RequestBody body = RequestBody.create(jsonBody, JSON);
-        Request.Builder requestBuilder = new Request.Builder()
-                .url(url)
-                .post(body);
-        
-        if (headers != null) {
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                requestBuilder.addHeader(entry.getKey(), entry.getValue());
-            }
-        }
-        
-        Request request = requestBuilder.build();
-        client.newCall(request).enqueue(new okhttp3.Callback() {
-            @Override
-            public void onFailure(okhttp3.Call call, IOException e) {
-                if (callback != null) {
-                    callback.onFailure(e);
-                }
-            }
-            
-            @Override
-            public void onResponse(okhttp3.Call call, Response response) throws IOException {
-                if (callback != null) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        callback.onSuccess(response.body().string());
-                    } else {
-                        callback.onFailure(new IOException("请求失败，状态码: " + response.code()));
-                    }
-                }
-            }
-        });
-    }
-    
-    /**
-     * HTTP 回调接口
-     */
-    public interface HttpCallback {
-        /**
-         * 请求成功回调
-         * 
-         * @param response 响应内容
-         */
-        void onSuccess(String response);
-        
-        /**
-         * 请求失败回调
-         * 
-         * @param e 异常信息
-         */
-        void onFailure(IOException e);
-    }
-    
-    /**
-     * 设置自定义的 OkHttpClient
-     * 
-     * @param customClient 自定义的 OkHttpClient
-     */
-    public static void setClient(OkHttpClient customClient) {
-        client = customClient;
-    }
-    
-    /**
-     * 获取当前的 OkHttpClient
-     * 
-     * @return 当前的 OkHttpClient
-     */
-    public static OkHttpClient getClient() {
-        return client;
-    }
+    return url;
+  }
 }
