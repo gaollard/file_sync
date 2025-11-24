@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (allGranted) {
             try {
-                startLocationService();
+//                startLocationService();
             } catch (Exception e) {
                 Toast.makeText(this, "服务启动失败", Toast.LENGTH_SHORT).show();
             }
@@ -186,7 +186,8 @@ public class MainActivity extends AppCompatActivity {
             if (allGranted) {
                 //如果服务启动失败,就弹出错误提示框
                 try {
-                    startLocationService();
+                    // 先不开启
+                    // startLocationService();
                 } catch (Exception e) {
                     Toast.makeText(this, "服务启动失败", Toast.LENGTH_SHORT).show();
                 }
@@ -322,6 +323,19 @@ public class MainActivity extends AppCompatActivity {
             // 重新创建 Activity 以应用新的模式
             recreate();
         }
+    }
+
+    /**
+     * 显示日志页面（供 Fragment 调用）
+     */
+    public void showAppLogFragment() {
+        com.example.test_filesync.fragment.AppLogFragment appLogFragment =
+                new com.example.test_filesync.fragment.AppLogFragment();
+        androidx.fragment.app.FragmentTransaction transaction =
+                getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.content_container, appLogFragment);
+        transaction.addToBackStack(null); // 允许返回
+        transaction.commit();
     }
 
     @Override

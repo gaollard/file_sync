@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,18 +25,31 @@ public class AppLogFragment extends Fragment {
     private static final String TAG = "AppLogFragment";
 
     private TextView appLogTextView;
+    private Button btnBack;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_app_log, container, false);
         appLogTextView = view.findViewById(R.id.app_log_text_view);
+        btnBack = view.findViewById(R.id.btn_back);
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        
+        // 设置返回按钮点击事件
+        btnBack.setOnClickListener(v -> {
+            // 返回到上一个Fragment
+            if (getParentFragmentManager().getBackStackEntryCount() > 0) {
+                getParentFragmentManager().popBackStack();
+            } else if (getActivity() != null) {
+                getActivity().onBackPressed();
+            }
+        });
+        
         loadLogContent();
     }
 
