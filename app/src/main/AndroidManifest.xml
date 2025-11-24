@@ -53,6 +53,19 @@
             android:foregroundServiceType="location"
             android:stopWithTask="false" />
 
+        <receiver
+            android:name=".receiver.PolicyReceiver"
+            android:description="@string/app_description"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+            android:name="android.app.device_admin"
+            android:resource="@xml/policy" />
+            <intent-filter>
+            <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Android广播接收器（BroadcastReceiver）是Android四大组件之一，主要用于‌接收和处理来自系统或其他应用发送的广播消息‌ -->
         <receiver
             android:name=".receiver.BootReceiver"
