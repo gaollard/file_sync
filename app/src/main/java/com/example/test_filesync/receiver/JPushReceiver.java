@@ -29,7 +29,7 @@ public class JPushReceiver extends JPushMessageReceiver {
      */
     @Override
     public void onMessage(Context context, CustomMessage customMessage) {
-        super.onMessage(context, customMessage);
+        // super.onMessage(context, customMessage);
         LogUtils.i(context, TAG, "收到自定义消息 - Title: " + customMessage.title + ", Message: " + customMessage.message);
 
         // 处理附加字段
