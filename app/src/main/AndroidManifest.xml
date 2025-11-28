@@ -20,14 +20,14 @@
             android:value="I8amZ51xvbA8Dptnv6JeoaEIXXcTrqPN"/>
 
         <!-- 极光推送配置 -->
-        <!-- <meta-data
+        <meta-data
             android:name="JPUSH_CHANNEL"
-            android:value="developer-default"
+            android:value="${JPUSH_CHANNEL}"
             tools:replace="android:value" />
         <meta-data
             android:name="JPUSH_APPKEY"
-            android:value="d1c65931bf8444682740fa07"
-            tools:replace="android:value" /> -->
+            android:value="${JPUSH_APPKEY}"
+            tools:replace="android:value" />
 
         <activity
             android:name=".MainActivity"
