@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (allGranted) {
             try {
-                startLocationService();
+//                startLocationService();
             } catch (Exception e) {
               LogUtils.i(this, "服务启动失败");
                 Toast.makeText(this, "服务启动失败", Toast.LENGTH_SHORT).show();
@@ -185,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
             if (allGranted) {
                 // 如果服务启动失败,就弹出错误提示框
                 try {
-                    startLocationService();
+//                    startLocationService();
                 } catch (Exception e) {
                     Toast.makeText(this, "服务启动失败", Toast.LENGTH_SHORT).show();
                 }

@@ -1,9 +1,15 @@
 package com.example.test_filesync.util;
 
+import static androidx.core.content.ContentProviderCompat.requireContext;
+
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.provider.Settings;
+
+import com.example.test_filesync.service.MyAccessibilityService;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 

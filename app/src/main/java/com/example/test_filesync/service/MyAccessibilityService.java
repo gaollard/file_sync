@@ -7,6 +7,20 @@ import android.view.accessibility.AccessibilityEvent;
 
 public class MyAccessibilityService extends AccessibilityService {
     
+    private static MyAccessibilityService instance;
+    
+    @Override
+    public void onServiceConnected() {
+        super.onServiceConnected();
+        instance = this;
+    }
+    
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        instance = null;
+    }
+    
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         // 监听系统事件
@@ -17,13 +31,23 @@ public class MyAccessibilityService extends AccessibilityService {
         // 服务中断处理
     }
     
+    /**
+     * 获取服务实例
+     */
+    public static MyAccessibilityService getInstance() {
+        return instance;
+    }
+    
+    /**
+     * 检查服务是否已启用
+     */
+    public static boolean isServiceEnabled() {
+        return instance != null;
+    }
+    
     // 触发截图的关键方法
     public void triggerScreenshot() {
-        // 方法一：发送系统截图广播
-        Intent screenshotIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
-        sendBroadcast(screenshotIntent);
-        
-        // 方法二：执行全局操作（Android 9+）
+        // 用户无感（无界面跳转/无弹窗提示）的实现应优先选择 performGlobalAction（Android 9+ 才支持，用户无需感知）
         performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT);
     }
 }

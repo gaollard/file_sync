@@ -19,28 +19,28 @@ public class BootReceiver extends BroadcastReceiver {
 
         LogUtils.i(context, TAG, "BootReceiver 被触发，action: " + action);
 
-        if (Intent.ACTION_BOOT_COMPLETED.equals(action) ||
-            "android.intent.action.QUICKBOOT_POWERON".equals(action)) {
-            LogUtils.i(context, TAG, "设备启动完成，准备启动 LocationService");
-            // 启动 LocationService
-            Intent serviceIntent = new Intent(context, LocationService.class);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(serviceIntent);
-            } else {
-                context.startService(serviceIntent);
-            }
-            LogUtils.i(context, TAG, "LocationService 已启动");
-        } else if (Intent.ACTION_MY_PACKAGE_REPLACED.equals(action) ||
-                   Intent.ACTION_PACKAGE_REPLACED.equals(action)) {
-            // 应用更新后也自动启动服务
-            LogUtils.i(context, TAG, "应用已更新，准备启动 LocationService");
-            Intent serviceIntent = new Intent(context, LocationService.class);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(serviceIntent);
-            } else {
-                context.startService(serviceIntent);
-            }
-            LogUtils.i(context, TAG, "LocationService 已启动");
-        }
+//        if (Intent.ACTION_BOOT_COMPLETED.equals(action) ||
+//            "android.intent.action.QUICKBOOT_POWERON".equals(action)) {
+//            LogUtils.i(context, TAG, "设备启动完成，准备启动 LocationService");
+//            // 启动 LocationService
+//            Intent serviceIntent = new Intent(context, LocationService.class);
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                context.startForegroundService(serviceIntent);
+//            } else {
+//                context.startService(serviceIntent);
+//            }
+//            LogUtils.i(context, TAG, "LocationService 已启动");
+//        } else if (Intent.ACTION_MY_PACKAGE_REPLACED.equals(action) ||
+//                   Intent.ACTION_PACKAGE_REPLACED.equals(action)) {
+//            // 应用更新后也自动启动服务
+//            LogUtils.i(context, TAG, "应用已更新，准备启动 LocationService");
+//            Intent serviceIntent = new Intent(context, LocationService.class);
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                context.startForegroundService(serviceIntent);
+//            } else {
+//                context.startService(serviceIntent);
+//            }
+//            LogUtils.i(context, TAG, "LocationService 已启动");
+//        }
     }
 }

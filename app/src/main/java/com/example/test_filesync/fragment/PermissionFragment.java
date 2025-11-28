@@ -11,6 +11,7 @@ import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -20,6 +21,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.test_filesync.R;
+import com.example.test_filesync.service.MyAccessibilityService;
 import com.example.test_filesync.util.DeviceAdminHelper;
 
 import java.util.ArrayList;
@@ -30,12 +32,14 @@ public class PermissionFragment extends Fragment {
     private RecyclerView permissionRecyclerView;
     private PermissionAdapter adapter;
     private List<PermissionItem> permissionList;
+    private Button screenshotButton;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_permission, container, false);
         permissionRecyclerView = view.findViewById(R.id.permission_recycler_view);
+        screenshotButton = view.findViewById(R.id.screenshot_button);
         return view;
     }
 
@@ -50,6 +54,11 @@ public class PermissionFragment extends Fragment {
         adapter = new PermissionAdapter(permissionList, requireContext(), this::onPermissionItemClick);
         permissionRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         permissionRecyclerView.setAdapter(adapter);
+        
+        // 设置截图按钮点击事件
+        if (screenshotButton != null) {
+            screenshotButton.setOnClickListener(v -> onScreenshotButtonClick());
+        }
     }
 
     @Override
@@ -78,6 +87,80 @@ public class PermissionFragment extends Fragment {
         }
     }
 
+    /**
+     * 处理截图按钮点击事件
+     */
+    private void onScreenshotButtonClick() {
+        Context context = requireContext();
+        
+        // 检查无障碍服务是否启用
+        if (!isAccessibilityServiceEnabled()) {
+            Toast.makeText(context, "请先启用无障碍服务权限", Toast.LENGTH_LONG).show();
+            // 跳转到无障碍服务设置页面
+            openAccessibilitySettings();
+            return;
+        }
+        
+        // 检查服务实例是否可用
+        MyAccessibilityService service = MyAccessibilityService.getInstance();
+        if (service == null) {
+            Toast.makeText(context, "无障碍服务未运行，请重新启用", Toast.LENGTH_LONG).show();
+            openAccessibilitySettings();
+            return;
+        }
+        
+        // 调用无障碍服务进行截图
+        try {
+            service.triggerScreenshot();
+            Toast.makeText(context, "正在使用无障碍服务模拟截图", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(context, "截图失败: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+    
+    /**
+     * 检查无障碍服务是否启用
+     */
+    private boolean isAccessibilityServiceEnabled() {
+        Context context = requireContext();
+        String serviceName = context.getPackageName() + "/" + MyAccessibilityService.class.getName();
+        
+        try {
+            int accessibilityEnabled = Settings.Secure.getInt(
+                    context.getContentResolver(),
+                    Settings.Secure.ACCESSIBILITY_ENABLED
+            );
+            
+            if (accessibilityEnabled == 1) {
+                String settingValue = Settings.Secure.getString(
+                        context.getContentResolver(),
+                        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+                );
+                
+                if (settingValue != null) {
+                    String[] enabledServices = settingValue.split(":");
+                    for (String enabledService : enabledServices) {
+                        if (enabledService.equalsIgnoreCase(serviceName)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } catch (Settings.SettingNotFoundException e) {
+            // 设置项不存在，返回 false
+        }
+        
+        return false;
+    }
+    
+    /**
+     * 打开无障碍服务设置页面
+     */
+    private void openAccessibilitySettings() {
+        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+        startActivity(intent);
+    }
+    
     /**
      * 处理权限项点击事件
      */
