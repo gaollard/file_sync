@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.test_filesync.util.LogUtils;
+
+import cn.jpush.android.api.CustomMessage;
 import cn.jpush.android.api.JPushInterface;
 import cn.jpush.android.api.NotificationMessage;
 import cn.jpush.android.service.JPushMessageReceiver;
@@ -18,4 +20,12 @@ import org.json.JSONObject;
  */
 public class JPushReceiver extends JPushMessageReceiver {
     private static final String TAG = "JPushReceiver";
+
+  @Override
+  public void onMessage(Context context, CustomMessage customMessage) {
+    super.onMessage(context, customMessage);
+    LogUtils.i(context, "new_msg" + customMessage.title + customMessage.message);
+  }
+
+
 }
