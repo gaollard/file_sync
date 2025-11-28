@@ -127,10 +127,16 @@
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-            <action android:name="cn.jpush.android.intent.RECEIVER_MESSAGE" />
-                <!-- <action android:name="cn.jpush.android.intent.RECEIVE_MESSAGE" /> -->
-                <!-- <action android:name="cn.jpush.android.intent.NOTIFICATION_OPENED" /> -->
-                <!-- <action android:name="cn.jpush.android.intent.NOTIFICATION_RECEIVED" /> -->
+                <!-- 自定义消息 -->
+                <action android:name="cn.jpush.android.intent.MESSAGE_RECEIVED" />
+                <!-- 通知消息到达 -->
+                <action android:name="cn.jpush.android.intent.NOTIFICATION_RECEIVED" />
+                <!-- 通知消息被点击 -->
+                <action android:name="cn.jpush.android.intent.NOTIFICATION_OPENED" />
+                <!-- 注册结果 -->
+                <action android:name="cn.jpush.android.intent.REGISTRATION" />
+                <!-- 连接状态变化 -->
+                <action android:name="cn.jpush.android.intent.CONNECTION" />
                 <category android:name="${applicationId}" />
             </intent-filter>
         </receiver>
