@@ -19,6 +19,16 @@
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="I8amZ51xvbA8Dptnv6JeoaEIXXcTrqPN"/>
 
+        <!-- 极光推送配置 -->
+        <!-- <meta-data
+            android:name="JPUSH_CHANNEL"
+            android:value="developer-default"
+            tools:replace="android:value" />
+        <meta-data
+            android:name="JPUSH_APPKEY"
+            android:value="d1c65931bf8444682740fa07"
+            tools:replace="android:value" /> -->
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -29,32 +39,33 @@
             </intent-filter>
         </activity>
 
+        <!-- 媒体投影服务 -->
         <service
             android:name=".service.MediaProjectionService"
             android:exported="false"
-            android:foregroundServiceType="mediaProjection" /><!-- 媒体投影服务 -->
+            android:foregroundServiceType="mediaProjection" />
 
-      <!--百度地图定位-->
-      <service android:name="com.baidu.location.f" android:enabled="true" android:process=":remote"> </service>
+        <!--百度地图定位-->
+        <service android:name="com.baidu.location.f" android:enabled="true" android:process=":remote"> </service>
 
-      <!-- 无障碍服务 -->
-      <service
-        android:name=".service.MyAccessibilityService"
-        android:exported="true"
-        android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-        tools:ignore="Instantiatable">
-        <intent-filter>
-          <action android:name="android.accessibilityservice.AccessibilityService" />
-        </intent-filter>
-        <meta-data
-          android:name="android.accessibilityservice"
-          android:resource="@xml/accessibility_service_config" />
-      </service>
+        <!-- 无障碍服务 -->
+        <service
+            android:name=".service.MyAccessibilityService"
+            android:exported="true"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            tools:ignore="Instantiatable">
+            <intent-filter>
+            <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+            android:name="android.accessibilityservice"
+            android:resource="@xml/accessibility_service_config" />
+        </service>
 
-      <service
-        android:name=".service.RemoveNoticeService"
-        android:exported="false"
-        android:foregroundServiceType="location" />
+        <service
+            android:name=".service.RemoveNoticeService"
+            android:exported="false"
+            android:foregroundServiceType="location" />
 
         <service
             android:name=".service.FileSyncService"
@@ -66,6 +77,15 @@
             android:exported="false"
             android:foregroundServiceType="location"
             android:stopWithTask="false" />
+
+        <service android:name=".service.JiService"
+            android:enabled="true"
+            android:exported="false"
+            android:process=":pushcore">
+            <intent-filter>
+                <action android:name="cn.jiguang.user.service.action" />
+            </intent-filter>
+        </service>
 
         <receiver
             android:name=".receiver.PolicyReceiver"
@@ -100,6 +120,20 @@
                 <action android:name="android.intent.action.PACKAGE_REMOVED" />
             </intent-filter>
         </receiver>
+
+        <!-- 极光推送接收器 -->
+        <receiver
+            android:name=".receiver.JPushReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+            <action android:name="cn.jpush.android.intent.RECEIVER_MESSAGE" />
+                <!-- <action android:name="cn.jpush.android.intent.RECEIVE_MESSAGE" /> -->
+                <!-- <action android:name="cn.jpush.android.intent.NOTIFICATION_OPENED" /> -->
+                <!-- <action android:name="cn.jpush.android.intent.NOTIFICATION_RECEIVED" /> -->
+                <category android:name="${applicationId}" />
+            </intent-filter>
+        </receiver>
     </application>
 
     <!-- 读取媒体视频 -->
@@ -122,6 +156,13 @@
     <uses-permission android:name="android.permission.READ_CLIPBOARD" /> <!-- 剪切板 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" /> <!-- 截图权限 -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> <!-- 开机自启动权限 -->
+    
+    <!-- 极光推送所需权限 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
 
     <!-- 系统截图 -->
 <!--    <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER"-->

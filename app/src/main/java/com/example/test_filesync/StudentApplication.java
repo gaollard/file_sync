@@ -9,6 +9,8 @@ import com.baidu.location.LocationClient;
 import com.example.test_filesync.service.LocationService;
 import com.example.test_filesync.util.LogUtils;
 
+import cn.jpush.android.api.JPushInterface;
+
 public class StudentApplication extends Application {
   @Override
   public void onCreate() {
@@ -16,7 +18,7 @@ public class StudentApplication extends Application {
 
     // 百度地图 SDK 隐私合规设置，必须在创建 LocationClient 之前调用
     // LocationClient.setAgreePrivacy(true);
-    
+
     // // 检查权限后再启动服务
     // if (checkRequiredPermissions()) {
     //   LogUtils.i(this, "StudentApplication", "权限检查通过，启动 LocationService");
@@ -26,8 +28,41 @@ public class StudentApplication extends Application {
     //   // 权限未授予时，服务会在用户授予权限后由其他组件启动
     //   // 或者可以在 MainActivity 中请求权限后再启动服务
     // }
+
+    // 初始化极光推送
+    initJPush();
   }
-  
+
+  /**
+   * 初始化极光推送SDK
+   */
+  private void initJPush() {
+    try {
+      // 设置是否开启日志，发布时请关闭日志
+      JPushInterface.setDebugMode(true);
+
+      // 初始化极光推送
+      JPushInterface.init(this);
+
+      // 获取注册ID
+      String registrationId = JPushInterface.getRegistrationID(this);
+      LogUtils.i(this, "StudentApplication", "极光推送初始化成功，RegistrationId: " + registrationId);
+
+      // 设置推送通知栏样式（可选）
+      // setPushNotificationStyle();
+    } catch (Exception e) {
+      LogUtils.e(this, "StudentApplication", "极光推送初始化失败: " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * 设置推送通知栏样式（可选）
+   */
+  private void setPushNotificationStyle() {
+    // 可以自定义通知栏样式
+    // 具体实现根据需求来定制
+  }
+
   /**
    * 检查启动 LocationService 所需的权限
    * @return true 如果所有必要权限都已授予
@@ -36,13 +71,13 @@ public class StudentApplication extends Application {
     // 检查位置权限
     boolean hasLocationPermission = false;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      int fineLocation = ContextCompat.checkSelfPermission(this, 
+      int fineLocation = ContextCompat.checkSelfPermission(this,
           android.Manifest.permission.ACCESS_FINE_LOCATION);
-      int coarseLocation = ContextCompat.checkSelfPermission(this, 
+      int coarseLocation = ContextCompat.checkSelfPermission(this,
           android.Manifest.permission.ACCESS_COARSE_LOCATION);
       hasLocationPermission = (fineLocation == PackageManager.PERMISSION_GRANTED) ||
           (coarseLocation == PackageManager.PERMISSION_GRANTED);
-      
+
       if (!hasLocationPermission) {
         LogUtils.w(this, "StudentApplication", "位置权限未授予");
       }
@@ -50,46 +85,46 @@ public class StudentApplication extends Application {
       // Android 6.0 以下版本，权限在安装时自动授予
       hasLocationPermission = true;
     }
-    
+
     // 检查前台服务权限（Android 9+）
     boolean hasForegroundServicePermission = true;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-      int foregroundService = ContextCompat.checkSelfPermission(this, 
+      int foregroundService = ContextCompat.checkSelfPermission(this,
           android.Manifest.permission.FOREGROUND_SERVICE);
       hasForegroundServicePermission = (foregroundService == PackageManager.PERMISSION_GRANTED);
-      
+
       if (!hasForegroundServicePermission) {
         LogUtils.w(this, "StudentApplication", "FOREGROUND_SERVICE 权限未授予");
       }
     }
-    
+
     // 检查前台服务位置类型权限（Android 14+）
     boolean hasForegroundServiceLocationPermission = true;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-      int foregroundServiceLocation = ContextCompat.checkSelfPermission(this, 
+      int foregroundServiceLocation = ContextCompat.checkSelfPermission(this,
           android.Manifest.permission.FOREGROUND_SERVICE_LOCATION);
-      hasForegroundServiceLocationPermission = 
+      hasForegroundServiceLocationPermission =
           (foregroundServiceLocation == PackageManager.PERMISSION_GRANTED);
-      
+
       if (!hasForegroundServiceLocationPermission) {
         LogUtils.w(this, "StudentApplication", "FOREGROUND_SERVICE_LOCATION 权限未授予");
       }
     }
-    
-    boolean allPermissionsGranted = hasLocationPermission && 
-        hasForegroundServicePermission && 
+
+    boolean allPermissionsGranted = hasLocationPermission &&
+        hasForegroundServicePermission &&
         hasForegroundServiceLocationPermission;
-    
+
     if (!allPermissionsGranted) {
-      LogUtils.w(this, "StudentApplication", 
-          "部分权限未授予 - 位置:" + hasLocationPermission + 
-          ", 前台服务:" + hasForegroundServicePermission + 
+      LogUtils.w(this, "StudentApplication",
+          "部分权限未授予 - 位置:" + hasLocationPermission +
+          ", 前台服务:" + hasForegroundServicePermission +
           ", 前台服务位置:" + hasForegroundServiceLocationPermission);
     }
-    
+
     return allPermissionsGranted;
   }
-  
+
   private void startLocationService() {
     try {
       Intent serviceIntent = new Intent(this, LocationService.class);

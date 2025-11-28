@@ -15,6 +15,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // 极光推送配置
+        manifestPlaceholders["JPUSH_PKGNAME"] = "com.example.test_filesync"
+        manifestPlaceholders["JPUSH_APPKEY"] = "d1c65931bf8444682740fa07"
+        manifestPlaceholders["JPUSH_CHANNEL"] = "developer-default"
     }
 
     buildTypes {
@@ -51,4 +56,8 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.baidu.lbsyun:BaiduMapSDK_Location_All:9.6.4")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // 极光推送SDK
+    implementation("cn.jiguang.sdk:jpush:5.8.0")
+    // implementation("cn.jiguang.sdk:jcore:3.2.4")
 }
