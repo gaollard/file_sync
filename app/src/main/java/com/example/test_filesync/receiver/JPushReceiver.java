@@ -1,5 +1,6 @@
 package com.example.test_filesync.receiver;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -47,16 +48,46 @@ public class JPushReceiver extends JPushMessageReceiver {
     /**
      * 通知消息到达时回调
      * 当通知消息到达设备时，会回调此方法
+     * 注意：不调用 super 方法可以阻止默认的通知显示行为
      */
     @Override
     public void onNotifyMessageArrived(Context context, NotificationMessage notificationMessage) {
-        super.onNotifyMessageArrived(context, notificationMessage);
-        LogUtils.i(context, TAG, "通知消息到达 - Title: " + notificationMessage.notificationTitle
+        // 不调用 super.onNotifyMessageArrived() 可以阻止默认通知显示
+        // super.onNotifyMessageArrived(context, notificationMessage);
+
+        LogUtils.i(context, TAG, "通知消息到达（不显示通知） - Title: " + notificationMessage.notificationTitle
                 + ", Content: " + notificationMessage.notificationContent);
 
         // 处理通知消息的附加字段
         if (notificationMessage.notificationExtras != null && !notificationMessage.notificationExtras.isEmpty()) {
             LogUtils.d(context, TAG, "通知消息附加字段: " + notificationMessage.notificationExtras);
+        }
+
+        // 如果通知已经显示，尝试取消它
+        cancelNotification(context, Long.parseLong(notificationMessage.msgId));
+    }
+
+    /**
+     * 取消通知显示
+     * @param context 上下文
+     * @param msgId 消息ID
+     */
+    private void cancelNotification(Context context, long msgId) {
+        try {
+            NotificationManager notificationManager = (NotificationManager)
+                    context.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null) {
+                // 取消指定ID的通知
+                if (msgId > 0) {
+                    notificationManager.cancel((int) msgId);
+                    LogUtils.d(context, TAG, "已取消通知显示，消息ID: " + msgId);
+                }
+                // 如果 msgId 无效，尝试取消所有通知（作为备选方案）
+                // 注意：这会取消应用的所有通知，请根据实际需求使用
+                // notificationManager.cancelAll();
+            }
+        } catch (Exception e) {
+            LogUtils.e(context, TAG, "取消通知失败: " + e.getMessage(), e);
         }
     }
 

@@ -123,7 +123,7 @@
 
         <!-- 极光推送接收器 -->
         <receiver
-            android:name=".receiver.JPushReceiver"
+            android:name=".receiver.CustomPushReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
@@ -162,7 +162,7 @@
     <uses-permission android:name="android.permission.READ_CLIPBOARD" /> <!-- 剪切板 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" /> <!-- 截图权限 -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> <!-- 开机自启动权限 -->
-    
+
     <!-- 极光推送所需权限 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
