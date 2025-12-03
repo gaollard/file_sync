@@ -78,6 +78,12 @@
             android:foregroundServiceType="location"
             android:stopWithTask="false" />
 
+        <service
+            android:name=".service.FloatingWindowService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse"
+            android:stopWithTask="false" />
+
         <service android:name=".service.JiService"
             android:enabled="true"
             android:exported="false"
@@ -161,7 +167,9 @@
 
     <uses-permission android:name="android.permission.READ_CLIPBOARD" /> <!-- 剪切板 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" /> <!-- 截图权限 -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" /> <!-- 特殊用途前台服务权限 -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> <!-- 开机自启动权限 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" /> <!-- 悬浮窗权限 -->
 
     <!-- 极光推送所需权限 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
