@@ -35,7 +35,7 @@ public class StudentApplication extends Application {
 
     // 初始化极光推送
     initJPush();
-    
+
     // 调度 PingJobService
     schedulePingJob();
   }
@@ -167,7 +167,7 @@ public class StudentApplication extends Application {
           .setRequiredNetworkType(JobInfo.NETWORK_TYPE_NONE) // 不需要网络
           .setRequiresCharging(false) // 不需要充电
           .setRequiresDeviceIdle(false) // 不需要设备空闲
-          .setPersisted(false); // 不持久化，应用卸载后不保留
+          .setPersisted(true); // 持久化，应用退出后仍可执行
 
       // 设置立即执行（延迟0毫秒）
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
