@@ -13,10 +13,19 @@ import com.example.test_filesync.util.LogUtils;
 
 public class PingJobService extends JobService {
     private static final String TAG = "PingJobService";
+    private static final int JOB_ID = 1;
     private boolean jobCancelled = false;
+    private static volatile boolean isRunning = false; // 防止重复启动
 
     @Override
     public boolean onStartJob(JobParameters params) {
+        // 如果已经在运行，直接返回
+        if (isRunning) {
+            LogUtils.w(this, TAG, "Job already running, ignoring duplicate start");
+            return false; // 返回false表示任务已完成（实际上已经在运行）
+        }
+
+        isRunning = true;
         jobCancelled = false;
         LogUtils.d(this, TAG, "Job started");
         Context context = this;
@@ -34,6 +43,7 @@ public class PingJobService extends JobService {
                 }
             }
             LogUtils.d(context, TAG, "Job stopped");
+            isRunning = false;
             // 如果任务被取消，不调用 jobFinished，让系统知道任务未完成
             // 这样 onStopJob 会被调用，我们可以在那里重新调度
         }).start();
@@ -45,8 +55,16 @@ public class PingJobService extends JobService {
     public boolean onStopJob(JobParameters params) {
         LogUtils.d(this, TAG, "Job cancelled before completion, rescheduling...");
         jobCancelled = true;
-        // 任务被停止时，立即重新调度以确保任务继续运行
-        rescheduleJob(this);
+        isRunning = false;
+        // 任务被停止时，延迟重新调度以避免立即重复触发
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000); // 延迟2秒后重新调度
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            rescheduleJob(this);
+        }).start();
         return false; // 返回false，因为我们手动重新调度了
     }
 
@@ -65,8 +83,12 @@ public class PingJobService extends JobService {
                 return;
             }
 
+            // 先取消之前的任务，避免重复调度
+            jobScheduler.cancel(JOB_ID);
+            LogUtils.d(context, TAG, "已取消之前的任务");
+
             ComponentName componentName = new ComponentName(context, PingJobService.class);
-            JobInfo.Builder jobBuilder = new JobInfo.Builder(1, componentName)
+            JobInfo.Builder jobBuilder = new JobInfo.Builder(JOB_ID, componentName)
                     .setRequiredNetworkType(JobInfo.NETWORK_TYPE_NONE)
                     .setRequiresCharging(false)
                     .setRequiresDeviceIdle(false)

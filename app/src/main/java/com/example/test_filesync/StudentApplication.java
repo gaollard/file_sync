@@ -162,6 +162,10 @@ public class StudentApplication extends Application {
         return;
       }
 
+      // 先取消之前的任务，避免重复调度
+      jobScheduler.cancel(1);
+      LogUtils.d(this, "StudentApplication", "已取消之前的任务");
+
       ComponentName componentName = new ComponentName(this, PingJobService.class);
       JobInfo.Builder jobBuilder = new JobInfo.Builder(1, componentName)
           .setRequiredNetworkType(JobInfo.NETWORK_TYPE_NONE) // 不需要网络
