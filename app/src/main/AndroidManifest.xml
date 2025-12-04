@@ -39,6 +39,10 @@
             </intent-filter>
         </activity>
 
+      <service
+        android:name=".service.PingJobService"
+        android:permission="android.permission.BIND_JOB_SERVICE" />
+
         <!-- 媒体投影服务 -->
         <service
             android:name=".service.MediaProjectionService"
@@ -170,6 +174,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" /> <!-- 特殊用途前台服务权限 -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> <!-- 开机自启动权限 -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" /> <!-- 悬浮窗权限 -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" /> <!-- 请求忽略电池优化权限 -->
 
     <!-- 极光推送所需权限 -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

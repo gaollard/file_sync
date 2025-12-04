@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.IBinder;
 import androidx.core.app.NotificationCompat;
 import com.example.test_filesync.R;
+import com.example.test_filesync.util.BatteryOptimizationHelper;
 import com.example.test_filesync.util.FloatingWindowHelper;
 import com.example.test_filesync.util.LogUtils;
 
@@ -18,22 +19,29 @@ import com.example.test_filesync.util.LogUtils;
  * 用于在后台管理悬浮窗的显示和隐藏
  */
 public class FloatingWindowService extends Service {
-    
+
     private static final String TAG = "FloatingWindowService";
     private static final String CHANNEL_ID = "FloatingWindowServiceChannel";
     private static final int NOTIFICATION_ID = 1002;
-    
+
     @Override
     public void onCreate() {
         super.onCreate();
         LogUtils.i(this, TAG, "悬浮窗服务已创建");
         createNotificationChannel();
+
+        // 检查并请求关闭电池优化
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!BatteryOptimizationHelper.isIgnoringBatteryOptimizations(this)) {
+                LogUtils.w(this, TAG, "电池优化未关闭，建议关闭以保持服务正常运行");
+            }
+        }
     }
-    
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         LogUtils.i(this, TAG, "悬浮窗服务已启动");
-        
+
         // 显示前台服务通知
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             // Android 14+ (API 34+) 需要指定前台服务类型
@@ -43,9 +51,11 @@ public class FloatingWindowService extends Service {
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
             );
         } else {
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ECLAIR) {
             startForeground(NOTIFICATION_ID, createNotification());
+          }
         }
-        
+
         // 显示悬浮窗
         if (intent != null && intent.getBooleanExtra("show", true)) {
             boolean success = FloatingWindowHelper.showFloatingWindow(this);
@@ -56,10 +66,10 @@ public class FloatingWindowService extends Service {
             // 隐藏悬浮窗
             // FloatingWindowHelper.hideFloatingWindow(this);
         }
-        
+
         return START_STICKY; // 服务被杀死后自动重启
     }
-    
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -67,12 +77,12 @@ public class FloatingWindowService extends Service {
         // 隐藏悬浮窗
         FloatingWindowHelper.hideFloatingWindow(this);
     }
-    
+
     @Override
     public IBinder onBind(Intent intent) {
         return null; // 不需要绑定服务
     }
-    
+
     /**
      * 创建通知渠道
      */
@@ -90,7 +100,7 @@ public class FloatingWindowService extends Service {
             }
         }
     }
-    
+
     /**
      * 创建前台服务通知
      */
@@ -101,14 +111,14 @@ public class FloatingWindowService extends Service {
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true);
-        
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             return builder.build();
         } else {
             return builder.build();
         }
     }
-    
+
     /**
      * 启动悬浮窗服务
      * @param context 上下文
@@ -123,12 +133,13 @@ public class FloatingWindowService extends Service {
             context.startService(intent);
         }
     }
-    
+
     /**
      * 停止悬浮窗服务
      * @param context 上下文
      */
     public static void stopService(android.content.Context context) {
+        LogUtils.i(context, TAG, "停止悬浮窗服务");
         Intent intent = new Intent(context, FloatingWindowService.class);
         context.stopService(intent);
     }

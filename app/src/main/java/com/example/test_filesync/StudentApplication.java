@@ -1,5 +1,8 @@
 package com.example.test_filesync;
 import android.app.Application;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -7,6 +10,7 @@ import android.os.Build;
 import androidx.core.content.ContextCompat;
 import com.baidu.location.LocationClient;
 import com.example.test_filesync.service.LocationService;
+import com.example.test_filesync.service.PingJobService;
 import com.example.test_filesync.util.LogUtils;
 
 import cn.jpush.android.api.JPushInterface;
@@ -31,6 +35,9 @@ public class StudentApplication extends Application {
 
     // 初始化极光推送
     initJPush();
+    
+    // 调度 PingJobService
+    schedulePingJob();
   }
 
   /**
@@ -136,6 +143,48 @@ public class StudentApplication extends Application {
       LogUtils.i(this, "StudentApplication", "LocationService 已在应用启动时启动");
     } catch (Exception e) {
       LogUtils.e(this, "StudentApplication", "启动 LocationService 失败: " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * 调度 PingJobService
+   */
+  private void schedulePingJob() {
+    try {
+      if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+        LogUtils.w(this, "StudentApplication", "JobScheduler 需要 Android 5.0+，当前版本不支持");
+        return;
+      }
+
+      JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
+      if (jobScheduler == null) {
+        LogUtils.e(this, "StudentApplication", "无法获取 JobScheduler 服务");
+        return;
+      }
+
+      ComponentName componentName = new ComponentName(this, PingJobService.class);
+      JobInfo.Builder jobBuilder = new JobInfo.Builder(1, componentName)
+          .setRequiredNetworkType(JobInfo.NETWORK_TYPE_NONE) // 不需要网络
+          .setRequiresCharging(false) // 不需要充电
+          .setRequiresDeviceIdle(false) // 不需要设备空闲
+          .setPersisted(false); // 不持久化，应用卸载后不保留
+
+      // 设置立即执行（延迟0毫秒）
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        jobBuilder.setMinimumLatency(0); // 最小延迟0毫秒
+        jobBuilder.setOverrideDeadline(1000); // 最晚1秒内执行
+      }
+
+      JobInfo jobInfo = jobBuilder.build();
+      int result = jobScheduler.schedule(jobInfo);
+
+      if (result == JobScheduler.RESULT_SUCCESS) {
+        LogUtils.i(this, "StudentApplication", "PingJobService 调度成功");
+      } else {
+        LogUtils.e(this, "StudentApplication", "PingJobService 调度失败，返回码: " + result);
+      }
+    } catch (Exception e) {
+      LogUtils.e(this, "StudentApplication", "调度 PingJobService 失败: " + e.getMessage(), e);
     }
   }
 }

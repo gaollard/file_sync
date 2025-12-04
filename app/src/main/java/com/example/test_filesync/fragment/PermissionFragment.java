@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.test_filesync.R;
 import com.example.test_filesync.service.FloatingWindowService;
 import com.example.test_filesync.service.MyAccessibilityService;
+import com.example.test_filesync.util.BatteryOptimizationHelper;
 import com.example.test_filesync.util.DeviceAdminHelper;
 import com.example.test_filesync.util.FloatingWindowHelper;
 import com.example.test_filesync.util.LogUtils;
@@ -138,6 +139,20 @@ public class PermissionFragment extends Fragment {
             // 显示悬浮窗
             boolean success = FloatingWindowHelper.showFloatingWindow(context);
             if (success) {
+                LogUtils.i(context, TAG, "显示悬浮窗成功");
+                // 检查并请求关闭电池优化
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    LogUtils.i(context, TAG, "检查并请求关闭电池优化");
+                    if (!BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context)) {
+                        // 如果未关闭电池优化，请求关闭
+                        if (getActivity() != null) {
+                            BatteryOptimizationHelper.requestIgnoreBatteryOptimizations(getActivity(), 112);
+                            LogUtils.i(context, TAG, "请求关闭电池优化");
+                        }
+                    } else {
+                        LogUtils.i(context, TAG, "电池优化已关闭");
+                    }
+                }
                 // 启动服务以保持悬浮窗显示
                 FloatingWindowService.startService(context, true);
                 floatingWindowButton.setText("隐藏悬浮窗");
@@ -256,6 +271,15 @@ public class PermissionFragment extends Fragment {
             if (getActivity() != null) {
                 FloatingWindowHelper.requestOverlayPermission(getActivity(), getRequestCode(item.permission));
             }
+        } else if (Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS.equals(item.permission)) {
+            // 请求忽略电池优化权限
+            LogUtils.i(context, TAG, "请求忽略电池优化权限");
+            if (getActivity() != null) {
+                BatteryOptimizationHelper.requestIgnoreBatteryOptimizations(getActivity(), getRequestCode(item.permission));
+            } else {
+                LogUtils.i(context, TAG, "请求忽略电池优化权限失败 getActivity == null");
+                BatteryOptimizationHelper.openBatteryOptimizationSettings(context);
+            }
         } else {
             // 普通权限，使用requestPermissions请求
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -309,6 +333,8 @@ public class PermissionFragment extends Fragment {
             return 110;
         } else if (Manifest.permission.SYSTEM_ALERT_WINDOW.equals(permission)) {
             return 111;
+        } else if (Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS.equals(permission)) {
+            return 112;
         }
         return 100; // 默认请求码
     }
@@ -359,6 +385,15 @@ public class PermissionFragment extends Fragment {
             if (adapter != null) {
                 adapter.notifyDataSetChanged();
             }
+        } else if (requestCode == 112) {
+            // 电池优化请求结果
+            if (BatteryOptimizationHelper.isIgnoringBatteryOptimizations(requireContext())) {
+                Toast.makeText(requireContext(), "电池优化已关闭", Toast.LENGTH_SHORT).show();
+                LogUtils.i(requireContext(), TAG, "电池优化已关闭");
+            } else {
+                Toast.makeText(requireContext(), "电池优化未关闭，建议关闭以保持服务正常运行", Toast.LENGTH_LONG).show();
+                LogUtils.w(requireContext(), TAG, "电池优化未关闭");
+            }
         }
     }
 
@@ -381,7 +416,8 @@ public class PermissionFragment extends Fragment {
                 Manifest.permission.ACCESS_WIFI_STATE,
                 Manifest.permission.FOREGROUND_SERVICE,
                 Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION,
-                Manifest.permission.SYSTEM_ALERT_WINDOW
+                Manifest.permission.SYSTEM_ALERT_WINDOW,
+                Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
         };
 
         // 权限名称映射
@@ -438,6 +474,8 @@ public class PermissionFragment extends Fragment {
             return "媒体投影服务权限";
         } else if (Manifest.permission.SYSTEM_ALERT_WINDOW.equals(permission)) {
             return "悬浮窗权限";
+        } else if (Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS.equals(permission)) {
+            return "请求忽略电池优化权限";
         }
         return permission;
     }
@@ -471,6 +509,8 @@ public class PermissionFragment extends Fragment {
             return "允许应用进行屏幕录制或截图";
         } else if (Manifest.permission.SYSTEM_ALERT_WINDOW.equals(permission)) {
             return "允许应用在其他应用上层显示悬浮窗";
+        } else if (Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS.equals(permission)) {
+            return "允许应用请求忽略电池优化";
         }
         return "未知权限";
     }
