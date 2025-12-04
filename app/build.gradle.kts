@@ -56,8 +56,13 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.baidu.lbsyun:BaiduMapSDK_Location_All:9.6.4")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("androidx.work:work-runtime:2.8.0")
+
 
     // 极光推送SDK
     implementation("cn.jiguang.sdk:jpush:5.8.0")
-    // implementation("cn.jiguang.sdk:jcore:3.2.4")
+
+    // 荣耀推送SDK
+    // implementation("cn.jiguang.sdk.plugin:honor:5.6.0")
+    // implementation(name: 'HiPushSDK-8.0.12.307', ext: 'aar')
 }

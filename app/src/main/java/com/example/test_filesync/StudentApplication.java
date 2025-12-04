@@ -8,17 +8,30 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import androidx.core.content.ContextCompat;
+import androidx.work.Configuration;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import androidx.work.Worker;
+import android.content.SharedPreferences;
+
 import com.baidu.location.LocationClient;
 import com.example.test_filesync.service.LocationService;
 import com.example.test_filesync.service.PingJobService;
 import com.example.test_filesync.util.LogUtils;
+import com.example.test_filesync.worker.PingWorker;
+
+import java.util.concurrent.TimeUnit;
 
 import cn.jpush.android.api.JPushInterface;
 
 public class StudentApplication extends Application {
+  private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
   @Override
   public void onCreate() {
     super.onCreate();
+
+    // 初始化 WorkManager
+    initializeWorkManager();
 
     // 百度地图 SDK 隐私合规设置，必须在创建 LocationClient 之前调用
     // LocationClient.setAgreePrivacy(true);
@@ -37,7 +50,110 @@ public class StudentApplication extends Application {
     initJPush();
 
     // 调度 PingJobService
-    schedulePingJob();
+//    schedulePingJob();
+
+    // 调度 WorkManager 任务
+    schedulePingWork();
+
+    // 注册 SharedPreferences 监听器
+    registerSharedPreferencesListener();
+  }
+
+  /**
+   * 初始化 WorkManager
+   */
+  private void initializeWorkManager() {
+    try {
+      Configuration configuration = new Configuration.Builder()
+          .setMinimumLoggingLevel(android.util.Log.INFO)
+          .build();
+      WorkManager.initialize(this, configuration);
+      LogUtils.d(this, "StudentApplication", "WorkManager 初始化成功");
+    } catch (IllegalStateException e) {
+      // WorkManager 已经初始化，忽略异常
+      LogUtils.d(this, "StudentApplication", "WorkManager 已经初始化");
+    } catch (Exception e) {
+      LogUtils.e(this, "StudentApplication", "WorkManager 初始化失败: " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * 调度 PingWorker 任务
+   */
+  private void schedulePingWork() {
+    try {
+      // 每隔15min调度一次 PingWorker 任务
+      OneTimeWorkRequest workRequest =
+          new OneTimeWorkRequest.Builder(PingWorker.class)
+              .setInitialDelay(1, TimeUnit.MINUTES)
+              .build();
+      WorkManager.getInstance(this.getApplicationContext()).enqueue(workRequest);
+      LogUtils.d(this, "StudentApplication", "PingWorker 任务调度成功");
+    } catch (Exception e) {
+      LogUtils.e(this, "StudentApplication", "调度 PingWorker 任务失败: " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * 注册 SharedPreferences 监听器
+   * 当 SharedPreferences 变化时，自动触发 PingWorker 任务
+   */
+  private void registerSharedPreferencesListener() {
+    try {
+      SharedPreferences sp = getSharedPreferences(PingWorker.PING_SP_NAME, Context.MODE_PRIVATE);
+
+      preferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+          LogUtils.d(StudentApplication.this, "StudentApplication",
+              "SharedPreferences 变化检测到，key: " + key);
+
+          // 当指定的 key 变化时，触发 PingWorker 任务
+          // 可以在这里添加过滤逻辑，只监听特定的 key
+          if (key != null) {
+            // 调度新的 PingWorker 任务
+            schedulePingWorkOnPreferenceChange(key);
+          }
+        }
+      };
+
+      sp.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
+      LogUtils.d(this, "StudentApplication", "SharedPreferences 监听器注册成功");
+    } catch (Exception e) {
+      LogUtils.e(this, "StudentApplication", "注册 SharedPreferences 监听器失败: " + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * 当 SharedPreferences 变化时调度 PingWorker 任务
+   */
+  private void schedulePingWorkOnPreferenceChange(String changedKey) {
+    try {
+      OneTimeWorkRequest workRequest =
+          new OneTimeWorkRequest.Builder(PingWorker.class)
+              .build();
+      WorkManager.getInstance(this).enqueue(workRequest);
+      LogUtils.d(this, "StudentApplication",
+          "SharedPreferences 变化触发 PingWorker 任务，变化的 key: " + changedKey);
+    } catch (Exception e) {
+      LogUtils.e(this, "StudentApplication",
+          "SharedPreferences 变化触发任务失败: " + e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public void onTerminate() {
+    super.onTerminate();
+    // 注销监听器，防止内存泄漏
+    if (preferenceChangeListener != null) {
+      try {
+        SharedPreferences sp = getSharedPreferences(PingWorker.PING_SP_NAME, Context.MODE_PRIVATE);
+        sp.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener);
+        LogUtils.d(this, "StudentApplication", "SharedPreferences 监听器已注销");
+      } catch (Exception e) {
+        LogUtils.e(this, "StudentApplication", "注销 SharedPreferences 监听器失败: " + e.getMessage(), e);
+      }
+    }
   }
 
   /**
