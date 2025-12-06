@@ -53,7 +53,7 @@ public class StudentApplication extends Application {
 //    schedulePingJob();
 
     // 调度 WorkManager 任务
-    schedulePingWork();
+//    schedulePingWork();
 
     // 注册 SharedPreferences 监听器
     registerSharedPreferencesListener();

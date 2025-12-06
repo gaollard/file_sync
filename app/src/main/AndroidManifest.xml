@@ -133,7 +133,7 @@
 
         <!-- 极光推送接收器 -->
         <receiver
-            android:name=".receiver.CustomPushReceiver"
+            android:name=".receiver.JPushReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
