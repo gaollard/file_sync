@@ -66,5 +66,5 @@ dependencies {
 
     // 荣耀推送SDK
     implementation("cn.jiguang.sdk.plugin:honor:5.6.0")
-    // implementation(name: 'HiPushSDK-8.0.12.307', ext: 'aar')
+    implementation(group = "", name = "HiPushSDK-8.0.12.307", ext = "aar")
 }
