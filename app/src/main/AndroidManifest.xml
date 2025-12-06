@@ -150,6 +150,23 @@
                 <category android:name="${applicationId}" />
             </intent-filter>
         </receiver>
+
+
+      <!--honor_config_start-->
+      <service
+        android:name="cn.jpush.android.service.JHonorService"
+        android:exported="false">
+        <intent-filter>
+          <action android:name="com.hihonor.push.action.MESSAGING_EVENT" />
+        </intent-filter>
+      </service>
+
+      <meta-data
+        android:name="com.hihonor.push.app_id"
+        android:value="${HONOR_APPID}" />
+      <!--honor_config_end-->
+
+
     </application>
 
     <!-- 读取媒体视频 -->

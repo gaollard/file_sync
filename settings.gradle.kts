@@ -16,12 +16,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        flatDir {
-            dirs("libs")
-        }
+
     }
 }
 
 rootProject.name = "FileSync"
 include(":app")
-include(":libs")
