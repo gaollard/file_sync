@@ -16,7 +16,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-
+        maven { url = uri("https://developer.huawei.com/repo/") }
+        flatDir {
+            dirs("app/libs")
+        }
     }
 }
 

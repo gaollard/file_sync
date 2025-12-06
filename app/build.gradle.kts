@@ -34,12 +34,6 @@ android {
         }
     }
 
-    repositories {
-        flatDir {
-            dirs("libs")
-        }
-    }
-
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -72,6 +66,8 @@ dependencies {
     implementation("cn.jiguang.sdk:jpush:5.8.0")
 
     // 荣耀推送SDK (本地文件)
-    implementation(files("libs/jpush-android-plugin-honor-v5.9.0.jar"))
+    // implementation(files("libs/jpush-android-plugin-honor-v5.9.0.jar"))
+    implementation("cn.jiguang.sdk.plugin:honor:5.6.0")
     implementation(group = "", name = "HiPushSDK-8.0.12.307", ext = "aar")
+    // implementation(files("libs/hipush.jar"))
 }
