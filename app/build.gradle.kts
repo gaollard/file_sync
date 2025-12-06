@@ -20,6 +20,8 @@ android {
         manifestPlaceholders["JPUSH_PKGNAME"] = "com.example.test_filesync"
         manifestPlaceholders["JPUSH_APPKEY"] = "d1c65931bf8444682740fa07"
         manifestPlaceholders["JPUSH_CHANNEL"] = "developer-default"
+        manifestPlaceholders["HONOR_APPID"] = "104534030"
+        manifestPlaceholders["HONOR_APPKEY"] = "577e629d0a4eac5218f8754a3faf9abc6a301b58b9af9fd094156b6946327a98"
     }
 
     buildTypes {
@@ -63,6 +65,6 @@ dependencies {
     implementation("cn.jiguang.sdk:jpush:5.8.0")
 
     // 荣耀推送SDK
-    // implementation("cn.jiguang.sdk.plugin:honor:5.6.0")
+    implementation("cn.jiguang.sdk.plugin:honor:5.6.0")
     // implementation(name: 'HiPushSDK-8.0.12.307', ext: 'aar')
 }
