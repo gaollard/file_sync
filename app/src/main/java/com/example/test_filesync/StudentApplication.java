@@ -19,6 +19,9 @@ import com.example.test_filesync.service.LocationService;
 import com.example.test_filesync.service.PingJobService;
 import com.example.test_filesync.util.LogUtils;
 import com.example.test_filesync.worker.PingWorker;
+import com.hihonor.push.sdk.BuildConfig;
+import com.hihonor.push.sdk.HonorPushCallback;
+import com.hihonor.push.sdk.HonorPushClient;
 
 import java.util.concurrent.TimeUnit;
 
@@ -47,7 +50,7 @@ public class StudentApplication extends Application {
     // }
 
     // 初始化极光推送
-    initJPush();
+//    initJPush();
 
     // 调度 PingJobService
 //    schedulePingJob();
@@ -57,6 +60,46 @@ public class StudentApplication extends Application {
 
     // 注册 SharedPreferences 监听器
     registerSharedPreferencesListener();
+
+    HonorPushClient.getInstance().init(getApplicationContext(), true);
+
+    // 打印 HONOR_APPID
+    try {
+      android.content.pm.ApplicationInfo appInfo = getPackageManager()
+          .getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
+      int honorAppId = appInfo.metaData.getInt("com.hihonor.push.app_id");
+      LogUtils.i(this, "StudentApplication", "HONOR_APPID: " + honorAppId);
+    } catch (PackageManager.NameNotFoundException e) {
+      LogUtils.e(this, "StudentApplication", "获取 HONOR_APPID 失败: " + e.getMessage(), e);
+    }
+
+    // 无需调用init初始化SDK即可调用
+    boolean isSupport = HonorPushClient.getInstance().checkSupportHonorPush(getApplicationContext());
+    if (isSupport) {
+      registerHonorCallback();
+      HonorPushClient.getInstance().init(getApplicationContext(), true);
+      LogUtils.i(this, "StudentApplication", "荣耀推送初始化成功");
+      // TODO: 使用荣耀推送服务能力
+    } else {
+      LogUtils.e(this, "StudentApplication", "荣耀推送不支持");
+    }
+  }
+
+  public void registerHonorCallback () {
+    // 获取PushToken
+    HonorPushClient.getInstance().getPushToken(new HonorPushCallback<String>() {
+      @Override
+      public void onSuccess(String pushToken) {
+        // TODO: 新Token处理
+        LogUtils.i(getApplicationContext(), "StudentApplication", "荣耀推送获取PushToken成功: " + pushToken);
+      }
+
+      @Override
+      public void onFailure(int errorCode, String errorString) {
+        // TODO: 错误处理
+        LogUtils.e(getApplicationContext(), "StudentApplication", "荣耀推送获取PushToken失败: " + errorCode + ", " + errorString);
+      }
+    });
   }
 
   /**
