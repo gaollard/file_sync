@@ -10,13 +10,12 @@ public class MyHonorMsgService extends HonorMessageService {
     //Token发生变化时，会以onNewToken方法返回
     @Override
     public void onNewToken(String pushToken) {
-        // TODO: 处理新token。
       LogUtils.i(getApplication(), TAG, "onNewToken: " + pushToken);
     }
 
     @Override
     public void onMessageReceived(HonorPushDataMsg msg) {
-        // TODO: 处理收到的透传消息
+        // 打印荣耀推送消息 这里为什么没执行？
         LogUtils.i(getApplication(), TAG, "onMessageReceived: " + msg.toString());
     }
 }
