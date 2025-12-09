@@ -5,7 +5,9 @@ import android.content.SharedPreferences;
 
 import com.example.test_filesync.util.LogUtils;
 
+import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
@@ -31,22 +33,6 @@ public class PingWorker extends Worker implements SharedPreferences.OnSharedPref
       super(context, workerParams);
     }
 
-      /**
-   * 调度 PingWorker 任务
-   */
-  private void schedulePingWork() {
-    try {
-      OneTimeWorkRequest workRequest =
-          new OneTimeWorkRequest.Builder(PingWorker.class)
-              .setInitialDelay(1, TimeUnit.MINUTES)
-              .build();
-      WorkManager.getInstance(this.getApplicationContext()).enqueue(workRequest);
-      LogUtils.d(this.getApplicationContext(), "WorkManager", "PingWorker 任务调度成功");
-    } catch (Exception e) {
-      LogUtils.e(this.getApplicationContext(), "WorkManager", "调度 PingWorker 任务失败: " + e.getMessage(), e);
-    }
-  }
-
   @Override
   public Result doWork() {
     Context context = getApplicationContext();
@@ -64,9 +50,6 @@ public class PingWorker extends Worker implements SharedPreferences.OnSharedPref
       sp.edit().putInt("pingCount", pingCount).apply();
 
       LogUtils.d(context, TAG, "后台任务执行完成，总计数: " + pingCount);
-
-      // 调度新的 PingWorker 任务
-      schedulePingWork();
 
       // 返回成功结果
       return Result.success();

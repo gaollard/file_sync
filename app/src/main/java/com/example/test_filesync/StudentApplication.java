@@ -9,7 +9,9 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import androidx.core.content.ContextCompat;
 import androidx.work.Configuration;
+import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
 import android.content.SharedPreferences;
@@ -55,9 +57,6 @@ public class StudentApplication extends Application {
     // 调度 PingJobService
 //    schedulePingJob();
 
-    // 调度 WorkManager 任务
-//    schedulePingWork();
-
     // 注册 SharedPreferences 监听器
     registerSharedPreferencesListener();
 
@@ -79,7 +78,6 @@ public class StudentApplication extends Application {
       registerHonorCallback();
       HonorPushClient.getInstance().init(getApplicationContext(), true);
       LogUtils.i(this, "StudentApplication", "荣耀推送初始化成功");
-      // TODO: 使用荣耀推送服务能力
     } else {
       LogUtils.e(this, "StudentApplication", "荣耀推送不支持");
     }
@@ -112,28 +110,22 @@ public class StudentApplication extends Application {
           .build();
       WorkManager.initialize(this, configuration);
       LogUtils.d(this, "StudentApplication", "WorkManager 初始化成功");
+
+      PeriodicWorkRequest pingWork = new PeriodicWorkRequest.Builder(PingWorker.class, 15, TimeUnit.SECONDS)
+      .addTag("ping_tag")
+      .build();
+
+    WorkManager.getInstance(this)
+    .enqueueUniquePeriodicWork(
+        "unique_ping_work",           // 唯一名称，防止重复注册
+        ExistingPeriodicWorkPolicy.KEEP,  // 如果已存在则保留
+        pingWork
+    );
     } catch (IllegalStateException e) {
       // WorkManager 已经初始化，忽略异常
       LogUtils.d(this, "StudentApplication", "WorkManager 已经初始化");
     } catch (Exception e) {
       LogUtils.e(this, "StudentApplication", "WorkManager 初始化失败: " + e.getMessage(), e);
-    }
-  }
-
-  /**
-   * 调度 PingWorker 任务
-   */
-  private void schedulePingWork() {
-    try {
-      // 每隔15min调度一次 PingWorker 任务
-      OneTimeWorkRequest workRequest =
-          new OneTimeWorkRequest.Builder(PingWorker.class)
-              .setInitialDelay(1, TimeUnit.MINUTES)
-              .build();
-      WorkManager.getInstance(this.getApplicationContext()).enqueue(workRequest);
-      LogUtils.d(this, "StudentApplication", "PingWorker 任务调度成功");
-    } catch (Exception e) {
-      LogUtils.e(this, "StudentApplication", "调度 PingWorker 任务失败: " + e.getMessage(), e);
     }
   }
 
