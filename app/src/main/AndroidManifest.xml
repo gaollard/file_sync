@@ -39,6 +39,25 @@
             </intent-filter>
         </activity>
 
+        <!-- ContentProvider 演示 Activity -->
+        <activity
+            android:name=".ContentProviderDemoActivity"
+            android:exported="false"
+            android:theme="@style/Theme.test_filesync" />
+
+        <!-- WebView Activity -->
+        <activity
+            android:name=".WebviewActivity"
+            android:exported="false"
+            android:theme="@style/Theme.test_filesync"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <!-- Note ContentProvider -->
+        <provider
+            android:name=".provider.NoteProvider"
+            android:authorities="com.example.test_filesync.provider"
+            android:exported="false" />
+
       <service
         android:name=".service.PingJobService"
         android:permission="android.permission.BIND_JOB_SERVICE" />
