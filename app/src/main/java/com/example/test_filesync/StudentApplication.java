@@ -40,7 +40,7 @@ public class StudentApplication extends Application {
     initializeWorkManager();
 
     // 百度地图 SDK 隐私合规设置，必须在创建 LocationClient 之前调用
-    // LocationClient.setAgreePrivacy(true);
+    LocationClient.setAgreePrivacy(true);
 
     // // 检查权限后再启动服务
     // if (checkRequiredPermissions()) {

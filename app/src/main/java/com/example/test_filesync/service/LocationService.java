@@ -225,6 +225,9 @@ public class LocationService extends Service {
 
             // 初始化定位客户端
             locationClient = new LocationClient(getApplicationContext());
+
+            LocationClient.setAgreePrivacy(true);
+
             locationClient.registerLocationListener(locationListener);
 
             // 配置定位参数
@@ -255,7 +258,6 @@ public class LocationService extends Service {
             // 设置是否允许模拟位置
             option.setEnableSimulateGps(false);
 
-            LocationClient.setAgreePrivacy(true);
 
             // 应用定位参数
             locationClient.setLocOption(option);
