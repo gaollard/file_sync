@@ -157,7 +157,7 @@ public class LocationService extends Service {
         if (notificationManager == null) {
             notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         }
-        
+
         // 如果前台服务未启动，则启动它
         try {
             // 检查通知渠道是否存在，如果不存在则创建
@@ -176,7 +176,7 @@ public class LocationService extends Service {
                 // Android 8.0 以下版本，直接启动前台服务
                 needStartForeground = true;
             }
-            
+
             // 如果需要启动前台服务（通知渠道已存在或 Android 8.0 以下）
             if (needStartForeground) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -189,7 +189,7 @@ public class LocationService extends Service {
                     startForeground(3, createNotification("位置服务运行中"));
                 }
             }
-            
+
             // 如果定位客户端未初始化或未启动，则重新初始化
             if (locationClient == null || !isLocationClientStarted) {
                 initializeBaiduLocation();
@@ -197,7 +197,7 @@ public class LocationService extends Service {
         } catch (Exception e) {
             LogUtils.e(this, "onStartCommand 中启动前台服务失败：" + e.getLocalizedMessage(), e);
         }
-        
+
         return START_STICKY; // 服务被关闭后自动重新启动
     }
 
@@ -254,6 +254,8 @@ public class LocationService extends Service {
             option.setLocationNotify(true);
             // 设置是否允许模拟位置
             option.setEnableSimulateGps(false);
+
+            LocationClient.setAgreePrivacy(true);
 
             // 应用定位参数
             locationClient.setLocOption(option);

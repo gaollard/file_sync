@@ -1,5 +1,7 @@
 package com.example.test_filesync.service;
 
+import com.example.test_filesync.util.LogUtils;
+
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Intent;
@@ -24,6 +26,7 @@ public class MyAccessibilityService extends AccessibilityService {
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
         // 监听系统事件
+        LogUtils.d(this, "onAccessibilityEvent: " + event.toString());
     }
 
     @Override

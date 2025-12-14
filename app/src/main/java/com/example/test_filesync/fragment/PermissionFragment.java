@@ -27,6 +27,7 @@ import com.example.test_filesync.util.BatteryOptimizationHelper;
 import com.example.test_filesync.util.DeviceAdminHelper;
 import com.example.test_filesync.util.FloatingWindowHelper;
 import com.example.test_filesync.util.LogUtils;
+import com.example.test_filesync.service.LocationService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,7 @@ public class PermissionFragment extends Fragment {
     private List<PermissionItem> permissionList;
     private Button screenshotButton;
     private Button floatingWindowButton;
+    private Button locationButton;
     private static final String TAG = "PermissionFragment";
 
     @Override
@@ -47,6 +49,7 @@ public class PermissionFragment extends Fragment {
         permissionRecyclerView = view.findViewById(R.id.permission_recycler_view);
         screenshotButton = view.findViewById(R.id.screenshot_button);
         floatingWindowButton = view.findViewById(R.id.floating_window_button);
+        locationButton = view.findViewById(R.id.location_button);
         return view;
     }
 
@@ -70,6 +73,11 @@ public class PermissionFragment extends Fragment {
         // 设置悬浮窗按钮点击事件
         if (floatingWindowButton != null) {
             floatingWindowButton.setOnClickListener(v -> onFloatingWindowButtonClick());
+        }
+
+        // 设置定位按钮点击事件
+        if (locationButton != null) {
+            locationButton.setOnClickListener(v -> onLocationButtonClick());
         }
     }
 
@@ -108,6 +116,44 @@ public class PermissionFragment extends Fragment {
                 // Android 6.0 以下，权限在安装时授予
                 item.isGranted = true;
             }
+        }
+    }
+
+    /**
+     * 处理定位按钮点击事件
+     */
+    private void onLocationButtonClick() {
+        Context context = requireContext();
+
+        // 检查位置权限
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(context, "请先授予定位权限", Toast.LENGTH_LONG).show();
+                // 请求定位权限
+                requestPermissions(new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                }, 113);
+                return;
+            }
+        }
+
+        // 启动 LocationService
+        try {
+            Intent intent = new Intent(context, LocationService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent);
+            } else {
+                context.startService(intent);
+            }
+            Toast.makeText(context, "定位服务已启动", Toast.LENGTH_SHORT).show();
+            LogUtils.i(context, TAG, "定位服务已启动");
+        } catch (Exception e) {
+            Toast.makeText(context, "启动定位服务失败: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            LogUtils.e(context, TAG, "启动定位服务失败: " + e.getMessage());
         }
     }
 

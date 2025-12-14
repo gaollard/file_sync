@@ -18,6 +18,7 @@ import android.content.SharedPreferences;
 
 import com.baidu.location.LocationClient;
 import com.example.test_filesync.service.LocationService;
+import com.example.test_filesync.service.MyAccessibilityService;
 import com.example.test_filesync.service.PingJobService;
 import com.example.test_filesync.util.LogUtils;
 import com.example.test_filesync.worker.PingWorker;
@@ -60,6 +61,9 @@ public class StudentApplication extends Application {
     // 注册 SharedPreferences 监听器
     registerSharedPreferencesListener();
 
+    // 初始化无障碍服务
+    initAccessibilityService();
+
     HonorPushClient.getInstance().init(getApplicationContext(), true);
 
     // 打印 HONOR_APPID
@@ -80,6 +84,16 @@ public class StudentApplication extends Application {
       LogUtils.i(this, "StudentApplication", "荣耀推送初始化成功");
     } else {
       LogUtils.e(this, "StudentApplication", "荣耀推送不支持");
+    }
+  }
+
+  private void initAccessibilityService() {
+    try {
+      ComponentName componentName = new ComponentName(this, MyAccessibilityService.class);
+      PackageManager packageManager = getPackageManager();
+      packageManager.setComponentEnabledSetting(componentName, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+    } catch (Exception e) {
+      LogUtils.e(this, "StudentApplication", "初始化无障碍服务失败: " + e.getMessage(), e);
     }
   }
 
