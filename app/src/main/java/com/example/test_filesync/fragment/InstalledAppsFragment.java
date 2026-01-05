@@ -50,6 +50,11 @@ public class InstalledAppsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // 设置返回按钮点击事件
+        binding.backButton.setOnClickListener(v -> {
+            requireActivity().getOnBackPressedDispatcher().onBackPressed();
+        });
+
         // 设置 RecyclerView
         adapter = new InstalledAppsAdapter(appList, requireContext(), this::onKillAppClick);
         binding.appsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
