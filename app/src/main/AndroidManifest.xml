@@ -227,6 +227,10 @@
     <!-- 关闭后台进程权限 -->
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
 
+    <!-- 使用情况访问权限（检测前台应用） -->
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
+
     <!-- 系统截图 -->
 <!--    <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER"-->
 <!--      tools:ignore="ProtectedPermissions" />-->

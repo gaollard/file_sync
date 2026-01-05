@@ -1,10 +1,14 @@
 package com.example.test_filesync.fragment;
 
 import android.app.ActivityManager;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.provider.Settings;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,6 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.test_filesync.R;
 import com.example.test_filesync.databinding.FragmentInstalledAppsBinding;
+import com.example.test_filesync.service.MyAccessibilityService;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -135,14 +140,134 @@ public class InstalledAppsFragment extends Fragment {
             return;
         }
 
+        // 检查无障碍服务是否启用
+        boolean accessibilityEnabled = MyAccessibilityService.isServiceEnabled();
+        
+        String message = "请选择关闭方式：\n\n" +
+            "• 尝试关闭：仅能关闭后台进程，效果有限\n" +
+            "• 手动停止：跳转到系统设置页面手动强制停止\n" +
+            "• 自动停止：使用无障碍服务自动点击强制停止" +
+            (accessibilityEnabled ? "" : "（需先开启无障碍服务）");
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context)
+            .setTitle("关闭应用: " + item.appName)
+            .setMessage(message)
+            .setNegativeButton("取消", null);
+        
+        // 添加三个选项按钮
+        builder.setPositiveButton("自动停止", (dialog, which) -> {
+            if (accessibilityEnabled) {
+                autoForceStop(item);
+            } else {
+                // 跳转到无障碍设置页面
+                openAccessibilitySettings();
+            }
+        });
+        
+        builder.setNeutralButton("手动停止", (dialog, which) -> {
+            openAppSettings(item.packageName);
+        });
+        
+        // 使用自定义方式添加第三个按钮
+        AlertDialog alertDialog = builder.create();
+        alertDialog.setOnShowListener(dialogInterface -> {
+            // 动态添加"尝试关闭"按钮
+            alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> {
+                alertDialog.dismiss();
+                openAppSettings(item.packageName);
+            });
+        });
+        
+        alertDialog.show();
+        
+        // 在对话框显示后添加额外的点击处理
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnLongClickListener(v -> {
+            alertDialog.dismiss();
+            tryKillBackgroundProcess(item);
+            return true;
+        });
+    }
+    
+    /**
+     * 使用无障碍服务自动强制停止应用
+     */
+    private void autoForceStop(AppItem item) {
+        Context context = requireContext();
+        
+        // 设置目标包名和回调
+        MyAccessibilityService.setForceStopTarget(item.packageName, (success, message) -> {
+            mainHandler.post(() -> {
+                if (isAdded() && context != null) {
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                    // 操作完成后返回到应用
+                    if (success) {
+                        // 可选：自动返回到我们的应用
+                        Intent intent = context.getPackageManager()
+                            .getLaunchIntentForPackage(context.getPackageName());
+                        if (intent != null) {
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
+                        }
+                    }
+                }
+            });
+        });
+        
+        // 打开目标应用的设置页面
+        try {
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.setData(Uri.parse("package:" + item.packageName));
+            startActivity(intent);
+            Toast.makeText(context, "正在自动执行强制停止...", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            MyAccessibilityService.cancelForceStop();
+            Toast.makeText(context, "无法打开应用设置: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * 打开无障碍服务设置页面
+     */
+    private void openAccessibilitySettings() {
+        Context context = requireContext();
+        try {
+            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+            startActivity(intent);
+            Toast.makeText(context, "请找到并开启本应用的无障碍服务", Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(context, "无法打开无障碍设置", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * 尝试关闭后台进程（效果有限）
+     */
+    private void tryKillBackgroundProcess(AppItem item) {
+        Context context = requireContext();
         try {
             ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
             if (am != null) {
                 am.killBackgroundProcesses(item.packageName);
-                Toast.makeText(context, "已尝试关闭: " + item.appName, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, 
+                    "已尝试关闭后台进程: " + item.appName + "\n（如果应用在前台运行则无效）", 
+                    Toast.LENGTH_LONG).show();
             }
         } catch (Exception e) {
             Toast.makeText(context, "关闭失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * 打开应用详情设置页面，用户可以手动强制停止
+     */
+    private void openAppSettings(String packageName) {
+        try {
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.setData(Uri.parse("package:" + packageName));
+            startActivity(intent);
+            Toast.makeText(requireContext(), "请点击「强制停止」按钮", Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "无法打开应用设置: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
