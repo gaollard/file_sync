@@ -79,7 +79,7 @@ public class InstalledAppsFragment extends Fragment {
                     adapter.notifyDataSetChanged();
 
                     // 更新应用数量显示
-                    binding.appCountText.setText("共 " + apps.size() + " 个应用");
+                    binding.appCountText.setText("共 " + apps.size() + " 个用户应用");
 
                     // 隐藏加载进度
                     binding.loadingProgress.setVisibility(View.GONE);
@@ -98,12 +98,18 @@ public class InstalledAppsFragment extends Fragment {
 
         for (PackageInfo packageInfo : packages) {
             try {
+                boolean isSystemApp = (packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
+                
+                // 只显示用户应用，跳过系统应用
+                if (isSystemApp) {
+                    continue;
+                }
+
                 String appName = packageInfo.applicationInfo.loadLabel(pm).toString();
                 String packageName = packageInfo.packageName;
                 String versionName = packageInfo.versionName != null ? packageInfo.versionName : "未知";
                 long versionCode = packageInfo.getLongVersionCode();
                 Drawable icon = packageInfo.applicationInfo.loadIcon(pm);
-                boolean isSystemApp = (packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
 
                 apps.add(new AppItem(appName, packageName, versionName, versionCode, icon, isSystemApp));
             } catch (Exception e) {
