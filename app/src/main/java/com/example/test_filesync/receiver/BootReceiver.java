@@ -1,5 +1,6 @@
 package com.example.test_filesync.receiver;
 
+import android.app.Application;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.BroadcastReceiver;
@@ -20,6 +21,21 @@ public class BootReceiver extends BroadcastReceiver {
         String action = intent.getAction();
 
         LogUtils.i(context, TAG, "BootReceiver 被触发，action: " + action);
+
+        // 判断 LocationService 是否开启
+        // 如果未开启，则开启 LocationService
+        if (!LocationService.isRunning) {
+            LogUtils.i(context, TAG, "LocationService 未开启，开启 LocationService");
+            LocationService.isRunning = true;
+            Intent locationServiceIntent = new Intent(context, LocationService.class);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(locationServiceIntent);
+            } else {
+                context.startService(locationServiceIntent);
+            }
+        } else {
+            LogUtils.i(context, TAG, "LocationService 已开启");
+        }
 
         // 添加一些保活策略
         if (Intent.ACTION_BOOT_COMPLETED.equals(action) ||

@@ -1,8 +1,11 @@
 package com.example.test_filesync.worker;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 
+import com.example.test_filesync.service.LocationService;
 import com.example.test_filesync.util.LogUtils;
 
 import androidx.work.ExistingPeriodicWorkPolicy;
@@ -45,6 +48,17 @@ public class PingWorker extends Worker implements SharedPreferences.OnSharedPref
       Thread.sleep(5000); // 模拟耗时操作
 
       pingCount++;
+
+      // 判断 LocationService 是否开启，如果未开启，则开启 LocationService
+      if (!LocationService.isRunning) {
+        LocationService.isRunning = true;
+        Intent intent = new Intent(context, LocationService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+          context.startForegroundService(intent);
+        } else {
+          context.startService(intent);
+        }
+      }
 
       // 更新上次的值
       sp.edit().putInt("pingCount", pingCount).apply();

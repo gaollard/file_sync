@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
+// 读取日志文件
+// 展示日志
 public class AppLogFragment extends Fragment {
     private static final String TAG = "AppLogFragment";
 
@@ -39,7 +41,7 @@ public class AppLogFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        
+
         // 设置返回按钮点击事件
         btnBack.setOnClickListener(v -> {
             // 返回到上一个Fragment
@@ -49,7 +51,7 @@ public class AppLogFragment extends Fragment {
                 getActivity().onBackPressed();
             }
         });
-        
+
         loadLogContent();
     }
 
@@ -70,7 +72,7 @@ public class AppLogFragment extends Fragment {
             try {
                 File logFile = LogUtils.getLogFileForRead(context);
                 String logContent = readLogFile(logFile);
-                
+
                 // 在主线程更新UI
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {

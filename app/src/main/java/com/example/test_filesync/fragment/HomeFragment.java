@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import com.example.test_filesync.R;
 import com.example.test_filesync.databinding.FragmentHomeBinding;
 
 public class HomeFragment extends Fragment {
@@ -23,6 +25,24 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // 权限管理按钮点击事件
+        binding.btnPermission.setOnClickListener(v -> {
+
+            navigateToFragment(new PermissionFragment());
+        });
+
+        // 应用管理按钮点击事件
+        binding.btnAppList.setOnClickListener(v -> {
+            navigateToFragment(new InstalledAppsFragment());
+        });
+    }
+
+    private void navigateToFragment(Fragment fragment) {
+        FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.content_container, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     @Override
@@ -31,4 +51,3 @@ public class HomeFragment extends Fragment {
         binding = null;
     }
 }
-

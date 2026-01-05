@@ -34,6 +34,7 @@ import com.example.test_filesync.util.AppInfo;
 import com.example.test_filesync.util.LogUtils;
 
 public class LocationService extends Service {
+    public static boolean isRunning = false;
     private static final String TAG = "LocationService";
     private static final long LOCATION_UPDATE_INTERVAL = 60000; // 1分钟
 
@@ -128,6 +129,7 @@ public class LocationService extends Service {
     // 7. onStartCommand 是当服务被系统服务启动时，会调用 onStartCommand 方法
     @Override
     public void onCreate() {
+        isRunning = true;
         LogUtils.i(this, "LocationService onCreate 被触发");
         super.onCreate();
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -405,6 +407,7 @@ public class LocationService extends Service {
 
     @Override
     public void onDestroy() {
+        isRunning = false;
         LogUtils.i(this, "LocationService onDestroy 被触发");
 
         super.onDestroy();

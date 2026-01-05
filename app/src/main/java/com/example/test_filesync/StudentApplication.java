@@ -1,4 +1,5 @@
 package com.example.test_filesync;
+import android.Manifest;
 import android.app.Application;
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
@@ -37,21 +38,21 @@ public class StudentApplication extends Application {
     super.onCreate();
 
     // 初始化 WorkManager
-    initializeWorkManager();
+    // initializeWorkManager();
 
-    // 百度地图 SDK 隐私合规设置，必须在创建 LocationClient 之前调用
-    LocationClient.setAgreePrivacy(true);
-
-    // // 检查权限后再启动服务
-    // if (checkRequiredPermissions()) {
-    //   LogUtils.i(this, "StudentApplication", "权限检查通过，启动 LocationService");
-    //   startLocationService();
-    // } else {
-    //   LogUtils.w(this, "StudentApplication", "缺少必要权限，延迟启动 LocationService");
-    //   // 权限未授予时，服务会在用户授予权限后由其他组件启动
-    //   // 或者可以在 MainActivity 中请求权限后再启动服务
-    // }
-
+    if (false) {
+      // 百度地图 SDK 隐私合规设置，必须在创建 LocationClient 之前调用
+      // LocationClient.setAgreePrivacy(true);
+      // 检查权限后再启动服务
+      if (checkRequiredPermissions()) {
+        LogUtils.i(this, "StudentApplication", "权限检查通过，启动 LocationService");
+        //  startLocationService();
+      } else {
+        LogUtils.w(this, "StudentApplication", "缺少必要权限，延迟启动 LocationService");
+        // 权限未授予时，服务会在用户授予权限后由其他组件启动
+        // 或者可以在 MainActivity 中请求权限后再启动服务
+      }
+    }
     // 初始化极光推送
 //    initJPush();
 
@@ -59,31 +60,31 @@ public class StudentApplication extends Application {
 //    schedulePingJob();
 
     // 注册 SharedPreferences 监听器
-    registerSharedPreferencesListener();
+    // registerSharedPreferencesListener();
 
     // 初始化无障碍服务
     initAccessibilityService();
 
-    HonorPushClient.getInstance().init(getApplicationContext(), true);
-
-    // 打印 HONOR_APPID
-    try {
-      android.content.pm.ApplicationInfo appInfo = getPackageManager()
-          .getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
-      int honorAppId = appInfo.metaData.getInt("com.hihonor.push.app_id");
-      LogUtils.i(this, "StudentApplication", "HONOR_APPID: " + honorAppId);
-    } catch (PackageManager.NameNotFoundException e) {
-      LogUtils.e(this, "StudentApplication", "获取 HONOR_APPID 失败: " + e.getMessage(), e);
-    }
-
-    // 无需调用init初始化SDK即可调用
-    boolean isSupport = HonorPushClient.getInstance().checkSupportHonorPush(getApplicationContext());
-    if (isSupport) {
-      registerHonorCallback();
-      HonorPushClient.getInstance().init(getApplicationContext(), true);
-      LogUtils.i(this, "StudentApplication", "荣耀推送初始化成功");
-    } else {
-      LogUtils.e(this, "StudentApplication", "荣耀推送不支持");
+    if (false) {
+       HonorPushClient.getInstance().init(getApplicationContext(), true);
+       // 打印 HONOR_APPID
+       try {
+         android.content.pm.ApplicationInfo appInfo = getPackageManager()
+             .getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
+         int honorAppId = appInfo.metaData.getInt("com.hihonor.push.app_id");
+         LogUtils.i(this, "StudentApplication", "HONOR_APPID: " + honorAppId);
+       } catch (PackageManager.NameNotFoundException e) {
+         LogUtils.e(this, "StudentApplication", "获取 HONOR_APPID 失败: " + e.getMessage(), e);
+       }
+       // 无需调用init初始化SDK即可调用
+       boolean isSupport = HonorPushClient.getInstance().checkSupportHonorPush(getApplicationContext());
+       if (isSupport) {
+         registerHonorCallback();
+         HonorPushClient.getInstance().init(getApplicationContext(), true);
+         LogUtils.i(this, "StudentApplication", "荣耀推送初始化成功");
+       } else {
+         LogUtils.e(this, "StudentApplication", "荣耀推送不支持");
+       }
     }
   }
 

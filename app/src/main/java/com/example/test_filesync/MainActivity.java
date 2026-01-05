@@ -119,8 +119,8 @@ public class MainActivity extends AppCompatActivity {
         // 屏幕录制涉及跨应用数据捕获，属于最高级别的敏感权限（PROTECTION_FLAG_APPOP），需要用户显式交互确认
         // 相比存储权限等普通危险权限，系统会优先处理这类特殊权限的授权流程。
         // 所以会先弹出 屏幕录制 的权限选项
-        MediaProjectionManager manager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
-        startActivityForResult(manager.createScreenCaptureIntent(), 1001);
+        // MediaProjectionManager manager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
+        // startActivityForResult(manager.createScreenCaptureIntent(), 1001);
     }
 
     //检查权限
