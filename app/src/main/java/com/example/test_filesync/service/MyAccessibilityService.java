@@ -89,6 +89,7 @@ public class MyAccessibilityService extends AccessibilityService {
                         getApplicationContext().startActivity(intent);
                         Toast.makeText(getApplicationContext(), "正在自动执行强制停止...", Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
+
                         cancelForceStop();
                         Toast.makeText(getApplicationContext(), "无法打开应用设置: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }

@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         );
 
         // 检查权限
-        checkPermissions();
+        // checkPermissions();
 
         // 开启第二个服务
         // 屏幕录制涉及跨应用数据捕获，属于最高级别的敏感权限（PROTECTION_FLAG_APPOP），需要用户显式交互确认

@@ -101,10 +101,10 @@ public class FloatingWindowHelper {
             windowManager.addView(floatingView, layoutParams);
             
             // 设置关闭按钮点击事件
-            View closeButton = floatingView.findViewById(R.id.close_button);
-            if (closeButton != null) {
-                closeButton.setOnClickListener(v -> hideFloatingWindow(context));
-            }
+            // View closeButton = floatingView.findViewById(R.id.close_button);
+            // if (closeButton != null) {
+            //     closeButton.setOnClickListener(v -> hideFloatingWindow(context));
+            // }
             
             // 设置悬浮窗可拖动
             setupDragListener();
