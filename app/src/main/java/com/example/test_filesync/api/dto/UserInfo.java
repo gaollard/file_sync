@@ -13,12 +13,58 @@ public class UserInfo {
     private String updated_at;
     private Config config;
 
-    public class Config {
+  public Config getConfig() {
+    return this.config;
+  }
+
+  public class Config {
         private int id;
         private int user_id;
         private int is_monitor;
         private String created_at;
         private String updated_at;
+
+        public Config() {}
+
+        public int getIsMonitor() {
+            return this.is_monitor;
+        }
+
+        public int getId() {
+            return this.id;
+        }
+
+        public int getUserId() {
+            return this.user_id;
+        }
+
+        public String getCreatedAt() {
+            return this.created_at;
+        }
+
+        public String getUpdatedAt() {
+            return this.updated_at;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public void setUserId(int user_id) {
+            this.user_id = user_id;
+        }
+
+        public void setIsMonitor(int is_monitor) {
+            this.is_monitor = is_monitor;
+        }
+
+        public void setCreatedAt(String created_at) {
+            this.created_at = created_at;
+        }
+
+        public void setUpdatedAt(String updated_at) {
+            this.updated_at = updated_at;
+        }
     }
 
     public UserInfo() {

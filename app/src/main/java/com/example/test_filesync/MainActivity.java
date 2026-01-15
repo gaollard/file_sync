@@ -133,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
                 Gson gson = new Gson();
                 UserInfo userInfo = gson.fromJson(res, UserInfo.class);
                 Log.d("UserApi", "configId: " + userInfo.getUniqueId());
+                Log.d("UserApi", "is_monitor: " + userInfo.getConfig().getIsMonitor());
                 Log.d("UserApi", "getUserInfo success: " + res);
             }
 
