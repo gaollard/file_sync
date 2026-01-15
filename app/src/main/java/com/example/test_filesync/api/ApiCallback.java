@@ -1,4 +1,4 @@
-package com.example.test_filesync.util;
+package com.example.test_filesync.api;
 
 public interface ApiCallback {
   void onSuccess(String res);

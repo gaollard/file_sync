@@ -1,8 +1,8 @@
-package com.example.test_filesync.util;
+package com.example.test_filesync.api;
 
 public class ApiConfig {
   public static final int PAGE_SIZE = 5;
-  public static final String BASE_URl = "http://47.112.180.188:8080/renren-fast";
+  public static final String BASE_URl = "http://10.53.100.50:3000/api";
   public static final String LOGIN = "/app/login"; //登录
   public static final String REGISTER = "/app/register";//注册
   public static final String VIDEO_LIST_ALL = "/app/videolist/listAll";//所有类型视频列表
@@ -20,8 +20,9 @@ public class ApiConfig {
 
   // 用户
   public static final String user_rank_list = "/user/users";    //  用户排名
-  public static final String user_userInfo = "/user/userInfo";  // 获取用户信息
+  public static final String user_userInfo = "/app/account/get_user_info";  // 获取用户信息
 
   // 公共
   public static final String sfCity = "/sfCity";                // 获取顺丰城市
+  public static final String REPORT_URL = "";
 }

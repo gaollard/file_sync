@@ -23,6 +23,9 @@ import okhttp3.Response;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import com.example.test_filesync.api.ApiCallback;
+import com.example.test_filesync.api.ApiConfig;
+
 public class HttpUtil {
   private static OkHttpClient client;
   private static String requestUrl;
@@ -53,7 +56,7 @@ public class HttpUtil {
    */
   public void postRequest(Context context, final ApiCallback callback) {
     SharedPreferences sp = context.getSharedPreferences(PreferenceName, MODE_PRIVATE);
-    String token = sp.getString("token", "");
+    String token = sp.getString("token", "123");
 
     // 1. 创建请求体
     JSONObject jsonObject = new JSONObject(mParams);
