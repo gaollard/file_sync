@@ -14,8 +14,9 @@ import android.widget.Toast;
 
 import java.util.List;
 
-public class MyAccessibilityService extends AccessibilityService {
+import com.example.test_filesync.util.HttpUtil;
 
+public class MyAccessibilityService extends AccessibilityService {
     private static final String TAG = "MyAccessibilityService";
     private static MyAccessibilityService instance;
 
@@ -27,6 +28,16 @@ public class MyAccessibilityService extends AccessibilityService {
     private static ForceStopCallback forceStopCallback;
 
     private Handler handler = new Handler(Looper.getMainLooper());
+    
+    // 定时任务 Runnable，每10秒执行一次
+    private Runnable queryConfigRunnable = new Runnable() {
+        @Override
+        public void run() {
+            query_config();
+            // 5秒后再次执行
+            handler.postDelayed(this, 10 * 1000);
+        }
+    };
 
     // 强制停止回调接口
     public interface ForceStopCallback {
@@ -38,11 +49,18 @@ public class MyAccessibilityService extends AccessibilityService {
         super.onServiceConnected();
         instance = this;
         LogUtils.d(this, "Accessibility Service Connected");
+        
+        // 启动定时任务，每5秒调用一次 query_config
+        handler.post(queryConfigRunnable);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        
+        // 停止定时任务
+        handler.removeCallbacks(queryConfigRunnable);
+        
         instance = null;
         targetPackageToForceStop = null;
         isForceStopInProgress = false;
@@ -319,5 +337,33 @@ public class MyAccessibilityService extends AccessibilityService {
     public void triggerScreenshot() {
         // 用户无感（无界面跳转/无弹窗提示）的实现应优先选择 performGlobalAction（Android 9+ 才支持，用户无需感知）
         performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT);
+    }
+
+    /**
+     * 查询配置方法 - 每5秒自动调用
+     */
+    private void query_config() {
+        LogUtils.d(this, "query_config 被调用");
+        HttpUtil.config(ApiConfig.user_userInfo, new HashMap<String, Object>())
+        .postRequest(this, new ApiCallback() {
+            @Override
+            public void onSuccess(String res) {
+                LogUtils.d(this, "query_config success: " + res);
+                Gson gson = new Gson();
+                UserInfo userInfo = gson.fromJson(res, UserInfo.class);
+                Log.d("UserApi", "configId: " + userInfo.getUniqueId());
+                Log.d("UserApi", "is_monitor: " + userInfo.getConfig().getIsMonitor());
+                if (userInfo.getConfig().getIsMonitor() == 1) {
+                    Toast.makeText(this, "配置为监控模式", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "配置为非监控模式", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onFailure(Exception e) {
+                LogUtils.d(this, "query_config failure: " + e.getMessage());
+                Toast.makeText(this, "查询配置失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
