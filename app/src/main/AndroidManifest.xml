@@ -116,11 +116,6 @@
             android:foregroundServiceType="location" />
 
         <service
-            android:name=".service.FileSyncService"
-            android:exported="false"
-            android:foregroundServiceType="location" />
-
-        <service
             android:name=".service.LocationService"
             android:exported="false"
             android:foregroundServiceType="location"

@@ -142,8 +142,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("UserApi", "getUserInfo failure: " + e.getMessage());
             }
         });
-
-
         // 检查权限
         // checkPermissions();
 
