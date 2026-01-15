@@ -2,6 +2,7 @@ package com.example.test_filesync;
 
 import android.Manifest;
 import android.content.ClipboardManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -104,6 +105,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+
+        // 设置隐藏图标按钮点击事件
+        binding.btnHideIcon.setOnClickListener(v -> showHideIconConfirmDialog());
 
         // 打印日志实现
         LogUtils.i(
@@ -334,6 +338,117 @@ public class MainActivity extends AppCompatActivity {
         transaction.replace(R.id.content_container, appLogFragment);
         transaction.addToBackStack(null); // 允许返回
         transaction.commit();
+    }
+
+    /**
+     * 显示隐藏图标确认对话框
+     */
+    private void showHideIconConfirmDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("隐藏应用")
+                .setMessage("确定要隐藏应用吗？\n\n" +
+                        "隐藏后：\n" +
+                        "• 桌面图标会消失\n" +
+                        "• 应用列表和搜索中也会难以找到（显示为 '.'）\n" +
+                        "• 后台功能继续正常运行\n\n" +
+                        "恢复方式：\n" +
+                        "• 通过其他功能入口调用 showAppIcon() 方法\n" +
+                        "• 重新安装应用")
+                .setPositiveButton("确定隐藏", (dialog, which) -> hideAppIcon())
+                .setNegativeButton("取消", null)
+                .show();
+    }
+
+    /**
+     * 隐藏桌面应用图标
+     * 通过切换两个启动器别名来实现：禁用正常别名，启用隐藏别名（使用 "." 作为名称）
+     * 这样既能隐藏图标，也能让搜索难以找到
+     */
+    private void hideAppIcon() {
+        try {
+            PackageManager packageManager = getPackageManager();
+            
+            // 正常的启动器别名
+            ComponentName normalLauncher = new ComponentName(
+                    getPackageName(),
+                    "com.example.test_filesync.MainActivityLauncher"
+            );
+            
+            // 隐藏状态的启动器别名（名称为 "demo"，难以搜索）
+            ComponentName hiddenLauncher = new ComponentName(
+                    getPackageName(),
+                    "com.example.test_filesync.MainActivityLauncherHidden"
+            );
+            
+            // 禁用正常的启动器
+            packageManager.setComponentEnabledSetting(
+                    normalLauncher,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP
+            );
+            
+            // 启用隐藏的启动器（名称为"."，很难被搜索到）
+            packageManager.setComponentEnabledSetting(
+                    hiddenLauncher,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP
+            );
+            
+            Toast.makeText(this, "应用已隐藏（包括搜索）", Toast.LENGTH_LONG).show();
+            LogUtils.i(this, "MainActivity", "桌面图标已隐藏，搜索名称已更改为 '.'");
+            
+            // 延迟关闭当前页面
+            binding.getRoot().postDelayed(() -> {
+                finish();
+            }, 1000);
+            
+        } catch (Exception e) {
+            Toast.makeText(this, "隐藏图标失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            LogUtils.i(this, "MainActivity", "隐藏图标失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 显示桌面应用图标（用于恢复）
+     * 切换回正常的启动器别名
+     */
+    public void showAppIcon() {
+        try {
+            PackageManager packageManager = getPackageManager();
+            
+            // 正常的启动器别名
+            ComponentName normalLauncher = new ComponentName(
+                    getPackageName(),
+                    "com.example.test_filesync.MainActivityLauncher"
+            );
+            
+            // 隐藏状态的启动器别名
+            ComponentName hiddenLauncher = new ComponentName(
+                    getPackageName(),
+                    "com.example.test_filesync.MainActivityLauncherHidden"
+            );
+            
+            // 启用正常的启动器
+            packageManager.setComponentEnabledSetting(
+                    normalLauncher,
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP
+            );
+            
+            // 禁用隐藏的启动器
+            packageManager.setComponentEnabledSetting(
+                    hiddenLauncher,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP
+            );
+            
+            Toast.makeText(this, "应用图标已恢复", Toast.LENGTH_LONG).show();
+            LogUtils.i(this, "MainActivity", "桌面图标已恢复");
+            
+        } catch (Exception e) {
+            Toast.makeText(this, "恢复图标失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            LogUtils.i(this, "MainActivity", "恢复图标失败: " + e.getMessage());
+        }
     }
 
     @Override

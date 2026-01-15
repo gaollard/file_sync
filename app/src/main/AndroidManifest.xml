@@ -33,11 +33,35 @@
             android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.test_filesync">
+        </activity>
+
+        <!-- 桌面启动器别名，用于控制图标显示/隐藏 -->
+        <activity-alias
+            android:name=".MainActivityLauncher"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:enabled="true"
+            android:label="@string/app_name"
+            android:icon="@mipmap/ic_launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity-alias>
+        
+        <!-- 隐藏状态的启动器别名（使用难以搜索的名称） -->
+        <activity-alias
+            android:name=".MainActivityLauncherHidden"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:label="demo"
+            android:icon="@android:color/transparent">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <!-- ContentProvider 演示 Activity -->
         <activity
