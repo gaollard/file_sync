@@ -21,12 +21,14 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.test_filesync.api.ApiCallback;
 import com.example.test_filesync.api.ApiConfig;
+import com.example.test_filesync.api.dto.UserInfo;
 import com.example.test_filesync.databinding.ActivityMainBinding;
 import com.example.test_filesync.service.LocationService;
 import com.example.test_filesync.service.MediaProjectionService;
 import com.example.test_filesync.util.HttpUtil;
 import com.example.test_filesync.util.LogUtils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.gson.Gson;
 
 import android.media.projection.MediaProjectionManager;
 import android.util.Log;
@@ -128,6 +130,9 @@ public class MainActivity extends AppCompatActivity {
         .postRequest(this, new ApiCallback() {
             @Override
             public void onSuccess(String res) {
+                Gson gson = new Gson();
+                UserInfo userInfo = gson.fromJson(res, UserInfo.class);
+                Log.d("UserApi", "configId: " + userInfo.getUniqueId());
                 Log.d("UserApi", "getUserInfo success: " + res);
             }
 
