@@ -2,7 +2,7 @@ package com.example.test_filesync.api;
 
 public class ApiConfig {
   public static final int PAGE_SIZE = 5;
-  public static final String BASE_URl = "http://10.53.100.50:3000/api";
+  public static final String BASE_URl = "https://83c4fa6933a0.ngrok-free.app/api";
   public static final String LOGIN = "/app/login"; //登录
   public static final String REGISTER = "/app/register";//注册
   public static final String VIDEO_LIST_ALL = "/app/videolist/listAll";//所有类型视频列表

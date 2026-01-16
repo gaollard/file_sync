@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
                 "应用已启动，执行onCreate方法"
         );
 
+        Context context = this;
       HashMap<String, Object> mParams = new HashMap<String, Object>();
         mParams.put("userId", "123");
         HttpUtil.config(ApiConfig.user_userInfo, mParams)
@@ -132,14 +133,22 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(String res) {
                 Gson gson = new Gson();
                 UserInfo userInfo = gson.fromJson(res, UserInfo.class);
-                Log.d("UserApi", "configId: " + userInfo.getUniqueId());
-                Log.d("UserApi", "is_monitor: " + userInfo.getConfig().getIsMonitor());
-                Log.d("UserApi", "getUserInfo success: " + res);
+                
+                // 在主线程中显示 Toast
+                runOnUiThread(() -> {
+                    Toast.makeText(context, "main activity configId: " + userInfo.getUniqueId(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "main activity is_monitor: " + userInfo.getConfig().getIsMonitor(), Toast.LENGTH_SHORT).show();
+                });
             }
 
             @Override
             public void onFailure(Exception e) {
                 Log.d("UserApi", "getUserInfo failure: " + e.getMessage());
+                
+                // 在主线程中显示错误 Toast
+                runOnUiThread(() -> {
+                    Toast.makeText(context, "main activity 请求失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
             }
         });
         // 检查权限

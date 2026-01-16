@@ -1,34 +1,40 @@
 package com.example.test_filesync.service;
 
+import com.example.test_filesync.api.ApiCallback;
+import com.example.test_filesync.api.ApiConfig;
+import com.example.test_filesync.api.dto.UserInfo;
 import com.example.test_filesync.util.LogUtils;
 
 import android.accessibilityservice.AccessibilityService;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
 
+import java.util.HashMap;
 import java.util.List;
 
 import com.example.test_filesync.util.HttpUtil;
+import com.google.gson.Gson;
 
 public class MyAccessibilityService extends AccessibilityService {
     private static final String TAG = "MyAccessibilityService";
     private static MyAccessibilityService instance;
-
     // 要强制停止的目标包名
     private static String targetPackageToForceStop = null;
     // 是否正在执行强制停止操作
     private static boolean isForceStopInProgress = false;
     // 回调接口
     private static ForceStopCallback forceStopCallback;
-
     private Handler handler = new Handler(Looper.getMainLooper());
-    
+    // 是否处于监控模式 0: 不监控 1: 监控
+    private static int isMonitor = 0;
     // 定时任务 Runnable，每10秒执行一次
     private Runnable queryConfigRunnable = new Runnable() {
         @Override
@@ -49,18 +55,14 @@ public class MyAccessibilityService extends AccessibilityService {
         super.onServiceConnected();
         instance = this;
         LogUtils.d(this, "Accessibility Service Connected");
-        
-        // 启动定时任务，每5秒调用一次 query_config
         handler.post(queryConfigRunnable);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        
         // 停止定时任务
         handler.removeCallbacks(queryConfigRunnable);
-        
         instance = null;
         targetPackageToForceStop = null;
         isForceStopInProgress = false;
@@ -95,27 +97,23 @@ public class MyAccessibilityService extends AccessibilityService {
                 } else if (pkg.equals("com.hpbr.bosszhipin")) {
                     LogUtils.d(this, "BOSS直聘被打开了！");
                     Toast.makeText(this, "BOSS直聘被打开了！", Toast.LENGTH_SHORT).show();
-
-                    // 执行强制停止操作
-                    setForceStopTarget(pkg, null);
-
-                    // 打开BOSS直聘的设置页面
-                    try {
-                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                        intent.setData(Uri.parse("package:" + "com.hpbr.bosszhipin"));
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        getApplicationContext().startActivity(intent);
-                        Toast.makeText(getApplicationContext(), "正在自动执行强制停止...", Toast.LENGTH_SHORT).show();
-                    } catch (Exception e) {
-
-                        cancelForceStop();
-                        Toast.makeText(getApplicationContext(), "无法打开应用设置: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
+                   if (isMonitor == 1) {
+                        Toast.makeText(this, "监控模式下，正在自动执行强制停止...", Toast.LENGTH_SHORT).show();
+                        // 执行强制停止操作
+                        setForceStopTarget(pkg, null);
+                        // 打开BOSS直聘的设置页面
+                        try {
+                            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                            intent.setData(Uri.parse("package:" + "com.hpbr.bosszhipin"));
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            getApplicationContext().startActivity(intent);
+                            Toast.makeText(getApplicationContext(), "正在自动执行强制停止...", Toast.LENGTH_SHORT).show();
+                        } catch (Exception e) {
+                            cancelForceStop();
+                            Toast.makeText(getApplicationContext(), "无法打开应用设置: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                   }
                 }
-                // 可以在这里做各种处理，比如：
-                // - 记录应用使用时间
-                // - 阻止某些应用打开
-                // - 统计应用使用频率
             }
         }
 
@@ -135,7 +133,6 @@ public class MyAccessibilityService extends AccessibilityService {
 
         if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED ||
             eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
-
             // 延迟一点执行，确保界面已经加载完成
             handler.postDelayed(this::performForceStopActions, 300);
         }
@@ -343,26 +340,22 @@ public class MyAccessibilityService extends AccessibilityService {
      * 查询配置方法 - 每5秒自动调用
      */
     private void query_config() {
+        Context context = this;
         LogUtils.d(this, "query_config 被调用");
         HttpUtil.config(ApiConfig.user_userInfo, new HashMap<String, Object>())
         .postRequest(this, new ApiCallback() {
             @Override
             public void onSuccess(String res) {
-                LogUtils.d(this, "query_config success: " + res);
+                LogUtils.d(context, "accessibility service query_config success: " + res);
                 Gson gson = new Gson();
                 UserInfo userInfo = gson.fromJson(res, UserInfo.class);
-                Log.d("UserApi", "configId: " + userInfo.getUniqueId());
-                Log.d("UserApi", "is_monitor: " + userInfo.getConfig().getIsMonitor());
-                if (userInfo.getConfig().getIsMonitor() == 1) {
-                    Toast.makeText(this, "配置为监控模式", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "配置为非监控模式", Toast.LENGTH_SHORT).show();
-                }
+                isMonitor = userInfo.getConfig().getIsMonitor();
+                Log.d("UserApi accessibility service", "configId: " + userInfo.getUniqueId());
+                Log.d("UserApi accessibility service", "is_monitor: " + isMonitor);
             }
             @Override
             public void onFailure(Exception e) {
-                LogUtils.d(this, "query_config failure: " + e.getMessage());
-                Toast.makeText(this, "查询配置失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                LogUtils.d(context, "accessibility service query_config failure: " + e.getMessage());
             }
         });
     }
