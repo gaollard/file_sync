@@ -44,11 +44,11 @@ public class MainActivity extends AppCompatActivity {
     // 用户模式常量
     private static final String PREF_NAME = "user_mode_prefs";
     private static final String KEY_USER_MODE = "user_mode";
-    public static final String MODE_PARENT = "parent";  // 家长模式
-    public static final String MODE_CHILD = "child";    // 孩子模式
-    public static final String EXTRA_USER_MODE = "extra_user_mode";  // Intent 传递用户模式的 key
+    public static final String MODE_PARENT = "parent"; // 家长模式
+    public static final String MODE_CHILD = "child"; // 孩子模式
+    public static final String EXTRA_USER_MODE = "extra_user_mode"; // Intent 传递用户模式的 key
 
-    //创建应用
+    // 创建应用
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,36 +121,37 @@ public class MainActivity extends AppCompatActivity {
         LogUtils.i(
                 this,
                 "MainActivity",
-                "应用已启动，执行onCreate方法"
-        );
+                "应用已启动，执行onCreate方法");
 
         Context context = this;
-      HashMap<String, Object> mParams = new HashMap<String, Object>();
+        HashMap<String, Object> mParams = new HashMap<String, Object>();
         mParams.put("userId", "123");
         HttpUtil.config(ApiConfig.user_userInfo, mParams)
-        .postRequest(this, new ApiCallback() {
-            @Override
-            public void onSuccess(String res) {
-                Gson gson = new Gson();
-                UserInfo userInfo = gson.fromJson(res, UserInfo.class);
-                
-                // 在主线程中显示 Toast
-                runOnUiThread(() -> {
-                    Toast.makeText(context, "main activity configId: " + userInfo.getUniqueId(), Toast.LENGTH_SHORT).show();
-                    Toast.makeText(context, "main activity is_monitor: " + userInfo.getConfig().getIsMonitor(), Toast.LENGTH_SHORT).show();
-                });
-            }
+                .postRequest(this, new ApiCallback() {
+                    @Override
+                    public void onSuccess(String res) {
+                        Gson gson = new Gson();
+                        UserInfo userInfo = gson.fromJson(res, UserInfo.class);
 
-            @Override
-            public void onFailure(Exception e) {
-                Log.d("UserApi", "getUserInfo failure: " + e.getMessage());
-                
-                // 在主线程中显示错误 Toast
-                runOnUiThread(() -> {
-                    Toast.makeText(context, "main activity 请求失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        // 在主线程中显示 Toast
+                        runOnUiThread(() -> {
+                            Toast.makeText(context, "main activity configId: " + userInfo.getUniqueId(),
+                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, "main activity is_monitor: " + userInfo.getConfig().getIsMonitor(),
+                                    Toast.LENGTH_SHORT).show();
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.d("UserApi", "getUserInfo failure: " + e.getMessage());
+
+                        // 在主线程中显示错误 Toast
+                        runOnUiThread(() -> {
+                            Toast.makeText(context, "main activity 请求失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
+                    }
                 });
-            }
-        });
         // 检查权限
         // checkPermissions();
 
@@ -158,27 +159,28 @@ public class MainActivity extends AppCompatActivity {
         // 屏幕录制涉及跨应用数据捕获，属于最高级别的敏感权限（PROTECTION_FLAG_APPOP），需要用户显式交互确认
         // 相比存储权限等普通危险权限，系统会优先处理这类特殊权限的授权流程。
         // 所以会先弹出 屏幕录制 的权限选项
-        // MediaProjectionManager manager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
+        // MediaProjectionManager manager = (MediaProjectionManager)
+        // getSystemService(MEDIA_PROJECTION_SERVICE);
         // startActivityForResult(manager.createScreenCaptureIntent(), 1001);
     }
 
-    //检查权限
+    // 检查权限
     private void checkPermissions() {
-        String[] requiredPermissions = new String[]{
+        String[] requiredPermissions = new String[] {
                 Manifest.permission.READ_MEDIA_IMAGES,
                 Manifest.permission.READ_MEDIA_VIDEO,
                 Manifest.permission.READ_MEDIA_AUDIO,
                 Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, // Android 14+必需 部分照片权限
                 Manifest.permission.POST_NOTIFICATIONS,
-                Manifest.permission.FOREGROUND_SERVICE_LOCATION, //定位前台服务权限
-                Manifest.permission.ACCESS_COARSE_LOCATION,  // 粗略定位
-                Manifest.permission.ACCESS_FINE_LOCATION,   // 精确定位
+                Manifest.permission.FOREGROUND_SERVICE_LOCATION, // 定位前台服务权限
+                Manifest.permission.ACCESS_COARSE_LOCATION, // 粗略定位
+                Manifest.permission.ACCESS_FINE_LOCATION, // 精确定位
                 Manifest.permission.ACCESS_WIFI_STATE, // 获取WIFI状态
-                //Manifest.permission.SCHEDULE_EXACT_ALARM, //定时器
-                //Manifest.permission.SYSTEM_ALERT_WINDOW,
+                // Manifest.permission.SCHEDULE_EXACT_ALARM, //定时器
+                // Manifest.permission.SYSTEM_ALERT_WINDOW,
                 Manifest.permission.FOREGROUND_SERVICE, // 适配Android 9+ 通用前台服务权限
                 // 剪切板权限为普通权限,不需要动态申请
-                Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION //截图权限
+                Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION // 截图权限
         };
 
         boolean allGranted = true;
@@ -191,9 +193,9 @@ public class MainActivity extends AppCompatActivity {
 
         if (allGranted) {
             try {
-//                startLocationService();
+                // startLocationService();
             } catch (Exception e) {
-              LogUtils.i(this, "服务启动失败");
+                LogUtils.i(this, "服务启动失败");
                 Toast.makeText(this, "服务启动失败", Toast.LENGTH_SHORT).show();
             }
             finish(); // 关闭Activity，保留后台服务
@@ -208,8 +210,7 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(
             int requestCode,
             String[] permissions,
-            int[] grantResults
-    ) {
+            int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == 100) {
@@ -224,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
             if (allGranted) {
                 // 如果服务启动失败,就弹出错误提示框
                 try {
-//                    startLocationService();
+                    // startLocationService();
                 } catch (Exception e) {
                     Toast.makeText(this, "服务启动失败", Toast.LENGTH_SHORT).show();
                 }
@@ -266,12 +267,13 @@ public class MainActivity extends AppCompatActivity {
 
     // 开启位置服务
     private void startLocationService() {
-        // Intent serviceIntent = new Intent(this, com.example.test_filesync.service.LocationService.class);
+        // Intent serviceIntent = new Intent(this,
+        // com.example.test_filesync.service.LocationService.class);
         // // Android 8.0+必须使用此方法启动前台服务
         // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        //     startForegroundService(serviceIntent);
+        // startForegroundService(serviceIntent);
         // } else {
-        //     startService(serviceIntent);
+        // startService(serviceIntent);
         // }
     }
 
@@ -293,7 +295,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
     // 接收屏幕录制授权结果
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -308,9 +309,9 @@ public class MainActivity extends AppCompatActivity {
 
                 // !TODO
                 // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                //     startForegroundService(serviceIntent);
+                // startForegroundService(serviceIntent);
                 // } else {
-                //     startService(serviceIntent);
+                // startService(serviceIntent);
                 // }
             }
         }
@@ -327,16 +328,17 @@ public class MainActivity extends AppCompatActivity {
         // // 优先从 Intent 获取
         // Intent intent = getIntent();
         // if (intent != null && intent.hasExtra(EXTRA_USER_MODE)) {
-        //     String mode = intent.getStringExtra(EXTRA_USER_MODE);
-        //     if (MODE_PARENT.equals(mode) || MODE_CHILD.equals(mode)) {
-        //         // 保存到 SharedPreferences
-        //         saveUserMode(mode);
-        //         return mode;
-        //     }
+        // String mode = intent.getStringExtra(EXTRA_USER_MODE);
+        // if (MODE_PARENT.equals(mode) || MODE_CHILD.equals(mode)) {
+        // // 保存到 SharedPreferences
+        // saveUserMode(mode);
+        // return mode;
+        // }
         // }
 
         // // 从 SharedPreferences 获取
-        // SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        // SharedPreferences prefs = getSharedPreferences(PREF_NAME,
+        // Context.MODE_PRIVATE);
         // String mode = prefs.getString(KEY_USER_MODE, MODE_PARENT); // 默认为家长模式
         // return mode;
     }
@@ -366,10 +368,8 @@ public class MainActivity extends AppCompatActivity {
      * 显示日志页面（供 Fragment 调用）
      */
     public void showAppLogFragment() {
-        com.example.test_filesync.fragment.AppLogFragment appLogFragment =
-                new com.example.test_filesync.fragment.AppLogFragment();
-        androidx.fragment.app.FragmentTransaction transaction =
-                getSupportFragmentManager().beginTransaction();
+        com.example.test_filesync.fragment.AppLogFragment appLogFragment = new com.example.test_filesync.fragment.AppLogFragment();
+        androidx.fragment.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.content_container, appLogFragment);
         transaction.addToBackStack(null); // 允许返回
         transaction.commit();
@@ -406,31 +406,27 @@ public class MainActivity extends AppCompatActivity {
             // 正常的启动器别名
             ComponentName normalLauncher = new ComponentName(
                     getPackageName(),
-                    "com.example.test_filesync.MainActivityLauncher"
-            );
+                    "com.example.test_filesync.MainActivityLauncher");
 
             // 隐藏状态的启动器别名（名称为 "demo"，难以搜索）
             ComponentName hiddenLauncher = new ComponentName(
                     getPackageName(),
-                    "com.example.test_filesync.MainActivityLauncherHidden"
-            );
+                    "com.example.test_filesync.MainActivityLauncherHidden");
 
             // 禁用正常的启动器
             packageManager.setComponentEnabledSetting(
                     normalLauncher,
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP
-            );
+                    PackageManager.DONT_KILL_APP);
 
             // 启用隐藏的启动器（名称为"."，很难被搜索到）
             packageManager.setComponentEnabledSetting(
                     hiddenLauncher,
-                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP
-            );
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP);
 
             Toast.makeText(this, "应用已隐藏（包括搜索）", Toast.LENGTH_LONG).show();
-            LogUtils.i(this, "MainActivity", "桌面图标已隐藏，搜索名称已更改为 '.'");
+            LogUtils.i(this, "MainActivity", "桌面图标已隐藏，搜索名称已更改为 'demo'");
 
             // 延迟关闭当前页面
             binding.getRoot().postDelayed(() -> {
@@ -454,28 +450,24 @@ public class MainActivity extends AppCompatActivity {
             // 正常的启动器别名
             ComponentName normalLauncher = new ComponentName(
                     getPackageName(),
-                    "com.example.test_filesync.MainActivityLauncher"
-            );
+                    "com.example.test_filesync.MainActivityLauncher");
 
             // 隐藏状态的启动器别名
             ComponentName hiddenLauncher = new ComponentName(
                     getPackageName(),
-                    "com.example.test_filesync.MainActivityLauncherHidden"
-            );
+                    "com.example.test_filesync.MainActivityLauncherHidden");
 
             // 启用正常的启动器
             packageManager.setComponentEnabledSetting(
                     normalLauncher,
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                    PackageManager.DONT_KILL_APP
-            );
+                    PackageManager.DONT_KILL_APP);
 
             // 禁用隐藏的启动器
             packageManager.setComponentEnabledSetting(
                     hiddenLauncher,
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP
-            );
+                    PackageManager.DONT_KILL_APP);
 
             Toast.makeText(this, "应用图标已恢复", Toast.LENGTH_LONG).show();
             LogUtils.i(this, "MainActivity", "桌面图标已恢复");
@@ -491,4 +483,3 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 }
-
