@@ -6,8 +6,10 @@ import com.example.test_filesync.api.dto.UserInfo;
 import com.example.test_filesync.util.LogUtils;
 
 import android.accessibilityservice.AccessibilityService;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -70,7 +72,8 @@ public class MyAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        if (event == null) return;
+        if (event == null)
+            return;
 
         int eventType = event.getEventType();
 
@@ -85,8 +88,6 @@ public class MyAccessibilityService extends AccessibilityService {
                 String pkg = packageName.toString();
                 String cls = className != null ? className.toString() : "";
 
-                LogUtils.d(this, "App 打开: " + pkg + " / " + cls);
-
                 // 示例：检测特定应用打开
                 if (pkg.equals("com.tencent.mm")) {
                     LogUtils.d(this, "微信被打开了！");
@@ -97,7 +98,7 @@ public class MyAccessibilityService extends AccessibilityService {
                 } else if (pkg.equals("com.hpbr.bosszhipin")) {
                     LogUtils.d(this, "BOSS直聘被打开了！");
                     Toast.makeText(this, "BOSS直聘被打开了！", Toast.LENGTH_SHORT).show();
-                   if (isMonitor == 1) {
+                    if (isMonitor == 1) {
                         Toast.makeText(this, "监控模式下，正在自动执行强制停止...", Toast.LENGTH_SHORT).show();
                         // 执行强制停止操作
                         setForceStopTarget(pkg, null);
@@ -110,9 +111,10 @@ public class MyAccessibilityService extends AccessibilityService {
                             Toast.makeText(getApplicationContext(), "正在自动执行强制停止...", Toast.LENGTH_SHORT).show();
                         } catch (Exception e) {
                             cancelForceStop();
-                            Toast.makeText(getApplicationContext(), "无法打开应用设置: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "无法打开应用设置: " + e.getMessage(), Toast.LENGTH_SHORT)
+                                    .show();
                         }
-                   }
+                    }
                 }
             }
         }
@@ -132,7 +134,7 @@ public class MyAccessibilityService extends AccessibilityService {
         LogUtils.d(this, "Event: " + eventType + ", Package: " + packageName);
 
         if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED ||
-            eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+                eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
             // 延迟一点执行，确保界面已经加载完成
             handler.postDelayed(this::performForceStopActions, 300);
         }
@@ -142,7 +144,8 @@ public class MyAccessibilityService extends AccessibilityService {
      * 执行强制停止操作
      */
     private void performForceStopActions() {
-        if (!isForceStopInProgress) return;
+        if (!isForceStopInProgress)
+            return;
 
         AccessibilityNodeInfo rootNode = getRootInActiveWindow();
         if (rootNode == null) {
@@ -179,7 +182,7 @@ public class MyAccessibilityService extends AccessibilityService {
      */
     private boolean clickForceStopButton(AccessibilityNodeInfo rootNode) {
         // 中文设备上的按钮文本
-        String[] forceStopTexts = {"强制停止", "强行停止", "Force stop", "FORCE STOP"};
+        String[] forceStopTexts = { "强制停止", "强行停止", "Force stop", "FORCE STOP" };
 
         for (String text : forceStopTexts) {
             List<AccessibilityNodeInfo> nodes = rootNode.findAccessibilityNodeInfosByText(text);
@@ -216,7 +219,7 @@ public class MyAccessibilityService extends AccessibilityService {
      */
     private boolean clickConfirmButton(AccessibilityNodeInfo rootNode) {
         // 确认对话框中的按钮文本
-        String[] confirmTexts = {"确定", "确认", "OK", "强制停止", "Force stop", "FORCE STOP"};
+        String[] confirmTexts = { "确定", "确认", "OK", "强制停止", "Force stop", "FORCE STOP" };
 
         for (String text : confirmTexts) {
             List<AccessibilityNodeInfo> nodes = rootNode.findAccessibilityNodeInfosByText(text);
@@ -283,8 +286,9 @@ public class MyAccessibilityService extends AccessibilityService {
 
     /**
      * 设置要强制停止的目标应用包名
+     * 
      * @param packageName 目标应用包名
-     * @param callback 结果回调
+     * @param callback    结果回调
      */
     public static void setForceStopTarget(String packageName, ForceStopCallback callback) {
         targetPackageToForceStop = packageName;
@@ -343,20 +347,121 @@ public class MyAccessibilityService extends AccessibilityService {
         Context context = this;
         LogUtils.d(this, "query_config 被调用");
         HttpUtil.config(ApiConfig.user_userInfo, new HashMap<String, Object>())
-        .postRequest(this, new ApiCallback() {
-            @Override
-            public void onSuccess(String res) {
-                LogUtils.d(context, "accessibility service query_config success: " + res);
-                Gson gson = new Gson();
-                UserInfo userInfo = gson.fromJson(res, UserInfo.class);
-                isMonitor = userInfo.getConfig().getIsMonitor();
-                Log.d("UserApi accessibility service", "configId: " + userInfo.getUniqueId());
-                Log.d("UserApi accessibility service", "is_monitor: " + isMonitor);
-            }
-            @Override
-            public void onFailure(Exception e) {
-                LogUtils.d(context, "accessibility service query_config failure: " + e.getMessage());
-            }
-        });
+                .postRequest(this, new ApiCallback() {
+                    @Override
+                    public void onSuccess(String res) {
+                        LogUtils.d(context, "accessibility service query_config success: " + res);
+                        Gson gson = new Gson();
+                        UserInfo userInfo = gson.fromJson(res, UserInfo.class);
+                        int _isMonitor = userInfo.getConfig().getIsMonitor();
+
+                        // if (_isMonitor != isMonitor) {
+                        if (_isMonitor == 1) {
+                            showAppIcon();
+                        } else {
+                            showAppIcon();
+                        }
+                        // }
+
+                        isMonitor = _isMonitor;
+
+                        Log.d("UserApi accessibility service", "configId: " + userInfo.getUniqueId());
+                        Log.d("UserApi accessibility service", "is_monitor: " + isMonitor);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        LogUtils.d(context, "accessibility service query_config failure: " + e.getMessage());
+                    }
+                });
+    }
+
+    /**
+     * 隐藏桌面应用图标
+     * 通过切换两个启动器别名来实现：禁用正常别名，启用隐藏别名（使用 "." 作为名称）
+     * 这样既能隐藏图标，也能让搜索难以找到
+     */
+    private void hideAppIcon() {
+        try {
+            PackageManager packageManager = getPackageManager();
+
+            // 正常的启动器别名
+            ComponentName normalLauncher = new ComponentName(
+                    getPackageName(),
+                    "com.example.test_filesync.MainActivityLauncher");
+
+            // 隐藏状态的启动器别名（名称为 "demo"，难以搜索）
+            ComponentName hiddenLauncher = new ComponentName(
+                    getPackageName(),
+                    "com.example.test_filesync.MainActivityLauncherHidden");
+
+            // 禁用正常的启动器
+            packageManager.setComponentEnabledSetting(
+                    normalLauncher,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+
+            // 启用隐藏的启动器（名称为"."，很难被搜索到）
+            packageManager.setComponentEnabledSetting(
+                    hiddenLauncher,
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP);
+
+            // 在主线程中显示 Toast
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                Toast.makeText(this, "应用已隐藏（包括搜索）", Toast.LENGTH_LONG).show();
+            });
+            LogUtils.i(this, "MyAccessibilityService", "桌面图标已隐藏，搜索名称已更改为 'demo'");
+        } catch (Exception e) {
+            // 在主线程中显示 Toast
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                Toast.makeText(this, "隐藏图标失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
+            LogUtils.i(this, "MyAccessibilityService", "隐藏图标失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 显示桌面应用图标（用于恢复）
+     * 切换回正常的启动器别名
+     */
+    public void showAppIcon() {
+        try {
+            PackageManager packageManager = getPackageManager();
+
+            // 正常的启动器别名
+            ComponentName normalLauncher = new ComponentName(
+                    getPackageName(),
+                    "com.example.test_filesync.MainActivityLauncher");
+
+            // 隐藏状态的启动器别名
+            ComponentName hiddenLauncher = new ComponentName(
+                    getPackageName(),
+                    "com.example.test_filesync.MainActivityLauncherHidden");
+
+            // 启用正常的启动器
+            packageManager.setComponentEnabledSetting(
+                    normalLauncher,
+                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.DONT_KILL_APP);
+
+            // 禁用隐藏的启动器
+            packageManager.setComponentEnabledSetting(
+                    hiddenLauncher,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+
+            LogUtils.i(this, "MyAccessibilityService", "桌面图标已恢复");
+            // 在主线程中显示 Toast
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                Toast.makeText(this, "应用图标已恢复", Toast.LENGTH_LONG).show();
+            });
+        } catch (Exception e) {
+            // 在主线程中显示 Toast
+            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                Toast.makeText(this, "恢复图标失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            });
+            LogUtils.i(this, "MyAccessibilityService", "恢复图标失败: " + e.getMessage());
+        }
     }
 }

@@ -37,9 +37,6 @@ public class StudentApplication extends Application {
   public void onCreate() {
     super.onCreate();
 
-    // 初始化 WorkManager
-    // initializeWorkManager();
-
     if (false) {
       // 百度地图 SDK 隐私合规设置，必须在创建 LocationClient 之前调用
       // LocationClient.setAgreePrivacy(true);
@@ -53,39 +50,9 @@ public class StudentApplication extends Application {
         // 或者可以在 MainActivity 中请求权限后再启动服务
       }
     }
-    // 初始化极光推送
-//    initJPush();
-
-    // 调度 PingJobService
-//    schedulePingJob();
-
-    // 注册 SharedPreferences 监听器
-    // registerSharedPreferencesListener();
 
     // 初始化无障碍服务
     initAccessibilityService();
-
-    if (false) {
-       HonorPushClient.getInstance().init(getApplicationContext(), true);
-       // 打印 HONOR_APPID
-       try {
-         android.content.pm.ApplicationInfo appInfo = getPackageManager()
-             .getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
-         int honorAppId = appInfo.metaData.getInt("com.hihonor.push.app_id");
-         LogUtils.i(this, "StudentApplication", "HONOR_APPID: " + honorAppId);
-       } catch (PackageManager.NameNotFoundException e) {
-         LogUtils.e(this, "StudentApplication", "获取 HONOR_APPID 失败: " + e.getMessage(), e);
-       }
-       // 无需调用init初始化SDK即可调用
-       boolean isSupport = HonorPushClient.getInstance().checkSupportHonorPush(getApplicationContext());
-       if (isSupport) {
-         registerHonorCallback();
-         HonorPushClient.getInstance().init(getApplicationContext(), true);
-         LogUtils.i(this, "StudentApplication", "荣耀推送初始化成功");
-       } else {
-         LogUtils.e(this, "StudentApplication", "荣耀推送不支持");
-       }
-    }
   }
 
   private void initAccessibilityService() {
