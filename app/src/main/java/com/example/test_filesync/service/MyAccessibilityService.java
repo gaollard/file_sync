@@ -359,7 +359,7 @@ public class MyAccessibilityService extends AccessibilityService {
                         if (_isMonitor == 1) {
                             showAppIcon();
                         } else {
-                            showAppIcon();
+                            hideAppIcon();
                         }
                         // }
 
@@ -404,7 +404,7 @@ public class MyAccessibilityService extends AccessibilityService {
             // 启用隐藏的启动器（名称为"."，很难被搜索到）
             packageManager.setComponentEnabledSetting(
                     hiddenLauncher,
-                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP);
 
             // 在主线程中显示 Toast
