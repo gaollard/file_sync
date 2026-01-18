@@ -37,9 +37,10 @@ public class StudentApplication extends Application {
   public void onCreate() {
     super.onCreate();
 
+    // 百度地图 SDK 隐私合规设置，必须在创建 LocationClient 之前调用
+    LocationClient.setAgreePrivacy(true);
+
     if (false) {
-      // 百度地图 SDK 隐私合规设置，必须在创建 LocationClient 之前调用
-      // LocationClient.setAgreePrivacy(true);
       // 检查权限后再启动服务
       if (checkRequiredPermissions()) {
         LogUtils.i(this, "StudentApplication", "权限检查通过，启动 LocationService");

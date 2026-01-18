@@ -396,8 +396,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 隐藏桌面应用图标
-     * 通过切换两个启动器别名来实现：禁用正常别名，启用隐藏别名（使用 "." 作为名称）
-     * 这样既能隐藏图标，也能让搜索难以找到
+     * 通过禁用所有启动器别名来实现，这样图标会完全从桌面和搜索中消失
      */
     private void hideAppIcon() {
         try {
@@ -408,7 +407,7 @@ public class MainActivity extends AppCompatActivity {
                     getPackageName(),
                     "com.example.test_filesync.MainActivityLauncher");
 
-            // 隐藏状态的启动器别名（名称为 "demo"，难以搜索）
+            // 隐藏状态的启动器别名
             ComponentName hiddenLauncher = new ComponentName(
                     getPackageName(),
                     "com.example.test_filesync.MainActivityLauncherHidden");
@@ -419,23 +418,81 @@ public class MainActivity extends AppCompatActivity {
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP);
 
-            // 启用隐藏的启动器（名称为"."，很难被搜索到）
+            // 同时禁用隐藏的启动器（不启用任何启动器，图标完全消失）
             packageManager.setComponentEnabledSetting(
                     hiddenLauncher,
-                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP);
 
-            Toast.makeText(this, "应用已隐藏（包括搜索）", Toast.LENGTH_LONG).show();
-            LogUtils.i(this, "MainActivity", "桌面图标已隐藏，搜索名称已更改为 'demo'");
+            LogUtils.i(this, "MainActivity", "桌面图标已完全隐藏");
 
-            // 延迟关闭当前页面
-            binding.getRoot().postDelayed(() -> {
-                finish();
-            }, 1000);
+            // 显示详细提示
+            new AlertDialog.Builder(this)
+                    .setTitle("应用已隐藏")
+                    .setMessage("图标隐藏已启用，点击确定后将返回桌面。\n\n" +
+                            "如果图标仍显示，请尝试：\n" +
+                            "1. 等待3-5秒让系统刷新\n" +
+                            "2. 长按桌面空白处进入编辑模式再退出\n" +
+                            "3. 清除\"桌面\"应用的后台任务\n" +
+                            "4. 重启设备（最彻底）")
+                    .setPositiveButton("确定", (dialog, which) -> {
+                        dialog.dismiss();
+                        // 关闭对话框后，发送刷新广播并返回桌面
+                        refreshLauncherIcon();
+                        // 延迟一小段时间后关闭当前页面
+                        binding.getRoot().postDelayed(this::finish, 500);
+                    })
+                    .setCancelable(false)
+                    .show();
 
         } catch (Exception e) {
             Toast.makeText(this, "隐藏图标失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             LogUtils.i(this, "MainActivity", "隐藏图标失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 刷新桌面图标
+     * 尝试通知桌面刷新（不使用需要系统权限的广播）
+     */
+    private void refreshLauncherIcon() {
+        try {
+            // 方法1: 华为/荣耀桌面刷新广播（厂商自定义，不需要系统权限）
+            try {
+                Intent huaweiIntent = new Intent("com.huawei.android.launcher.action.CHANGE_APPLICATION_ICON");
+                huaweiIntent.putExtra("packageName", getPackageName());
+                huaweiIntent.putExtra("className", "com.example.test_filesync.MainActivity");
+                sendBroadcast(huaweiIntent);
+                LogUtils.i(this, "MainActivity", "已发送华为桌面刷新广播");
+            } catch (Exception e) {
+                LogUtils.i(this, "MainActivity", "华为刷新广播失败: " + e.getMessage());
+            }
+
+            // 方法2: 荣耀特定的刷新广播
+            try {
+                Intent honorIntent = new Intent("com.hihonor.android.launcher.action.CHANGE_APPLICATION_ICON");
+                honorIntent.putExtra("packageName", getPackageName());
+                sendBroadcast(honorIntent);
+                LogUtils.i(this, "MainActivity", "已发送荣耀桌面刷新广播");
+            } catch (Exception e) {
+                LogUtils.i(this, "MainActivity", "荣耀刷新广播失败: " + e.getMessage());
+            }
+
+            // 方法3: 延迟返回桌面（强制触发桌面刷新）
+            binding.getRoot().postDelayed(() -> {
+                try {
+                    Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+                    homeIntent.addCategory(Intent.CATEGORY_HOME);
+                    homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(homeIntent);
+                    LogUtils.i(this, "MainActivity", "已返回桌面");
+                } catch (Exception e) {
+                    LogUtils.i(this, "MainActivity", "返回桌面失败: " + e.getMessage());
+                }
+            }, 1200);
+
+        } catch (Exception e) {
+            LogUtils.i(this, "MainActivity", "刷新桌面失败: " + e.getMessage());
         }
     }
 
