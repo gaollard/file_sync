@@ -20,21 +20,21 @@ import java.util.concurrent.TimeUnit;
 // 监听 SharedPreferences 变动，如果变动，则执行后台任务
 public class PingWorker extends Worker implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private static final String TAG = "PingWorker";
-    private static final long PING_INTERVAL_MS = 5000; // 5秒间隔
-    public static final String PING_SP_NAME = "ping"; // 改为 public，供外部访问
-    private static final String KEY_LAST_PING_COUNT = "lastPingCount"; // 上次的 pingCount 值
+  private static final String TAG = "PingWorker";
+  private static final long PING_INTERVAL_MS = 5000; // 5秒间隔
+  public static final String PING_SP_NAME = "ping"; // 改为 public，供外部访问
+  private static final String KEY_LAST_PING_COUNT = "lastPingCount"; // 上次的 pingCount 值
 
-    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
+  private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        LogUtils.d(this.getApplicationContext(), "WorkManager", "SharedPreferences 变化检测到，key: " + key);
-    }
+  @Override
+  public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+    LogUtils.d(this.getApplicationContext(), "WorkManager", "SharedPreferences 变化检测到，key: " + key);
+  }
 
-    public PingWorker(Context context, WorkerParameters workerParams) {
-      super(context, workerParams);
-    }
+  public PingWorker(Context context, WorkerParameters workerParams) {
+    super(context, workerParams);
+  }
 
   @Override
   public Result doWork() {
