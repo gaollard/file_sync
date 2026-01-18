@@ -13,18 +13,45 @@ public class UserInfo {
     private String updated_at;
     private Config config;
 
-  public Config getConfig() {
-    return this.config;
-  }
+    public class AppItem {
+        private String app_name;
+        private String package_name;
 
-  public class Config {
+        public AppItem() {
+        }
+
+        public String getAppName() {
+            return app_name;
+        }
+
+        public void setAppName(String app_name) {
+            this.app_name = app_name;
+        }
+
+        public String getPackageName() {
+            return package_name;
+        }
+
+        public void setPackageName(String package_name) {
+            this.package_name = package_name;
+        }
+    }
+
+    private List<AppItem> disabled_apps;
+
+    public Config getConfig() {
+        return this.config;
+    }
+
+    public class Config {
         private int id;
         private int user_id;
         private int is_monitor;
         private String created_at;
         private String updated_at;
 
-        public Config() {}
+        public Config() {
+        }
 
         public int getIsMonitor() {
             return this.is_monitor;
@@ -70,45 +97,45 @@ public class UserInfo {
     public UserInfo() {
     }
 
-   public void setId(int id) {
-    this.id = id;
-   }
+    public void setId(int id) {
+        this.id = id;
+    }
 
-   public void setUsername(String username) {
-    this.username = username;
-   }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-   public void setUniqueId(String unique_id) {
-    this.unique_id = unique_id;
-   }
+    public void setUniqueId(String unique_id) {
+        this.unique_id = unique_id;
+    }
 
-   public void setPassword(String password) {
-    this.password = password;
-   }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-   public void setEmail(String email) {
-    this.email = email;
-   }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-   public void setPhone(String phone) {
-    this.phone = phone;
-   }
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
-   public void setStatus(int status) {
-    this.status = status;
-   }
+    public void setStatus(int status) {
+        this.status = status;
+    }
 
-   public void setCreatedAt(String created_at) {
-    this.created_at = created_at;
-   }
+    public void setCreatedAt(String created_at) {
+        this.created_at = created_at;
+    }
 
-   public void setUpdatedAt(String updated_at) {
-    this.updated_at = updated_at;
-   }
+    public void setUpdatedAt(String updated_at) {
+        this.updated_at = updated_at;
+    }
 
-   public void setConfig(Config config) {
-    this.config = config;
-   }
+    public void setConfig(Config config) {
+        this.config = config;
+    }
 
     public int getId() {
         return this.id;

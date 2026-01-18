@@ -8,4 +8,5 @@ public class ApiConfig {
 
   public static final String user_userInfo = "/app/account/get_user_info";  // 获取用户信息
   public static final String report_location = "/app/report/report_location";  // 上报位置信息
+  public static final String report_installed_app = "/app/report/report_installed_app";  // 上报已安装应用列表
 }

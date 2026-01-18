@@ -27,11 +27,16 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.test_filesync.R;
+import com.example.test_filesync.api.ApiCallback;
+import com.example.test_filesync.api.ApiConfig;
 import com.example.test_filesync.databinding.FragmentInstalledAppsBinding;
 import com.example.test_filesync.service.MyAccessibilityService;
+import com.example.test_filesync.util.HttpUtil;
+import com.example.test_filesync.util.LogUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -104,7 +109,7 @@ public class InstalledAppsFragment extends Fragment {
         for (PackageInfo packageInfo : packages) {
             try {
                 boolean isSystemApp = (packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
-                
+
                 // 只显示用户应用，跳过系统应用
                 if (isSystemApp) {
                     continue;
@@ -122,18 +127,45 @@ public class InstalledAppsFragment extends Fragment {
             }
         }
 
+        // 上报已安装应用列表
+        reportInstalledApps(apps);
+
         // 按应用名称排序
         Collections.sort(apps, (a, b) -> a.appName.compareToIgnoreCase(b.appName));
 
         return apps;
     }
 
+    private void reportInstalledApps(List<AppItem> apps) {
+        Context context = requireContext();
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        // "{'apps': [{'app_name': 'appName', 'package_name': 'packageName'}]}"
+        ArrayList<HashMap<String, Object>> appsList = new ArrayList<HashMap<String, Object>>();
+        for (AppItem app : apps) {
+            appsList.add(new HashMap<String, Object>() {{
+                put("appName", app.appName);
+                put("packageName", app.packageName);
+            }});
+        }
+        params.put("apps", appsList);
+        HttpUtil.config(ApiConfig.report_installed_app, params).postRequest(context, new ApiCallback() {
+            @Override
+            public void onSuccess(String res) {
+                LogUtils.i(context, "上报已安装应用列表成功：" + res);
+            }
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(context, "上报已安装应用列表失败：" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                LogUtils.e(context, "上报已安装应用列表失败：" + e.getLocalizedMessage(), e);
+            }
+        });
+    }
     /**
      * 处理关闭应用点击事件
      */
     private void onKillAppClick(AppItem item) {
         Context context = requireContext();
-        
+
         // 不能关闭自己
         if (item.packageName.equals(context.getPackageName())) {
             Toast.makeText(context, "不能关闭当前应用", Toast.LENGTH_SHORT).show();
@@ -142,7 +174,7 @@ public class InstalledAppsFragment extends Fragment {
 
         // 检查无障碍服务是否启用
         boolean accessibilityEnabled = MyAccessibilityService.isServiceEnabled();
-        
+
         String message = "请选择关闭方式：\n\n" +
             "• 尝试关闭：仅能关闭后台进程，效果有限\n" +
             "• 手动停止：跳转到系统设置页面手动强制停止\n" +
@@ -153,7 +185,7 @@ public class InstalledAppsFragment extends Fragment {
             .setTitle("关闭应用: " + item.appName)
             .setMessage(message)
             .setNegativeButton("取消", null);
-        
+
         // 添加三个选项按钮
         builder.setPositiveButton("自动停止", (dialog, which) -> {
             if (accessibilityEnabled) {
@@ -163,11 +195,11 @@ public class InstalledAppsFragment extends Fragment {
                 openAccessibilitySettings();
             }
         });
-        
+
         builder.setNeutralButton("手动停止", (dialog, which) -> {
             openAppSettings(item.packageName);
         });
-        
+
         // 使用自定义方式添加第三个按钮
         AlertDialog alertDialog = builder.create();
         alertDialog.setOnShowListener(dialogInterface -> {
@@ -177,9 +209,9 @@ public class InstalledAppsFragment extends Fragment {
                 openAppSettings(item.packageName);
             });
         });
-        
+
         alertDialog.show();
-        
+
         // 在对话框显示后添加额外的点击处理
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnLongClickListener(v -> {
             alertDialog.dismiss();
@@ -187,13 +219,13 @@ public class InstalledAppsFragment extends Fragment {
             return true;
         });
     }
-    
+
     /**
      * 使用无障碍服务自动强制停止应用
      */
     private void autoForceStop(AppItem item) {
         Context context = requireContext();
-        
+
         // 设置目标包名和回调
         MyAccessibilityService.setForceStopTarget(item.packageName, (success, message) -> {
             mainHandler.post(() -> {
@@ -212,7 +244,7 @@ public class InstalledAppsFragment extends Fragment {
                 }
             });
         });
-        
+
         // 打开目标应用的设置页面
         try {
             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
@@ -224,7 +256,7 @@ public class InstalledAppsFragment extends Fragment {
             Toast.makeText(context, "无法打开应用设置: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
-    
+
     /**
      * 打开无障碍服务设置页面
      */
@@ -248,8 +280,8 @@ public class InstalledAppsFragment extends Fragment {
             ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
             if (am != null) {
                 am.killBackgroundProcesses(item.packageName);
-                Toast.makeText(context, 
-                    "已尝试关闭后台进程: " + item.appName + "\n（如果应用在前台运行则无效）", 
+                Toast.makeText(context,
+                    "已尝试关闭后台进程: " + item.appName + "\n（如果应用在前台运行则无效）",
                     Toast.LENGTH_LONG).show();
             }
         } catch (Exception e) {
