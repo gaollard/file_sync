@@ -14,23 +14,20 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 import androidx.core.app.NotificationCompat;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.example.test_filesync.R;
+import com.example.test_filesync.api.ApiCallback;
+import com.example.test_filesync.api.ApiConfig;
 import com.example.test_filesync.util.AppInfo;
+import com.example.test_filesync.util.HttpUtil;
 import com.example.test_filesync.util.LogUtils;
 
 public class LocationService extends Service {
@@ -336,8 +333,37 @@ public class LocationService extends Service {
 
         LogUtils.i(this, "位置信息: " + locationInfoStr);
 
+        // 上报位置信息
+        reportLocation(latitude, longitude, 1, address);
+
         // 更新通知显示位置信息
         updateNotification(locationInfoStr);
+    }
+
+    private void reportLocation(double latitude, double longitude, int accuracy, String address) {
+      Context context = this;
+        try {
+            // 上报位置信息
+            HashMap<String, Object> params = new HashMap<String, Object>();
+            params.put("latitude", latitude);
+            params.put("longitude", longitude);
+            params.put("accuracy", accuracy);
+            params.put("address", address);
+            HttpUtil.config(ApiConfig.report_location, params).postRequest(context, new ApiCallback() {
+                @Override
+                public void onSuccess(String res) {
+                    LogUtils.i(context, "上报位置信息成功：" + res);
+                }
+                @Override
+                public void onFailure(Exception e) {
+                    Toast.makeText(context, "上报位置信息失败：" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                    LogUtils.e(context, "上报位置信息失败：" + e.getLocalizedMessage(), e);
+                }
+            });
+        } catch (Exception e) {
+            Toast.makeText(context, "上报位置信息失败：" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+            LogUtils.e(context, "上报位置信息失败：" + e.getLocalizedMessage(), e);
+        }
     }
 
     // 创建通知渠道并启动前台服务
