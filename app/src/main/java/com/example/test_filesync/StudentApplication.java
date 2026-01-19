@@ -32,6 +32,12 @@ public class StudentApplication extends Application {
   public UserInfo getUserInfo() {
     return userInfo;
   }
+  public boolean isMonitor () {
+    if (userInfo != null) {
+      return userInfo.getConfig().getIsMonitor() == 1;
+    }
+    return false;
+  }
   public void setUserInfo(UserInfo userInfo) {
     if (userInfo != null) {
       LogUtils.d(this, "StudentApplication", "setUserInfo: " + userInfo.toString());

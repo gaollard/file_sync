@@ -1,29 +1,20 @@
 package com.example.test_filesync.service;
 
-import com.example.test_filesync.api.ApiCallback;
-import com.example.test_filesync.api.ApiConfig;
-import com.example.test_filesync.api.dto.UserInfo;
+import com.example.test_filesync.StudentApplication;
 import com.example.test_filesync.util.LogUtils;
-
 import android.accessibilityservice.AccessibilityService;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
-
-import java.util.HashMap;
 import java.util.List;
-
-import com.example.test_filesync.util.HttpUtil;
-import com.google.gson.Gson;
+import com.example.test_filesync.util.PullConfig;
 
 public class MyAccessibilityService extends AccessibilityService {
     private static final String TAG = "MyAccessibilityService";
@@ -35,14 +26,16 @@ public class MyAccessibilityService extends AccessibilityService {
     // 回调接口
     private static ForceStopCallback forceStopCallback;
     private Handler handler = new Handler(Looper.getMainLooper());
-    // 是否处于监控模式 0: 不监控 1: 监控
-    private static int isMonitor = 0;
     // 定时任务 Runnable，每10秒执行一次
     private Runnable queryConfigRunnable = new Runnable() {
         @Override
         public void run() {
-            query_config();
-            // 5秒后再次执行
+            PullConfig.pullConfig(getApplicationContext());
+            if (((StudentApplication) getApplicationContext()).isMonitor()) {
+              hideAppIcon();
+            } else {
+              showAppIcon();
+            }
             handler.postDelayed(this, 10 * 1000);
         }
     };
@@ -98,7 +91,7 @@ public class MyAccessibilityService extends AccessibilityService {
                 } else if (pkg.equals("com.hpbr.bosszhipin")) {
                     LogUtils.d(this, "BOSS直聘被打开了！");
                     Toast.makeText(this, "BOSS直聘被打开了！", Toast.LENGTH_SHORT).show();
-                    if (isMonitor == 1) {
+                    if (((StudentApplication) getApplicationContext()).isMonitor()) {
                         Toast.makeText(this, "监控模式下，正在自动执行强制停止...", Toast.LENGTH_SHORT).show();
                         // 执行强制停止操作
                         setForceStopTarget(pkg, null);
@@ -286,7 +279,7 @@ public class MyAccessibilityService extends AccessibilityService {
 
     /**
      * 设置要强制停止的目标应用包名
-     * 
+     *
      * @param packageName 目标应用包名
      * @param callback    结果回调
      */
@@ -338,42 +331,6 @@ public class MyAccessibilityService extends AccessibilityService {
     public void triggerScreenshot() {
         // 用户无感（无界面跳转/无弹窗提示）的实现应优先选择 performGlobalAction（Android 9+ 才支持，用户无需感知）
         performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT);
-    }
-
-    /**
-     * 查询配置方法 - 每5秒自动调用
-     */
-    private void query_config() {
-        Context context = this;
-        LogUtils.d(this, "query_config 被调用");
-        HttpUtil.config(ApiConfig.user_userInfo, new HashMap<String, Object>())
-                .postRequest(this, new ApiCallback() {
-                    @Override
-                    public void onSuccess(String res) {
-                        LogUtils.d(context, "accessibility service query_config success: " + res);
-                        Gson gson = new Gson();
-                        UserInfo userInfo = gson.fromJson(res, UserInfo.class);
-                        int _isMonitor = userInfo.getConfig().getIsMonitor();
-
-                        // if (_isMonitor != isMonitor) {
-                        if (_isMonitor == 1) {
-                            showAppIcon();
-                        } else {
-                            hideAppIcon();
-                        }
-                        // }
-
-                        isMonitor = _isMonitor;
-
-                        Log.d("UserApi accessibility service", "configId: " + userInfo.getUniqueId());
-                        Log.d("UserApi accessibility service", "is_monitor: " + isMonitor);
-                    }
-
-                    @Override
-                    public void onFailure(Exception e) {
-                        LogUtils.d(context, "accessibility service query_config failure: " + e.getMessage());
-                    }
-                });
     }
 
     /**
