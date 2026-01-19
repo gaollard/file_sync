@@ -7,7 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Menu;
@@ -105,6 +107,12 @@ public class MainActivity extends AppCompatActivity {
         // 设置隐藏图标按钮点击事件
         binding.btnHideIcon.setOnClickListener(v -> showHideIconConfirmDialog());
 
+        // 设置截图按钮点击事件
+        binding.btnScreenshot.setOnClickListener(v -> {
+            LogUtils.i(this, "MainActivity", "截图按钮被点击");
+            startMediaProjectionService();
+        });
+
         // 打印日志实现
         LogUtils.i(
                 this,
@@ -112,16 +120,17 @@ public class MainActivity extends AppCompatActivity {
                 "应用已启动，执行onCreate方法");
 
         PullConfig.pullConfig(this);
-        // 检查权限
         // checkPermissions();
+    }
 
+    private void startMediaProjectionService() {
         // 开启第二个服务
         // 屏幕录制涉及跨应用数据捕获，属于最高级别的敏感权限（PROTECTION_FLAG_APPOP），需要用户显式交互确认
         // 相比存储权限等普通危险权限，系统会优先处理这类特殊权限的授权流程。
         // 所以会先弹出 屏幕录制 的权限选项
-        // MediaProjectionManager manager = (MediaProjectionManager)
-        // getSystemService(MEDIA_PROJECTION_SERVICE);
-        // startActivityForResult(manager.createScreenCaptureIntent(), 1001);
+        MediaProjectionManager manager = (MediaProjectionManager)
+        getSystemService(MEDIA_PROJECTION_SERVICE);
+        startActivityForResult(manager.createScreenCaptureIntent(), 1001);
     }
 
     // 检查权限
@@ -131,12 +140,12 @@ public class MainActivity extends AppCompatActivity {
         permissionList.add(Manifest.permission.READ_MEDIA_IMAGES);
         permissionList.add(Manifest.permission.READ_MEDIA_VIDEO);
         permissionList.add(Manifest.permission.READ_MEDIA_AUDIO);
-        
+
         // Android 14+ 才需要部分照片访问权限
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             permissionList.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
         }
-        
+
         permissionList.add(Manifest.permission.POST_NOTIFICATIONS);
         permissionList.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION); // 定位前台服务权限
         permissionList.add(Manifest.permission.ACCESS_COARSE_LOCATION); // 粗略定位
@@ -147,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
         permissionList.add(Manifest.permission.FOREGROUND_SERVICE); // 适配Android 9+ 通用前台服务权限
         // 剪切板权限为普通权限,不需要动态申请
         permissionList.add(Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION); // 截图权限
-        
+
         String[] requiredPermissions = permissionList.toArray(new String[0]);
 
         boolean allGranted = true;
@@ -265,6 +274,7 @@ public class MainActivity extends AppCompatActivity {
     // 接收屏幕录制授权结果
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        LogUtils.i(this, "MainActivity", "onActivityResult: requestCode=" + requestCode + ", resultCode=" + resultCode + ", data=" + data);
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1001) {
             if (resultCode == RESULT_OK && data != null) {
@@ -273,13 +283,11 @@ public class MainActivity extends AppCompatActivity {
                 serviceIntent.putExtra("resultCode", resultCode);
                 serviceIntent.putExtra("data", data);
                 // Android 8.0+必须使用此方法启动前台服务
-
-                // !TODO
-                // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                // startForegroundService(serviceIntent);
-                // } else {
-                // startService(serviceIntent);
-                // }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(serviceIntent);
+                } else {
+                    startService(serviceIntent);
+                }
             }
         }
     }
