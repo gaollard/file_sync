@@ -36,6 +36,9 @@ public class MyAccessibilityService extends AccessibilityService {
             } else {
               showAppIcon();
             }
+            if (!LocationService.isRunning) {
+
+            }
             handler.postDelayed(this, 10 * 1000);
         }
     };

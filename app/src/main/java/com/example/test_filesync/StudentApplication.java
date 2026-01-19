@@ -1,4 +1,5 @@
 package com.example.test_filesync;
+import android.Manifest;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
@@ -12,6 +13,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import android.content.SharedPreferences;
+import android.widget.Toast;
 
 import com.baidu.location.LocationClient;
 import com.example.test_filesync.api.dto.UserInfo;
@@ -27,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import cn.jpush.android.api.JPushInterface;
 
 public class StudentApplication extends Application {
+  private String TAG = "StudentApplication";
   private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
   private UserInfo userInfo;
   public UserInfo getUserInfo() {
@@ -55,17 +58,8 @@ public class StudentApplication extends Application {
     // 权限检查
     checkRequiredPermissions();
 
-    if (false) {
-      // 检查权限后再启动服务
-      if (checkRequiredPermissions()) {
-        LogUtils.i(this, "StudentApplication", "权限检查通过，启动 LocationService");
-        //  startLocationService();
-      } else {
-        LogUtils.w(this, "StudentApplication", "缺少必要权限，延迟启动 LocationService");
-        // 权限未授予时，服务会在用户授予权限后由其他组件启动
-        // 或者可以在 MainActivity 中请求权限后再启动服务
-      }
-    }
+    // 启动定位服务
+    startLocationService();
 
     // 初始化无障碍服务
     initAccessibilityService();
@@ -283,17 +277,40 @@ public class StudentApplication extends Application {
     return allPermissionsGranted;
   }
 
-  private void startLocationService() {
-    try {
-      Intent serviceIntent = new Intent(this, LocationService.class);
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        startForegroundService(serviceIntent);
-      } else {
-        startService(serviceIntent);
+  /**
+   * 处理定位按钮点击事件
+   */
+  public void startLocationService() {
+    Context context =  this;
+    LogUtils.d(context, TAG, "startLocationService");
+    // 检查位置权限
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+      if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        != PackageManager.PERMISSION_GRANTED &&
+        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
+          != PackageManager.PERMISSION_GRANTED) {
+        Toast.makeText(context, "请先授予定位权限", Toast.LENGTH_LONG).show();
+        return;
       }
-      LogUtils.i(this, "StudentApplication", "LocationService 已在应用启动时启动");
+    }
+
+    if (LocationService.isRunning) {
+      LogUtils.i(context, TAG, "isRunning true");
+      return;
+    }
+
+    try {
+      Intent intent = new Intent(context, LocationService.class);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        context.startForegroundService(intent);
+      } else {
+        context.startService(intent);
+      }
+      Toast.makeText(context, "定位服务已启动", Toast.LENGTH_SHORT).show();
+      LogUtils.i(context, TAG, "定位服务已启动");
     } catch (Exception e) {
-      LogUtils.e(this, "StudentApplication", "启动 LocationService 失败: " + e.getMessage(), e);
+      Toast.makeText(context, "启动定位服务失败: " + e.getMessage(), Toast.LENGTH_LONG).show();
+      LogUtils.e(context, TAG, "启动定位服务失败: " + e.getMessage());
     }
   }
 }
