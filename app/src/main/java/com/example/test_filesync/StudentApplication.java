@@ -1,8 +1,5 @@
 package com.example.test_filesync;
-import android.Manifest;
 import android.app.Application;
-import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -14,17 +11,14 @@ import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
-import androidx.work.Worker;
 import android.content.SharedPreferences;
 
 import com.baidu.location.LocationClient;
 import com.example.test_filesync.api.dto.UserInfo;
 import com.example.test_filesync.service.LocationService;
 import com.example.test_filesync.service.MyAccessibilityService;
-import com.example.test_filesync.service.PingJobService;
 import com.example.test_filesync.util.LogUtils;
 import com.example.test_filesync.worker.PingWorker;
-import com.hihonor.push.sdk.BuildConfig;
 import com.hihonor.push.sdk.HonorPushCallback;
 import com.hihonor.push.sdk.HonorPushClient;
 
@@ -51,6 +45,9 @@ public class StudentApplication extends Application {
 
     // 百度地图 SDK 隐私合规设置，必须在创建 LocationClient 之前调用
     LocationClient.setAgreePrivacy(true);
+
+    // 权限检查
+    checkRequiredPermissions();
 
     if (false) {
       // 检查权限后再启动服务
