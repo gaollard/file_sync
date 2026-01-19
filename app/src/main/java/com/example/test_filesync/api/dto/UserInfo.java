@@ -1,5 +1,9 @@
 package com.example.test_filesync.api.dto;
 
+import androidx.annotation.NonNull;
+
+import java.util.List;
+
 public class UserInfo {
     // {"id":1,"username":"123","unique_id":"123","password":"123","email":null,"phone":null,"status":1,"created_at":"2026-01-15T00:33:35.063Z","updated_at":"2026-01-15T00:33:35.063Z","config":{"id":1,"user_id":1,"is_monitor":0,"created_at":"2026-01-15T00:33:49.567Z","updated_at":"2026-01-15T00:33:49.567Z"}}
     private int id;
@@ -13,7 +17,7 @@ public class UserInfo {
     private String updated_at;
     private Config config;
 
-    public class AppItem {
+  public class AppItem {
         private String app_name;
         private String package_name;
 

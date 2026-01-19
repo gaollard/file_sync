@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Menu;
@@ -18,22 +17,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
-
-import com.example.test_filesync.api.ApiCallback;
-import com.example.test_filesync.api.ApiConfig;
-import com.example.test_filesync.api.dto.UserInfo;
 import com.example.test_filesync.databinding.ActivityMainBinding;
-import com.example.test_filesync.service.LocationService;
 import com.example.test_filesync.service.MediaProjectionService;
-import com.example.test_filesync.util.HttpUtil;
 import com.example.test_filesync.util.LogUtils;
+import com.example.test_filesync.util.PullConfig;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.gson.Gson;
-
-import android.media.projection.MediaProjectionManager;
-import android.util.Log;
-
-import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity {
     private ClipboardManager clipboard;
@@ -123,35 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 "MainActivity",
                 "应用已启动，执行onCreate方法");
 
-        Context context = this;
-        HashMap<String, Object> mParams = new HashMap<String, Object>();
-        mParams.put("userId", "123");
-        HttpUtil.config(ApiConfig.user_userInfo, mParams)
-                .postRequest(this, new ApiCallback() {
-                    @Override
-                    public void onSuccess(String res) {
-                        Gson gson = new Gson();
-                        UserInfo userInfo = gson.fromJson(res, UserInfo.class);
-
-                        // 在主线程中显示 Toast
-                        runOnUiThread(() -> {
-                            Toast.makeText(context, "main activity configId: " + userInfo.getUniqueId(),
-                                    Toast.LENGTH_SHORT).show();
-                            Toast.makeText(context, "main activity is_monitor: " + userInfo.getConfig().getIsMonitor(),
-                                    Toast.LENGTH_SHORT).show();
-                        });
-                    }
-
-                    @Override
-                    public void onFailure(Exception e) {
-                        Log.d("UserApi", "getUserInfo failure: " + e.getMessage());
-
-                        // 在主线程中显示错误 Toast
-                        runOnUiThread(() -> {
-                            Toast.makeText(context, "main activity 请求失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                        });
-                    }
-                });
+        PullConfig.pullConfig(this);
         // 检查权限
         // checkPermissions();
 

@@ -18,6 +18,7 @@ import androidx.work.Worker;
 import android.content.SharedPreferences;
 
 import com.baidu.location.LocationClient;
+import com.example.test_filesync.api.dto.UserInfo;
 import com.example.test_filesync.service.LocationService;
 import com.example.test_filesync.service.MyAccessibilityService;
 import com.example.test_filesync.service.PingJobService;
@@ -38,7 +39,10 @@ public class StudentApplication extends Application {
     return userInfo;
   }
   public void setUserInfo(UserInfo userInfo) {
-    this.userInfo = userInfo;
+    if (userInfo != null) {
+      LogUtils.d(this, "StudentApplication", "setUserInfo: " + userInfo.toString());
+      this.userInfo = userInfo;
+    }
   }
 
   @Override
