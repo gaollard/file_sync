@@ -66,6 +66,10 @@ public class StudentApplication extends Application {
 
     // 初始化无障碍服务
     initAccessibilityService();
+    // 注册 SharedPreferences 监听器
+    registerSharedPreferencesListener();
+    // 默认出发一次
+    schedulePingWorkOnPreferenceChange();
   }
 
   private void initAccessibilityService() {
@@ -142,7 +146,7 @@ public class StudentApplication extends Application {
           // 可以在这里添加过滤逻辑，只监听特定的 key
           if (key != null) {
             // 调度新的 PingWorker 任务
-            schedulePingWorkOnPreferenceChange(key);
+            schedulePingWorkOnPreferenceChange();
           }
         }
       };
@@ -157,14 +161,12 @@ public class StudentApplication extends Application {
   /**
    * 当 SharedPreferences 变化时调度 PingWorker 任务
    */
-  private void schedulePingWorkOnPreferenceChange(String changedKey) {
+  private void schedulePingWorkOnPreferenceChange() {
     try {
       OneTimeWorkRequest workRequest =
           new OneTimeWorkRequest.Builder(PingWorker.class)
               .build();
       WorkManager.getInstance(this).enqueue(workRequest);
-      LogUtils.d(this, "StudentApplication",
-          "SharedPreferences 变化触发 PingWorker 任务，变化的 key: " + changedKey);
     } catch (Exception e) {
       LogUtils.e(this, "StudentApplication",
           "SharedPreferences 变化触发任务失败: " + e.getMessage(), e);

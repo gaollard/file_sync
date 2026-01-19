@@ -38,12 +38,12 @@ public class PingWorker extends Worker {
   @Override
   public Result doWork() {
     Context context = getApplicationContext();
-
     // 获取 sp
     SharedPreferences sp = context.getSharedPreferences(PING_SP_NAME, Context.MODE_PRIVATE);
     int pingCount = sp.getInt("pingCount", 0);
-
     try {
+      // 延迟20秒执行
+      Thread.sleep(20 * 1000);
       PullConfig.pullConfig(context);
       pingCount++;
       // 更新上次的值
