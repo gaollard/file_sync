@@ -1,18 +1,14 @@
 package com.example.test_filesync.util;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.util.Log;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -20,11 +16,11 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
 import static android.content.Context.MODE_PRIVATE;
 
 import com.example.test_filesync.api.ApiCallback;
 import com.example.test_filesync.api.ApiConfig;
+import com.example.test_filesync.util.AppInfo;
 
 public class HttpUtil {
   private static OkHttpClient client;
@@ -56,7 +52,7 @@ public class HttpUtil {
    */
   public void postRequest(Context context, final ApiCallback callback) {
     SharedPreferences sp = context.getSharedPreferences(PreferenceName, MODE_PRIVATE);
-    String token = sp.getString("token", "123");
+    String token = sp.getString("token", AppInfo.uuid(context));
 
     // 1. 创建请求体
     JSONObject jsonObject = new JSONObject(mParams);
@@ -98,7 +94,7 @@ public class HttpUtil {
    */
   public void getRequest(Context context, final ApiCallback callback) {
     SharedPreferences sp = context.getSharedPreferences(PreferenceName, MODE_PRIVATE);
-    String token = sp.getString("token", "");
+    String token = sp.getString("token", AppInfo.uuid(context));
     String url = getAppendUrl(requestUrl, mParams);
 
     Request request = new Request.Builder()
