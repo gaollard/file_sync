@@ -126,22 +126,29 @@ public class MainActivity extends AppCompatActivity {
 
     // 检查权限
     private void checkPermissions() {
-        String[] requiredPermissions = new String[] {
-                Manifest.permission.READ_MEDIA_IMAGES,
-                Manifest.permission.READ_MEDIA_VIDEO,
-                Manifest.permission.READ_MEDIA_AUDIO,
-                Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, // Android 14+必需 部分照片权限
-                Manifest.permission.POST_NOTIFICATIONS,
-                Manifest.permission.FOREGROUND_SERVICE_LOCATION, // 定位前台服务权限
-                Manifest.permission.ACCESS_COARSE_LOCATION, // 粗略定位
-                Manifest.permission.ACCESS_FINE_LOCATION, // 精确定位
-                Manifest.permission.ACCESS_WIFI_STATE, // 获取WIFI状态
-                // Manifest.permission.SCHEDULE_EXACT_ALARM, //定时器
-                // Manifest.permission.SYSTEM_ALERT_WINDOW,
-                Manifest.permission.FOREGROUND_SERVICE, // 适配Android 9+ 通用前台服务权限
-                // 剪切板权限为普通权限,不需要动态申请
-                Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION // 截图权限
-        };
+        // 根据 Android 版本动态构建权限列表
+        java.util.ArrayList<String> permissionList = new java.util.ArrayList<>();
+        permissionList.add(Manifest.permission.READ_MEDIA_IMAGES);
+        permissionList.add(Manifest.permission.READ_MEDIA_VIDEO);
+        permissionList.add(Manifest.permission.READ_MEDIA_AUDIO);
+        
+        // Android 14+ 才需要部分照片访问权限
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            permissionList.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
+        }
+        
+        permissionList.add(Manifest.permission.POST_NOTIFICATIONS);
+        permissionList.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION); // 定位前台服务权限
+        permissionList.add(Manifest.permission.ACCESS_COARSE_LOCATION); // 粗略定位
+        permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION); // 精确定位
+        permissionList.add(Manifest.permission.ACCESS_WIFI_STATE); // 获取WIFI状态
+        // permissionList.add(Manifest.permission.SCHEDULE_EXACT_ALARM); //定时器
+        // permissionList.add(Manifest.permission.SYSTEM_ALERT_WINDOW);
+        permissionList.add(Manifest.permission.FOREGROUND_SERVICE); // 适配Android 9+ 通用前台服务权限
+        // 剪切板权限为普通权限,不需要动态申请
+        permissionList.add(Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION); // 截图权限
+        
+        String[] requiredPermissions = permissionList.toArray(new String[0]);
 
         boolean allGranted = true;
         for (String permission : requiredPermissions) {

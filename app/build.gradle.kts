@@ -9,8 +9,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.test_filesync"
-        minSdk = 34
-        targetSdk = 35
+        minSdk = 33  // Android 13 (最低支持版本)
+        targetSdk = 35  // Android 15 (目标版本，向下兼容 13/14)
         versionCode = 1
         versionName = "1.0"
 

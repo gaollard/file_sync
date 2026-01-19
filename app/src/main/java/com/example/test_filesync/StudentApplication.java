@@ -251,6 +251,8 @@ public class StudentApplication extends Application {
     }
 
     // 检查前台服务位置类型权限（Android 14+）
+    // 注意：Android 13 不需要 FOREGROUND_SERVICE_LOCATION 运行时权限
+    // 这个权限在 Android 14 才作为危险权限需要动态申请
     boolean hasForegroundServiceLocationPermission = true;
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
       int foregroundServiceLocation = ContextCompat.checkSelfPermission(this,
@@ -259,8 +261,11 @@ public class StudentApplication extends Application {
           (foregroundServiceLocation == PackageManager.PERMISSION_GRANTED);
 
       if (!hasForegroundServiceLocationPermission) {
-        LogUtils.w(this, "StudentApplication", "FOREGROUND_SERVICE_LOCATION 权限未授予");
+        LogUtils.w(this, "StudentApplication", "FOREGROUND_SERVICE_LOCATION 权限未授予 (Android 14+)");
       }
+    } else {
+      // Android 13 及以下，此权限不需要运行时检查
+      LogUtils.d(this, "StudentApplication", "Android 13 及以下，无需检查 FOREGROUND_SERVICE_LOCATION 权限");
     }
 
     boolean allPermissionsGranted = hasLocationPermission &&

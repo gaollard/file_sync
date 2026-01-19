@@ -457,24 +457,30 @@ public class PermissionFragment extends Fragment {
         List<PermissionItem> list = new ArrayList<>();
         Context context = requireContext();
 
-        // 从 MainActivity 中获取的权限列表
-        String[] permissions = new String[]{
-            Manifest.permission.BIND_ACCESSIBILITY_SERVICE,
-            Manifest.permission.BIND_DEVICE_ADMIN,
-                Manifest.permission.READ_MEDIA_IMAGES,
-                Manifest.permission.READ_MEDIA_VIDEO,
-                Manifest.permission.READ_MEDIA_AUDIO,
-                Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED,
-                Manifest.permission.POST_NOTIFICATIONS,
-                Manifest.permission.FOREGROUND_SERVICE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_WIFI_STATE,
-                Manifest.permission.FOREGROUND_SERVICE,
-                Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION,
-                Manifest.permission.SYSTEM_ALERT_WINDOW,
-                Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-        };
+        // 根据 Android 版本动态构建权限列表
+        ArrayList<String> permissionList = new ArrayList<>();
+        permissionList.add(Manifest.permission.BIND_ACCESSIBILITY_SERVICE);
+        permissionList.add(Manifest.permission.BIND_DEVICE_ADMIN);
+        permissionList.add(Manifest.permission.READ_MEDIA_IMAGES);
+        permissionList.add(Manifest.permission.READ_MEDIA_VIDEO);
+        permissionList.add(Manifest.permission.READ_MEDIA_AUDIO);
+        
+        // Android 14+ 才需要部分照片访问权限
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            permissionList.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
+        }
+        
+        permissionList.add(Manifest.permission.POST_NOTIFICATIONS);
+        permissionList.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION);
+        permissionList.add(Manifest.permission.ACCESS_COARSE_LOCATION);
+        permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        permissionList.add(Manifest.permission.ACCESS_WIFI_STATE);
+        permissionList.add(Manifest.permission.FOREGROUND_SERVICE);
+        permissionList.add(Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION);
+        permissionList.add(Manifest.permission.SYSTEM_ALERT_WINDOW);
+        permissionList.add(Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+        
+        String[] permissions = permissionList.toArray(new String[0]);
 
         // 权限名称映射
         for (String permission : permissions) {
