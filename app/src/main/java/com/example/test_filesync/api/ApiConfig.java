@@ -2,7 +2,8 @@ package com.example.test_filesync.api;
 
 public class ApiConfig {
   public static final int PAGE_SIZE = 10;
-  public static final String BASE_URl = "https://7de27a4c312b.ngrok-free.app/api";
+  // public static final String BASE_URl = "https://7de27a4c312b.ngrok-free.app/api";
+  public static final String BASE_URl = "https://60d60abef887.ngrok-free.app/api";
   public static final String LOGIN = "/app/login"; //登录
   public static final String REGISTER = "/app/register";//注册
 
