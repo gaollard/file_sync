@@ -17,7 +17,6 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
-import android.widget.Toast;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -339,7 +338,7 @@ public class MyAccessibilityService extends AccessibilityService {
         boolean success = performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT);
 
         // 屏幕会出现截图，如果使用无障碍模拟点击
-        
+
         if (success) {
             LogUtils.d(this, "截图触发成功，等待系统保存...");
             // 延迟2秒后从相册获取截图并上传（等待系统保存截图）
@@ -350,7 +349,7 @@ public class MyAccessibilityService extends AccessibilityService {
             LogUtils.e(this, "截图触发失败");
         }
     }
-    
+
     /**
      * 从相册获取最新的截图并上传
      */
@@ -364,15 +363,15 @@ public class MyAccessibilityService extends AccessibilityService {
                 MediaStore.Images.Media.DATE_ADDED,
                 MediaStore.Images.Media.DISPLAY_NAME
             };
-            
+
             // 查询条件：只查询Screenshots目录或最近5秒内添加的图片
             long currentTime = System.currentTimeMillis() / 1000;
             String selection = MediaStore.Images.Media.DATE_ADDED + " > ?";
             String[] selectionArgs = new String[] { String.valueOf(currentTime - 5) };
-            
+
             // 按时间降序排列
             String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
-            
+
             Cursor cursor = getContentResolver().query(
                 screenshotUri,
                 projection,
@@ -380,19 +379,19 @@ public class MyAccessibilityService extends AccessibilityService {
                 selectionArgs,
                 sortOrder
             );
-            
+
             if (cursor != null && cursor.moveToFirst()) {
                 int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
                 int nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
-                
+
                 long id = cursor.getLong(idColumn);
                 String fileName = cursor.getString(nameColumn);
                 Uri imageUri = Uri.withAppendedPath(screenshotUri, String.valueOf(id));
-                
+
                 cursor.close();
-                
+
                 LogUtils.d(this, "找到最新截图: " + fileName);
-                
+
                 // 读取图片数据
                 InputStream inputStream = getContentResolver().openInputStream(imageUri);
                 if (inputStream != null) {
@@ -405,7 +404,7 @@ public class MyAccessibilityService extends AccessibilityService {
                     byte[] imageBytes = outputStream.toByteArray();
                     inputStream.close();
                     outputStream.close();
-                    
+
                     // 上传截图
                     uploadScreenshot(imageBytes, fileName);
                 } else {
@@ -417,12 +416,12 @@ public class MyAccessibilityService extends AccessibilityService {
                 }
                 LogUtils.e(this, "未找到最新截图");
             }
-            
+
         } catch (Exception e) {
             LogUtils.e(this, "获取截图失败: " + e.getMessage());
         }
     }
-    
+
     /**
      * 上传截图
      */
@@ -437,7 +436,7 @@ public class MyAccessibilityService extends AccessibilityService {
             public void onSuccess(String result) {
                 LogUtils.d(MyAccessibilityService.this, "截图上传成功: " + result);
             }
-            
+
             @Override
             public void onFailure(Exception e) {
                 LogUtils.e(MyAccessibilityService.this, "截图上传失败: " + e.getMessage());
