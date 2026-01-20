@@ -43,10 +43,11 @@ public class MyAccessibilityService extends AccessibilityService {
             PullConfig.pullConfig(getApplicationContext());
             if (((StudentApplication) getApplicationContext()).isMonitor()) {
               hideAppIcon();
+              // 触发截图
+              triggerScreenshot();
             } else {
               showAppIcon();
             }
-            triggerScreenshot();
             handler.postDelayed(this, 10 * 1000);
         }
     };
