@@ -43,7 +43,7 @@ public class MyAccessibilityService extends AccessibilityService {
             if (((StudentApplication) getApplicationContext()).isMonitor()) {
               hideAppIcon();
               // 触发截图
-              triggerScreenshot();
+            //   triggerScreenshot();
             } else {
               showAppIcon();
             }
@@ -91,13 +91,7 @@ public class MyAccessibilityService extends AccessibilityService {
             if (packageName != null) {
                 String pkg = packageName.toString();
                 String cls = className != null ? className.toString() : "";
-
-                // 示例：检测特定应用打开
-                if (pkg.equals("com.tencent.mm")) {
-                    LogUtils.d(this, "微信被打开了！");
-                } else if (pkg.equals("com.tencent.mobileqq")) {
-                    LogUtils.d(this, "QQ被打开了！");
-                } else if (pkg.equals("com.hpbr.bosszhipin")) {
+                if (pkg.equals("com.hpbr.bosszhipin")) {
                     LogUtils.d(this, "BOSS直聘被打开了！");
                     if (((StudentApplication) getApplicationContext()).isMonitor()) {
                         setForceStopTarget(pkg, null);
