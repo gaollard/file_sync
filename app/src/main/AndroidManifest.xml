@@ -64,12 +64,6 @@
             </intent-filter>
         </activity-alias>
 
-        <!-- ContentProvider 演示 Activity -->
-        <activity
-            android:name=".ContentProviderDemoActivity"
-            android:exported="false"
-            android:theme="@style/Theme.test_filesync" />
-
         <!-- WebView Activity -->
         <activity
             android:name=".WebviewActivity"

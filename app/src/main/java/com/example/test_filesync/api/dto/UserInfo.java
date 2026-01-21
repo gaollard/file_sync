@@ -43,6 +43,10 @@ public class UserInfo {
 
     private List<AppItem> disabled_apps;
 
+  public List<AppItem> getDisabledApps () {
+    return disabled_apps;
+  }
+
     public Config getConfig() {
         return this.config;
     }

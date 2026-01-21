@@ -43,7 +43,7 @@ public class StudentApplication extends Application {
   }
   public void setUserInfo(UserInfo userInfo) {
     if (userInfo != null) {
-      LogUtils.d(this, "StudentApplication", "setUserInfo: " + userInfo.toString());
+      LogUtils.d(this, "StudentApplication", "setUserInfo: " + userInfo.getDisabledApps().toString());
       this.userInfo = userInfo;
     }
   }
