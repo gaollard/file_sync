@@ -66,7 +66,7 @@ public class StudentApplication extends Application {
     // 注册 SharedPreferences 监听器
     registerSharedPreferencesListener();
     // 默认触发一次
-    schedulePingWorkOnPreferenceChange();
+   schedulePingWorkOnPreferenceChange();
   }
 
   private void initAccessibilityService() {

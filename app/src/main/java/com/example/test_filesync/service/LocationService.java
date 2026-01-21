@@ -134,7 +134,6 @@ public class LocationService extends Service {
             startForegroundService();
             initializeBaiduLocation();
         } catch (Exception e) {
-            Toast.makeText(this, "LocationService 初始化错误：" + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             LogUtils.e(this, "LocationService 初始化错误：" + e.getLocalizedMessage(), e);
         }
     }
@@ -293,7 +292,6 @@ public class LocationService extends Service {
             }, 1000);
             LogUtils.i(this, "正在启动百度定位服务...");
         } catch (Exception e) {
-            Toast.makeText(this, "初始化百度定位失败：" + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             LogUtils.e(this, "初始化百度定位失败：" + e.getLocalizedMessage(), e);
         }
     }
@@ -356,12 +354,10 @@ public class LocationService extends Service {
                 }
                 @Override
                 public void onFailure(Exception e) {
-                    Toast.makeText(context, "上报位置信息失败：" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
                     LogUtils.e(context, "上报位置信息失败：" + e.getLocalizedMessage(), e);
                 }
             });
         } catch (Exception e) {
-            Toast.makeText(context, "上报位置信息失败：" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
             LogUtils.e(context, "上报位置信息失败：" + e.getLocalizedMessage(), e);
         }
     }

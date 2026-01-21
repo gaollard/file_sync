@@ -17,14 +17,18 @@ public class PullConfig {
                 .postRequest(context.getApplicationContext(), new ApiCallback() {
                     @Override
                     public void onSuccess(String res) {
-                        LogUtils.d(context, " pull_config in pullConfig success: " + res);
-                        Gson gson = new Gson();
-                        UserInfo userInfo = gson.fromJson(res, UserInfo.class);
-                        ((StudentApplication) context.getApplicationContext()).setUserInfo(userInfo);
+                        if (res != null && res.startsWith("{")) {
+                            LogUtils.d(context, " pull_config success: " + res);
+                            Gson gson = new Gson();
+                            UserInfo userInfo = gson.fromJson(res, UserInfo.class);
+                            ((StudentApplication) context.getApplicationContext()).setUserInfo(userInfo);
+                        } else {
+                            LogUtils.d(context, " pull_config error: " + res);
+                        }
                     }
                     @Override
                     public void onFailure(Exception e) {
-                        LogUtils.d(context, " pull_config in pullConfig failure: " + e.getMessage());
+                        LogUtils.d(context, " pull_config failure: " + e.getMessage());
                     }
                 });
     }
