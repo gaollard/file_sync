@@ -1,6 +1,7 @@
 package com.example.test_filesync.service;
 
 import com.example.test_filesync.StudentApplication;
+import com.example.test_filesync.api.dto.UserInfo;
 import com.example.test_filesync.util.LogUtils;
 import com.example.test_filesync.util.FileUpload;
 import com.example.test_filesync.api.ApiCallback;
@@ -17,6 +18,8 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.widget.Toast;
+
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -83,31 +86,46 @@ public class MyAccessibilityService extends AccessibilityService {
 
         // 监听窗口状态变化（App 打开/切换）
         if (eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-            // 获取当前打开的应用包名
+            LogUtils.d(this, "AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED" + event.getPackageName() + " " + event.getClassName());
             CharSequence packageName = event.getPackageName();
-            // 获取当前 Activity 类名
             CharSequence className = event.getClassName();
 
             if (packageName != null) {
                 String pkg = packageName.toString();
                 String cls = className != null ? className.toString() : "";
-                if (pkg.equals("com.hpbr.bosszhipin")) {
-                    LogUtils.d(this, "BOSS直聘被打开了！");
-                    if (((StudentApplication) getApplicationContext()).isMonitor()) {
-                        setForceStopTarget(pkg, null);
-                        // 打开BOSS直聘的设置页面
-                        try {
-                            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                            intent.setData(Uri.parse("package:" + "com.hpbr.bosszhipin"));
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            getApplicationContext().startActivity(intent);
-                            LogUtils.d(this, "正在自动执行强制停止...");
-                        } catch (Exception e) {
-                            cancelForceStop();
-                            LogUtils.e(this, "无法打开应用设置: " + e.getMessage());
-                        }
-                    }
-                }
+                  UserInfo userInfo = ((StudentApplication) getApplicationContext()).getUserInfo();
+                  boolean isDisabled = false;
+                  if (userInfo != null) {
+                      List<UserInfo.AppItem> disabledApps = userInfo.getDisabledApps();
+                      for (UserInfo.AppItem appItem : disabledApps) {
+                          if (appItem.getPackageName().equals(pkg)) {
+                              isDisabled = true;
+                          }
+                      }
+                  } else {
+                      LogUtils.d(this, "userInfo is null");
+                  }
+
+                  if (!isDisabled) {
+                    LogUtils.d(this, pkg + ":app_pass");
+                    return;
+                  } else {
+                    LogUtils.d(this, pkg + ":app_reject");
+                  }
+
+                  if (((StudentApplication) getApplicationContext()).isMonitor()) {
+                      setForceStopTarget(pkg, null);
+                      try {
+                          Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                          intent.setData(Uri.parse("package:" + pkg));
+                          intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                          getApplicationContext().startActivity(intent);
+                          LogUtils.d(this, "正在自动执行强制停止...");
+                      } catch (Exception e) {
+                          cancelForceStop();
+                          LogUtils.e(this, "无法打开应用设置: " + e.getMessage());
+                      }
+                  }
             }
         }
 
@@ -149,6 +167,7 @@ public class MyAccessibilityService extends AccessibilityService {
             // 步骤1: 查找并点击"强制停止"按钮
             if (clickForceStopButton(rootNode)) {
                 LogUtils.d(this, "Clicked force stop button");
+                performGlobalAction(GLOBAL_ACTION_BACK);
                 return;
             }
 
@@ -158,6 +177,7 @@ public class MyAccessibilityService extends AccessibilityService {
                 // 操作完成
                 handler.postDelayed(() -> {
                     completeForceStop(true, "强制停止成功");
+                    performGlobalAction(GLOBAL_ACTION_BACK);
                 }, 500);
                 return;
             }
@@ -167,6 +187,14 @@ public class MyAccessibilityService extends AccessibilityService {
         } finally {
             rootNode.recycle();
         }
+    }
+
+    // 调用此方法即可回到桌面
+    public void goHome() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     /**
