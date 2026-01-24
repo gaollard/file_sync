@@ -3,7 +3,8 @@ package com.example.test_filesync.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.widget.EditText;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -13,6 +14,8 @@ import com.example.test_filesync.R;
 import com.example.test_filesync.util.LogUtils;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 
 /**
  * 设备绑定页面
@@ -105,27 +108,46 @@ public class BindActivity extends AppCompatActivity {
      * 显示管控码输入对话框
      */
     private void showCodeInputDialog() {
-        // 创建输入框
-        EditText editText = new EditText(this);
-        editText.setHint(R.string.bind_code_input_hint);
-        editText.setSingleLine(true);
-        editText.setPadding(50, 30, 50, 30);
+        // 加载自定义布局
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_code_input, null);
+        TextInputLayout tilCodeInput = dialogView.findViewById(R.id.til_code_input);
+        TextInputEditText etCodeInput = dialogView.findViewById(R.id.et_code_input);
         
         // 创建对话框
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.bind_code_dialog_title)
                 .setMessage(R.string.bind_code_dialog_message)
-                .setView(editText)
-                .setPositiveButton("确定", (dialog, which) -> {
-                    String code = editText.getText().toString().trim();
-                    handleControlCodeBind(code);
-                })
-                .setNegativeButton("取消", (dialog, which) -> {
-                    dialog.dismiss();
+                .setView(dialogView)
+                .setPositiveButton("确定", null) // 先设置为null，后面手动设置监听器
+                .setNegativeButton("取消", (d, which) -> {
+                    d.dismiss();
                     LogUtils.d(this, TAG, "用户取消管控码输入");
                 })
                 .setCancelable(true)
-                .show();
+                .create();
+        
+        // 显示对话框
+        dialog.show();
+        
+        // 手动设置确定按钮的点击事件，这样可以在输入为空时不关闭对话框
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String code = etCodeInput.getText() != null ? etCodeInput.getText().toString().trim() : "";
+            
+            if (TextUtils.isEmpty(code)) {
+                // 显示错误提示
+                tilCodeInput.setError(getString(R.string.bind_code_empty_error));
+                tilCodeInput.setErrorEnabled(true);
+                LogUtils.w(this, TAG, "管控码为空");
+            } else {
+                // 清除错误提示
+                tilCodeInput.setError(null);
+                tilCodeInput.setErrorEnabled(false);
+                // 关闭对话框
+                dialog.dismiss();
+                // 处理绑定
+                handleControlCodeBind(code);
+            }
+        });
         
         LogUtils.d(this, TAG, "显示管控码输入对话框");
     }
@@ -135,12 +157,6 @@ public class BindActivity extends AppCompatActivity {
      * @param code 管控码
      */
     private void handleControlCodeBind(String code) {
-        if (TextUtils.isEmpty(code)) {
-            Toast.makeText(this, R.string.bind_code_empty_error, Toast.LENGTH_SHORT).show();
-            LogUtils.w(this, TAG, "管控码为空");
-            return;
-        }
-        
         LogUtils.i(this, TAG, "管控码绑定: " + code);
         
         // 这里先模拟绑定成功
