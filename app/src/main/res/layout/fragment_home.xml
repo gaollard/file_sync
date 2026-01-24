@@ -22,10 +22,11 @@
     <Button
         android:id="@+id/btn_bind"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:text="设备绑定"
         android:textSize="16sp"
         android:layout_marginTop="48dp"
+        app:cornerRadius="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textView" />
@@ -33,10 +34,11 @@
     <Button
         android:id="@+id/btn_permission"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:text="权限管理"
         android:textSize="16sp"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="16dp"
+        app:cornerRadius="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btn_bind" />
@@ -44,10 +46,11 @@
     <Button
         android:id="@+id/btn_app_list"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:text="应用管理"
         android:textSize="16sp"
         android:layout_marginTop="16dp"
+        app:cornerRadius="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btn_permission" />
