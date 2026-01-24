@@ -3,4 +3,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="notification_tint">#FF4081</color>
+    
+    <!-- ZXing Scanner Colors -->
+    <color name="zxing_custom_possible_result_points">#c0ffbd</color>
+    <color name="zxing_custom_result_view">#b0000000</color>
+    <color name="zxing_custom_viewfinder_laser">#ffcc0066</color>
+    <color name="zxing_custom_viewfinder_mask">#60000000</color>
 </resources>

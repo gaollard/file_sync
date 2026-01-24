@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- 相机权限 (用于二维码扫描) -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+
     <!-- 读取媒体图片 -->
     <application
         android:allowBackup="true"
@@ -75,6 +80,13 @@
         <activity
             android:name=".activity.BindActivity"
             android:exported="false"
+            android:theme="@style/Theme.test_filesync" />
+
+        <!-- QR Scan Activity -->
+        <activity
+            android:name=".activity.QrScanActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.test_filesync" />
 
         <!-- Note ContentProvider -->

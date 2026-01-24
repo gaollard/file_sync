@@ -89,15 +89,12 @@ public class BindActivity extends AppCompatActivity {
      */
     private void openQrScanner() {
         try {
-            // TODO: 集成二维码扫描库（如 ZXing）
-            // 这里先使用 Toast 提示，实际使用时需要集成二维码扫描功能
-            Toast.makeText(this, R.string.bind_qr_scanning, Toast.LENGTH_SHORT).show();
-            
-            // 示例代码：启动二维码扫描Activity
-            // Intent intent = new Intent(this, QrScanActivity.class);
-            // startActivityForResult(intent, REQUEST_CODE_QR_SCAN);
-            
             LogUtils.i(this, TAG, "准备打开二维码扫描页面");
+            
+            // 启动二维码扫描Activity
+            Intent intent = new Intent(this, QrScanActivity.class);
+            startActivityForResult(intent, REQUEST_CODE_QR_SCAN);
+            
         } catch (Exception e) {
             Toast.makeText(this, getString(R.string.bind_qr_error) + ": " + e.getMessage(), Toast.LENGTH_SHORT).show();
             LogUtils.e(this, TAG, "打开二维码扫描失败: " + e.getMessage());
@@ -206,7 +203,7 @@ public class BindActivity extends AppCompatActivity {
      */
     private void onBindSuccess(String bindCode) {
         LogUtils.i(this, TAG, "设备绑定成功: " + bindCode);
-        Toast.makeText(this, R.string.bind_success, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "设备绑定成功: " + bindCode, Toast.LENGTH_LONG).show();
         
         // TODO: 保存绑定信息到本地
         // TODO: 跳转到主页面或其他页面

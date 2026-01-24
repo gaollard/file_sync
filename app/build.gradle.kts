@@ -71,4 +71,8 @@ dependencies {
     implementation("cn.jiguang.sdk.plugin:honor:5.6.0")
     implementation(group = "", name = "HiPushSDK-8.0.12.307", ext = "aar")
     // implementation(files("libs/hipush.jar"))
+
+    // ZXing 二维码扫描库
+    implementation("com.google.zxing:core:3.5.3")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 }
