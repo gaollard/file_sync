@@ -1,58 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
     tools:context=".fragment.HomeFragment">
 
-    <TextView
-        android:id="@+id/textView"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="首页"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="32dp" />
+
+        <Button
+            android:id="@+id/btn_bind"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:text="1. 设备绑定"
+            android:textSize="16sp"
+            android:layout_marginTop="48dp"
+            app:cornerRadius="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textView" />
+
+        <Button
+            android:id="@+id/btn_permission"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:text="2. 权限设置"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            app:cornerRadius="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_bind" />
+
+        <Button
+            android:id="@+id/btn_app_list"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:text="应用管理"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            app:cornerRadius="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_permission" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- 隐藏桌面图标按钮 -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn_hide_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="首页"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="32dp" />
+        android:layout_gravity="top|end"
+        android:layout_margin="16dp"
+        android:contentDescription="隐藏桌面图标"
+        app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
 
-    <Button
-        android:id="@+id/btn_bind"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:text="1. 设备绑定"
-        android:textSize="16sp"
-        android:layout_marginTop="48dp"
-        app:cornerRadius="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textView" />
+    <!-- 投影截图按钮 -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/btn_screenshot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:contentDescription="投影截图"
+        app:srcCompat="@android:drawable/ic_menu_camera"
+        app:fabSize="normal"
+        app:backgroundTint="?attr/colorPrimary" />
 
-    <Button
-        android:id="@+id/btn_permission"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:text="2. 权限设置"
-        android:textSize="16sp"
-        android:layout_marginTop="16dp"
-        app:cornerRadius="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_bind" />
-
-    <Button
-        android:id="@+id/btn_app_list"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:text="应用管理"
-        android:textSize="16sp"
-        android:layout_marginTop="16dp"
-        app:cornerRadius="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_permission" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

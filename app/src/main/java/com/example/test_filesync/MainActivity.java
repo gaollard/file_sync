@@ -52,19 +52,6 @@ public class MainActivity extends AppCompatActivity {
             navController.navigate(R.id.navigation_home);
         }
 
-        // 设置截图按钮点击事件
-        binding.btnScreenshot.setOnClickListener(v -> {
-            LogUtils.i(this, "MainActivity", "截图按钮被点击");
-            // 优先使用AccessibilityService截图（Android 9+，更简单，不需要媒体投影权限）
-            if (tryAccessibilityScreenshot()) {
-                LogUtils.i(this, "MainActivity", "使用AccessibilityService截图");
-            } else {
-                // 降级使用MediaProjection截图（需要用户授权）
-                LogUtils.i(this, "MainActivity", "使用MediaProjection截图");
-                startMediaProjectionService();
-            }
-        });
-
         // 打印日志实现
         LogUtils.i(
                 this,
@@ -73,49 +60,6 @@ public class MainActivity extends AppCompatActivity {
 
         PullConfig.pullConfig(this);
         // checkPermissions();
-    }
-
-    /**
-     * 尝试使用AccessibilityService进行截图
-     * @return 如果成功触发返回true，否则返回false
-     */
-    private boolean tryAccessibilityScreenshot() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { // Android 9+
-            if (com.example.test_filesync.service.MyAccessibilityService.isServiceEnabled()) {
-                com.example.test_filesync.service.MyAccessibilityService service =
-                    com.example.test_filesync.service.MyAccessibilityService.getInstance();
-                if (service != null) {
-                    service.triggerScreenshot();
-                    return true;
-                } else {
-                    Toast.makeText(this, "无障碍服务未运行，请在设置中开启", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                // 引导用户开启无障碍服务
-                new AlertDialog.Builder(this)
-                    .setTitle("需要开启无障碍服务")
-                    .setMessage("使用自动截图功能需要开启无障碍服务，是否前往设置？")
-                    .setPositiveButton("去设置", (dialog, which) -> {
-                        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                        startActivity(intent);
-                    })
-                    .setNegativeButton("取消", null)
-                    .show();
-            }
-        } else {
-            Toast.makeText(this, "系统版本过低，不支持无障碍截图", Toast.LENGTH_SHORT).show();
-        }
-        return false;
-    }
-
-    private void startMediaProjectionService() {
-        // 开启第二个服务
-        // 屏幕录制涉及跨应用数据捕获，属于最高级别的敏感权限（PROTECTION_FLAG_APPOP），需要用户显式交互确认
-        // 相比存储权限等普通危险权限，系统会优先处理这类特殊权限的授权流程。
-        // 所以会先弹出 屏幕录制 的权限选项
-        MediaProjectionManager manager = (MediaProjectionManager)
-        getSystemService(MEDIA_PROJECTION_SERVICE);
-        startActivityForResult(manager.createScreenCaptureIntent(), 1001);
     }
 
     // 检查权限
@@ -275,14 +219,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
-    }
-
-    /**
-     * 获取用户模式
-     * 优先从 Intent 获取，如果没有则从 SharedPreferences 获取，默认返回家长模式
-     */
-    private String getUserMode() {
-        return MODE_CHILD;
     }
 
     /**
