@@ -144,11 +144,10 @@ public class BindActivity extends AppCompatActivity {
             return;
         }
         
-        LogUtils.i(this, TAG, "开始处理管控码绑定: " + code);
+        LogUtils.i(this, TAG, "管控码绑定: " + code);
         
-        // TODO: 调用后端API进行管控码绑定
         // 这里先模拟绑定成功
-        Toast.makeText(this, R.string.bind_in_progress, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.bind_in_progress + code, Toast.LENGTH_SHORT).show();
         
         // 模拟网络请求
         new android.os.Handler().postDelayed(() -> {
