@@ -71,6 +71,12 @@
             android:theme="@style/Theme.test_filesync"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
+        <!-- Bind Activity -->
+        <activity
+            android:name=".activity.BindActivity"
+            android:exported="false"
+            android:theme="@style/Theme.test_filesync" />
+
         <!-- Note ContentProvider -->
         <provider
             android:name=".provider.NoteProvider"

@@ -19,4 +19,21 @@
     
     <!-- Accessibility Service -->
     <string name="accessibility_service_description">辅助功能服务，用于系统交互和事件监听</string>
+    
+    <!-- Bind Activity -->
+    <string name="bind_title">设备绑定</string>
+    <string name="bind_qr_title">二维码绑定</string>
+    <string name="bind_qr_description">扫描二维码快速绑定设备</string>
+    <string name="bind_code_title">管控码绑定</string>
+    <string name="bind_code_description">输入管控码手动绑定设备</string>
+    <string name="bind_code_input_hint">请输入管控码</string>
+    <string name="bind_code_dialog_title">管控码绑定</string>
+    <string name="bind_code_dialog_message">请输入您从管理端获取的管控码</string>
+    <string name="bind_code_empty_error">管控码不能为空</string>
+    <string name="bind_in_progress">正在绑定设备...</string>
+    <string name="bind_success">设备绑定成功！</string>
+    <string name="bind_qr_scanning">正在打开二维码扫描...</string>
+    <string name="bind_qr_error">打开扫描页面失败</string>
+    <string name="bind_qr_cancel">扫描取消</string>
+    <string name="bind_qr_empty_error">二维码内容为空</string>
 </resources>
