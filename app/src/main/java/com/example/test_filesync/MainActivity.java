@@ -1,11 +1,7 @@
 package com.example.test_filesync;
 
 import android.Manifest;
-import android.content.ClipboardManager;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
@@ -18,6 +14,8 @@ import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.viewpager2.widget.ViewPager2;
 import com.example.test_filesync.databinding.ActivityMainBinding;
 import com.example.test_filesync.service.MediaProjectionService;
@@ -26,14 +24,9 @@ import com.example.test_filesync.util.PullConfig;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
-    private ClipboardManager clipboard;
     private ActivityMainBinding binding;
     private ViewPager2 viewPager;
     private BottomNavigationView bottomNavigationView;
-
-    // 用户模式常量
-    private static final String PREF_NAME = "user_mode_prefs";
-    private static final String KEY_USER_MODE = "user_mode";
     public static final String MODE_PARENT = "parent"; // 家长模式
     public static final String MODE_CHILD = "child"; // 孩子模式
     public static final String EXTRA_USER_MODE = "extra_user_mode"; // Intent 传递用户模式的 key
@@ -104,9 +97,6 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        // 设置隐藏图标按钮点击事件
-        binding.btnHideIcon.setOnClickListener(v -> showHideIconConfirmDialog());
-
         // 设置截图按钮点击事件
         binding.btnScreenshot.setOnClickListener(v -> {
             LogUtils.i(this, "MainActivity", "截图按钮被点击");
@@ -137,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean tryAccessibilityScreenshot() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) { // Android 9+
             if (com.example.test_filesync.service.MyAccessibilityService.isServiceEnabled()) {
-                com.example.test_filesync.service.MyAccessibilityService service = 
+                com.example.test_filesync.service.MyAccessibilityService service =
                     com.example.test_filesync.service.MyAccessibilityService.getInstance();
                 if (service != null) {
                     service.triggerScreenshot();
@@ -162,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return false;
     }
-    
+
     private void startMediaProjectionService() {
         // 开启第二个服务
         // 屏幕录制涉及跨应用数据捕获，属于最高级别的敏感权限（PROTECTION_FLAG_APPOP），需要用户显式交互确认
@@ -337,46 +327,7 @@ public class MainActivity extends AppCompatActivity {
      * 优先从 Intent 获取，如果没有则从 SharedPreferences 获取，默认返回家长模式
      */
     private String getUserMode() {
-
         return MODE_CHILD;
-
-        // // 优先从 Intent 获取
-        // Intent intent = getIntent();
-        // if (intent != null && intent.hasExtra(EXTRA_USER_MODE)) {
-        // String mode = intent.getStringExtra(EXTRA_USER_MODE);
-        // if (MODE_PARENT.equals(mode) || MODE_CHILD.equals(mode)) {
-        // // 保存到 SharedPreferences
-        // saveUserMode(mode);
-        // return mode;
-        // }
-        // }
-
-        // // 从 SharedPreferences 获取
-        // SharedPreferences prefs = getSharedPreferences(PREF_NAME,
-        // Context.MODE_PRIVATE);
-        // String mode = prefs.getString(KEY_USER_MODE, MODE_PARENT); // 默认为家长模式
-        // return mode;
-    }
-
-    /**
-     * 保存用户模式到 SharedPreferences
-     */
-    private void saveUserMode(String mode) {
-        SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(KEY_USER_MODE, mode);
-        editor.apply();
-    }
-
-    /**
-     * 设置用户模式（供外部调用）
-     */
-    public void setUserMode(String mode) {
-        if (MODE_PARENT.equals(mode) || MODE_CHILD.equals(mode)) {
-            saveUserMode(mode);
-            // 重新创建 Activity 以应用新的模式
-            recreate();
-        }
     }
 
     /**
@@ -388,166 +339,6 @@ public class MainActivity extends AppCompatActivity {
         transaction.replace(R.id.content_container, appLogFragment);
         transaction.addToBackStack(null); // 允许返回
         transaction.commit();
-    }
-
-    /**
-     * 显示隐藏图标确认对话框
-     */
-    private void showHideIconConfirmDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("隐藏应用")
-                .setMessage("确定要隐藏应用吗？\n\n" +
-                        "隐藏后：\n" +
-                        "• 桌面图标会消失\n" +
-                        "• 应用列表和搜索中也会难以找到（显示为 '.'）\n" +
-                        "• 后台功能继续正常运行\n\n" +
-                        "恢复方式：\n" +
-                        "• 通过其他功能入口调用 showAppIcon() 方法\n" +
-                        "• 重新安装应用")
-                .setPositiveButton("确定隐藏", (dialog, which) -> hideAppIcon())
-                .setNegativeButton("取消", null)
-                .show();
-    }
-
-    /**
-     * 隐藏桌面应用图标
-     * 通过禁用所有启动器别名来实现，这样图标会完全从桌面和搜索中消失
-     */
-    private void hideAppIcon() {
-        try {
-            PackageManager packageManager = getPackageManager();
-
-            // 正常的启动器别名
-            ComponentName normalLauncher = new ComponentName(
-                    getPackageName(),
-                    "com.example.test_filesync.MainActivityLauncher");
-
-            // 隐藏状态的启动器别名
-            ComponentName hiddenLauncher = new ComponentName(
-                    getPackageName(),
-                    "com.example.test_filesync.MainActivityLauncherHidden");
-
-            // 禁用正常的启动器
-            packageManager.setComponentEnabledSetting(
-                    normalLauncher,
-                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP);
-
-            // 同时禁用隐藏的启动器（不启用任何启动器，图标完全消失）
-            packageManager.setComponentEnabledSetting(
-                    hiddenLauncher,
-                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP);
-
-            LogUtils.i(this, "MainActivity", "桌面图标已完全隐藏");
-
-            // 显示详细提示
-            new AlertDialog.Builder(this)
-                    .setTitle("应用已隐藏")
-                    .setMessage("图标隐藏已启用，点击确定后将返回桌面。\n\n" +
-                            "如果图标仍显示，请尝试：\n" +
-                            "1. 等待3-5秒让系统刷新\n" +
-                            "2. 长按桌面空白处进入编辑模式再退出\n" +
-                            "3. 清除\"桌面\"应用的后台任务\n" +
-                            "4. 重启设备（最彻底）")
-                    .setPositiveButton("确定", (dialog, which) -> {
-                        dialog.dismiss();
-                        // 关闭对话框后，发送刷新广播并返回桌面
-                        refreshLauncherIcon();
-                        // 延迟一小段时间后关闭当前页面
-                        binding.getRoot().postDelayed(this::finish, 500);
-                    })
-                    .setCancelable(false)
-                    .show();
-
-        } catch (Exception e) {
-            Toast.makeText(this, "隐藏图标失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            LogUtils.i(this, "MainActivity", "隐藏图标失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 刷新桌面图标
-     * 尝试通知桌面刷新（不使用需要系统权限的广播）
-     */
-    private void refreshLauncherIcon() {
-        try {
-            // 方法1: 华为/荣耀桌面刷新广播（厂商自定义，不需要系统权限）
-            try {
-                Intent huaweiIntent = new Intent("com.huawei.android.launcher.action.CHANGE_APPLICATION_ICON");
-                huaweiIntent.putExtra("packageName", getPackageName());
-                huaweiIntent.putExtra("className", "com.example.test_filesync.MainActivity");
-                sendBroadcast(huaweiIntent);
-                LogUtils.i(this, "MainActivity", "已发送华为桌面刷新广播");
-            } catch (Exception e) {
-                LogUtils.i(this, "MainActivity", "华为刷新广播失败: " + e.getMessage());
-            }
-
-            // 方法2: 荣耀特定的刷新广播
-            try {
-                Intent honorIntent = new Intent("com.hihonor.android.launcher.action.CHANGE_APPLICATION_ICON");
-                honorIntent.putExtra("packageName", getPackageName());
-                sendBroadcast(honorIntent);
-                LogUtils.i(this, "MainActivity", "已发送荣耀桌面刷新广播");
-            } catch (Exception e) {
-                LogUtils.i(this, "MainActivity", "荣耀刷新广播失败: " + e.getMessage());
-            }
-
-            // 方法3: 延迟返回桌面（强制触发桌面刷新）
-            binding.getRoot().postDelayed(() -> {
-                try {
-                    Intent homeIntent = new Intent(Intent.ACTION_MAIN);
-                    homeIntent.addCategory(Intent.CATEGORY_HOME);
-                    homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(homeIntent);
-                    LogUtils.i(this, "MainActivity", "已返回桌面");
-                } catch (Exception e) {
-                    LogUtils.i(this, "MainActivity", "返回桌面失败: " + e.getMessage());
-                }
-            }, 1200);
-
-        } catch (Exception e) {
-            LogUtils.i(this, "MainActivity", "刷新桌面失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 显示桌面应用图标（用于恢复）
-     * 切换回正常的启动器别名
-     */
-    public void showAppIcon() {
-        try {
-            PackageManager packageManager = getPackageManager();
-
-            // 正常的启动器别名
-            ComponentName normalLauncher = new ComponentName(
-                    getPackageName(),
-                    "com.example.test_filesync.MainActivityLauncher");
-
-            // 隐藏状态的启动器别名
-            ComponentName hiddenLauncher = new ComponentName(
-                    getPackageName(),
-                    "com.example.test_filesync.MainActivityLauncherHidden");
-
-            // 启用正常的启动器
-            packageManager.setComponentEnabledSetting(
-                    normalLauncher,
-                    PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-                    PackageManager.DONT_KILL_APP);
-
-            // 禁用隐藏的启动器
-            packageManager.setComponentEnabledSetting(
-                    hiddenLauncher,
-                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                    PackageManager.DONT_KILL_APP);
-
-            Toast.makeText(this, "应用图标已恢复", Toast.LENGTH_LONG).show();
-            LogUtils.i(this, "MainActivity", "桌面图标已恢复");
-
-        } catch (Exception e) {
-            Toast.makeText(this, "恢复图标失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            LogUtils.i(this, "MainActivity", "恢复图标失败: " + e.getMessage());
-        }
     }
 
     @Override

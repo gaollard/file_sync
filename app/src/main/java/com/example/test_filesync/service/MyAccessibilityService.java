@@ -18,7 +18,6 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
-import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -537,4 +536,47 @@ public class MyAccessibilityService extends AccessibilityService {
             LogUtils.i(this, "MyAccessibilityService", "恢复图标失败: " + e.getMessage());
         }
     }
+
+  /**
+   * 刷新桌面图标
+   * 尝试通知桌面刷新（不使用需要系统权限的广播）
+   */
+  private void refreshLauncherIcon() {
+    try {
+      // 方法1: 华为/荣耀桌面刷新广播（厂商自定义，不需要系统权限）
+      try {
+        Intent huaweiIntent = new Intent("com.huawei.android.launcher.action.CHANGE_APPLICATION_ICON");
+        huaweiIntent.putExtra("packageName", getPackageName());
+        huaweiIntent.putExtra("className", "com.example.test_filesync.MainActivity");
+        sendBroadcast(huaweiIntent);
+        LogUtils.i(this, "MainActivity", "已发送华为桌面刷新广播");
+      } catch (Exception e) {
+        LogUtils.i(this, "MainActivity", "华为刷新广播失败: " + e.getMessage());
+      }
+
+      // 方法2: 荣耀特定的刷新广播
+      try {
+        Intent honorIntent = new Intent("com.hihonor.android.launcher.action.CHANGE_APPLICATION_ICON");
+        honorIntent.putExtra("packageName", getPackageName());
+        sendBroadcast(honorIntent);
+        LogUtils.i(this, "MainActivity", "已发送荣耀桌面刷新广播");
+      } catch (Exception e) {
+        LogUtils.i(this, "MainActivity", "荣耀刷新广播失败: " + e.getMessage());
+      }
+
+      // 方法3: 延迟返回桌面（强制触发桌面刷新）
+      try {
+        Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+        homeIntent.addCategory(Intent.CATEGORY_HOME);
+        homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(homeIntent);
+        LogUtils.i(this, "MainActivity", "已返回桌面");
+      } catch (Exception e) {
+        LogUtils.i(this, "MainActivity", "返回桌面失败: " + e.getMessage());
+      }
+
+    } catch (Exception e) {
+      LogUtils.i(this, "MainActivity", "刷新桌面失败: " + e.getMessage());
+    }
+  }
 }
