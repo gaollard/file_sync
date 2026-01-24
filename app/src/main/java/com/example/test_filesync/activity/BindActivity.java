@@ -1,14 +1,17 @@
 package com.example.test_filesync.activity;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.example.test_filesync.R;
 import com.example.test_filesync.util.LogUtils;
@@ -37,11 +40,40 @@ public class BindActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bind);
         
+        setupSystemBars();
         initViews();
         setupToolbar();
         setupListeners();
         
         LogUtils.d(this, TAG, "绑定页面已启动");
+    }
+    
+    /**
+     * 设置状态栏和导航栏颜色
+     */
+    private void setupSystemBars() {
+        Window window = getWindow();
+        if (window != null) {
+            // 获取主题色
+            int primaryColor = ContextCompat.getColor(this, R.color.colorPrimary);
+            
+            // 设置状态栏颜色
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                window.setStatusBarColor(primaryColor);
+            }
+            
+            // 设置导航栏颜色
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                window.setNavigationBarColor(primaryColor);
+            }
+            
+            // 设置状态栏图标为浅色（因为背景是深色）
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                View decorView = window.getDecorView();
+                // 清除浅色状态栏标志，使用深色图标需要这个标志，我们不需要
+                // decorView.setSystemUiVisibility(0);
+            }
+        }
     }
     
     /**
