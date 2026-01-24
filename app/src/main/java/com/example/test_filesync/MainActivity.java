@@ -3,7 +3,6 @@ package com.example.test_filesync;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,7 +15,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
 import com.example.test_filesync.databinding.ActivityMainBinding;
 import com.example.test_filesync.service.MediaProjectionService;
 import com.example.test_filesync.util.LogUtils;
@@ -27,11 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private NavController navController;
     private BottomNavigationView bottomNavigationView;
-    public static final String MODE_PARENT = "parent"; // 家长模式
-    public static final String MODE_CHILD = "child"; // 孩子模式
-    public static final String EXTRA_USER_MODE = "extra_user_mode"; // Intent 传递用户模式的 key
 
-    // 创建应用
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
