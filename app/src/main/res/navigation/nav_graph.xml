@@ -3,14 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/HomeFragment">
+    app:startDestination="@id/navigation_home">
 
+    <!-- 首页 -->
     <fragment
-        android:id="@+id/HomeFragment"
+        android:id="@+id/navigation_home"
         android:name="com.example.test_filesync.fragment.HomeFragment"
         android:label="首页"
         tools:layout="@layout/fragment_home">
-
         <action
             android:id="@+id/action_HomeFragment_to_PermissionFragment"
             app:destination="@id/PermissionFragment" />
@@ -19,47 +19,25 @@
             app:destination="@id/InstalledAppsFragment" />
     </fragment>
 
+    <!-- 应用权限列表 -->
     <fragment
         android:id="@+id/PermissionFragment"
         android:name="com.example.test_filesync.fragment.PermissionFragment"
         android:label="应用权限列表"
         tools:layout="@layout/fragment_permission">
-
         <action
             android:id="@+id/action_PermissionFragment_to_HomeFragment"
-            app:destination="@id/HomeFragment" />
+            app:destination="@id/navigation_home" />
     </fragment>
 
+    <!-- 已安装应用 -->
     <fragment
         android:id="@+id/InstalledAppsFragment"
         android:name="com.example.test_filesync.fragment.InstalledAppsFragment"
         android:label="已安装应用"
         tools:layout="@layout/fragment_installed_apps">
-
         <action
             android:id="@+id/action_InstalledAppsFragment_to_HomeFragment"
-            app:destination="@id/HomeFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/FirstFragment"
-        android:name="com.example.test_filesync.FirstFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
-
-        <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.example.test_filesync.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
-
-        <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            app:destination="@id/navigation_home" />
     </fragment>
 </navigation>

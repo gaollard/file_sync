@@ -16,7 +16,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.viewpager2.widget.ViewPager2;
+import androidx.navigation.ui.NavigationUI;
 import com.example.test_filesync.databinding.ActivityMainBinding;
 import com.example.test_filesync.service.MediaProjectionService;
 import com.example.test_filesync.util.LogUtils;
@@ -25,7 +25,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
-    private ViewPager2 viewPager;
+    private NavController navController;
     private BottomNavigationView bottomNavigationView;
     public static final String MODE_PARENT = "parent"; // 家长模式
     public static final String MODE_CHILD = "child"; // 孩子模式
@@ -39,62 +39,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot()); // <-- 这句是用于创建界面的
         // setSupportActionBar(binding.toolbar);
 
-        // 获取用户模式（优先从 Intent 获取，否则从 SharedPreferences 获取）
-        String userMode = getUserMode();
-
-        // 初始化 ViewPager2 和 BottomNavigationView
-        viewPager = findViewById(R.id.view_pager);
+        // 初始化 NavController 和 BottomNavigationView
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.nav_host_fragment);
+        if (navHostFragment != null) {
+            navController = navHostFragment.getNavController();
+        }
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        // 设置 ViewPager2 适配器（两种模式都需要，传入用户模式）
-        ViewPagerAdapter adapter = new ViewPagerAdapter(this, userMode);
-        viewPager.setAdapter(adapter);
-        viewPager.setUserInputEnabled(false);
-
-        // 根据用户模式决定是否显示底部导航栏
-        if (MODE_CHILD.equals(userMode)) {
-            // 孩子模式：隐藏底部导航栏
-            bottomNavigationView.setVisibility(View.GONE);
-            // 默认显示第一个页面
-            viewPager.setCurrentItem(0, false);
-        } else {
-            // 家长模式：显示底部导航栏
-            bottomNavigationView.setVisibility(View.VISIBLE);
-
-            // 连接 BottomNavigationView 和 ViewPager2
-            bottomNavigationView.setOnItemSelectedListener(item -> {
-                int itemId = item.getItemId();
-                if (itemId == R.id.navigation_home) {
-                    viewPager.setCurrentItem(0, false);
-                    return true;
-                } else if (itemId == R.id.navigation_record) {
-                    viewPager.setCurrentItem(1, false);
-                    return true;
-                } else if (itemId == R.id.navigation_profile) {
-                    viewPager.setCurrentItem(2, false);
-                    return true;
-                }
-                return false;
-            });
-
-            // 监听 ViewPager2 页面变化，同步更新 BottomNavigationView
-            viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-                @Override
-                public void onPageSelected(int position) {
-                    super.onPageSelected(position);
-                    switch (position) {
-                        case 0:
-                            bottomNavigationView.setSelectedItemId(R.id.navigation_home);
-                            break;
-                        case 1:
-                            bottomNavigationView.setSelectedItemId(R.id.navigation_record);
-                            break;
-                        case 2:
-                            bottomNavigationView.setSelectedItemId(R.id.navigation_profile);
-                            break;
-                    }
-                }
-            });
+        bottomNavigationView.setVisibility(View.GONE);
+        if (navController != null) {
+            navController.navigate(R.id.navigation_home);
         }
 
         // 设置截图按钮点击事件
@@ -336,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
     public void showAppLogFragment() {
         com.example.test_filesync.fragment.AppLogFragment appLogFragment = new com.example.test_filesync.fragment.AppLogFragment();
         androidx.fragment.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.content_container, appLogFragment);
+        transaction.replace(R.id.nav_host_fragment, appLogFragment);
         transaction.addToBackStack(null); // 允许返回
         transaction.commit();
     }
