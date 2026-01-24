@@ -120,12 +120,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // 设置绑定按钮点击事件
-        binding.btnBind.setOnClickListener(v -> {
-            LogUtils.i(this, "MainActivity", "绑定按钮被点击");
-            openBindActivity();
-        });
-
         // 打印日志实现
         LogUtils.i(
                 this,
@@ -134,20 +128,6 @@ public class MainActivity extends AppCompatActivity {
 
         PullConfig.pullConfig(this);
         // checkPermissions();
-    }
-
-    /**
-     * 打开设备绑定页面
-     */
-    private void openBindActivity() {
-        try {
-            Intent intent = new Intent(this, com.example.test_filesync.activity.BindActivity.class);
-            startActivity(intent);
-            LogUtils.i(this, "MainActivity", "跳转到绑定页面");
-        } catch (Exception e) {
-            Toast.makeText(this, "打开绑定页面失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            LogUtils.e(this, "MainActivity", "打开绑定页面失败: " + e.getMessage());
-        }
     }
 
     /**

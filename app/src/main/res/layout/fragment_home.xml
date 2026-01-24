@@ -20,6 +20,17 @@
         android:layout_marginTop="32dp" />
 
     <Button
+        android:id="@+id/btn_bind"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="设备绑定"
+        android:textSize="16sp"
+        android:layout_marginTop="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textView" />
+
+    <Button
         android:id="@+id/btn_permission"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -28,7 +39,7 @@
         android:layout_marginTop="48dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textView" />
+        app:layout_constraintTop_toBottomOf="@id/btn_bind" />
 
     <Button
         android:id="@+id/btn_app_list"
