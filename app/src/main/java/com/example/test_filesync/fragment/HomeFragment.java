@@ -19,7 +19,7 @@ public class HomeFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+            @Nullable Bundle savedInstanceState) {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -30,7 +30,6 @@ public class HomeFragment extends Fragment {
 
         // 权限管理按钮点击事件
         binding.btnPermission.setOnClickListener(v -> {
-
             navigateToFragment(new PermissionFragment());
         });
 
