@@ -12,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -21,6 +20,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.example.test_filesync.R;
 import com.example.test_filesync.service.FloatingWindowService;
 import com.example.test_filesync.service.MyAccessibilityService;
@@ -41,7 +41,7 @@ public class PermissionFragment extends Fragment {
     private Button screenshotButton;
     private Button floatingWindowButton;
     private Button locationButton;
-    private ImageButton btnBack;
+    private MaterialToolbar toolbar;
     private static final String TAG = "PermissionFragment";
 
     @Override
@@ -52,7 +52,7 @@ public class PermissionFragment extends Fragment {
         screenshotButton = view.findViewById(R.id.screenshot_button);
         floatingWindowButton = view.findViewById(R.id.floating_window_button);
         locationButton = view.findViewById(R.id.location_button);
-        btnBack = view.findViewById(R.id.btn_back);
+        toolbar = view.findViewById(R.id.toolbar);
         return view;
     }
 
@@ -82,10 +82,10 @@ public class PermissionFragment extends Fragment {
         if (locationButton != null) {
             locationButton.setOnClickListener(v -> onLocationButtonClick());
         }
-        
-        // 设置返回按钮点击事件
-        if (btnBack != null) {
-            btnBack.setOnClickListener(v -> {
+
+        // 设置 Toolbar 返回按钮点击事件
+        if (toolbar != null) {
+            toolbar.setNavigationOnClickListener(v -> {
                 requireActivity().getSupportFragmentManager().popBackStack();
             });
         }
@@ -464,12 +464,12 @@ public class PermissionFragment extends Fragment {
         permissionList.add(Manifest.permission.READ_MEDIA_IMAGES);
         permissionList.add(Manifest.permission.READ_MEDIA_VIDEO);
         permissionList.add(Manifest.permission.READ_MEDIA_AUDIO);
-        
+
         // Android 14+ 才需要部分照片访问权限
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             permissionList.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
         }
-        
+
         permissionList.add(Manifest.permission.POST_NOTIFICATIONS);
         permissionList.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION);
         permissionList.add(Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -479,7 +479,7 @@ public class PermissionFragment extends Fragment {
         permissionList.add(Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION);
         permissionList.add(Manifest.permission.SYSTEM_ALERT_WINDOW);
         permissionList.add(Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-        
+
         String[] permissions = permissionList.toArray(new String[0]);
 
         // 权限名称映射
