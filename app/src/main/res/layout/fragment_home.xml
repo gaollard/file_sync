@@ -51,7 +51,7 @@
             android:id="@+id/btn_app_list"
             android:layout_width="0dp"
             android:layout_height="60dp"
-            android:text="应用管理"
+            android:text="应用管理(调试用)"
             android:textSize="16sp"
             android:layout_marginTop="16dp"
             app:cornerRadius="8dp"
@@ -59,29 +59,30 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btn_permission" />
 
+        <Button
+            android:id="@+id/btn_hide_icon"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:text="隐藏桌面图标(调试用)"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            app:cornerRadius="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_app_list" />
+
+        <Button
+            android:id="@+id/btn_screenshot"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:text="投影截图(调试用)"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            app:cornerRadius="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_hide_icon" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!-- 隐藏桌面图标按钮 -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btn_hide_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="top|end"
-        android:layout_margin="16dp"
-        android:contentDescription="隐藏桌面图标"
-        app:srcCompat="@android:drawable/ic_menu_close_clear_cancel" />
-
-    <!-- 投影截图按钮 -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/btn_screenshot"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:contentDescription="投影截图"
-        app:srcCompat="@android:drawable/ic_menu_camera"
-        app:fabSize="normal"
-        app:backgroundTint="?attr/colorPrimary" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

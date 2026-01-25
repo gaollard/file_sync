@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">test_filesync</string>
+    <string name="app_name">手机管理</string>
     <string name="app_description">设备管理员权限，用于设备管理和安全策略</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
@@ -9,7 +9,7 @@
     <string name="previous">Previous</string>
 
     <string name="lorem_ipsum">
-        test_filesync
+        手机管理
     </string>
     
     <!-- Bottom Navigation Tab Labels -->
