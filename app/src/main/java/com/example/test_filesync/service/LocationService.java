@@ -12,7 +12,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 import androidx.core.app.NotificationCompat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -208,7 +207,6 @@ public class LocationService extends Service {
                     checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) !=
                     android.content.pm.PackageManager.PERMISSION_GRANTED) {
                     LogUtils.e(this, "位置权限未授予，无法使用定位服务");
-                    Toast.makeText(this, "位置权限未授予，无法使用定位服务", Toast.LENGTH_LONG).show();
                     return;
                 }
             }
@@ -273,7 +271,6 @@ public class LocationService extends Service {
                     if (locationClient != null) {
                         isLocationClientStarted = locationClient.isStarted();
                         if (isLocationClientStarted) {
-                            Toast.makeText(LocationService.this, "百度定位服务已启动", Toast.LENGTH_SHORT).show();
                             Log.i(TAG, "百度定位服务已启动，isStarted: " + isLocationClientStarted);
                         } else {
                             startCheckRetryCount++;
@@ -281,9 +278,7 @@ public class LocationService extends Service {
                                 Log.w(TAG, "定位客户端启动中，重试检查 (" + startCheckRetryCount + "/" + MAX_START_CHECK_RETRY + ")");
                                 // 如果还未启动，再等待一段时间后重试检查
                                 handler.postDelayed(this, 1000);
-                                Toast.makeText(LocationService.this, "定位客户端启动中，重试检查 (" + startCheckRetryCount + "/" + MAX_START_CHECK_RETRY + ")", Toast.LENGTH_SHORT).show();
                             } else {
-                                Toast.makeText(LocationService.this, "定位客户端启动超时，已达到最大重试次数", Toast.LENGTH_SHORT).show();
                                 LogUtils.e(LocationService.this, "定位客户端启动超时，已达到最大重试次数");
                             }
                         }
@@ -387,11 +382,8 @@ public class LocationService extends Service {
             } else {
                 startForeground(3, createNotification("位置服务运行中"));
             }
-
-            Toast.makeText(this, "位置服务已启动", Toast.LENGTH_SHORT).show();
             Log.i(TAG, "位置服务已启动");
         } catch (Exception e) {
-            Toast.makeText(this, "启动位置服务错误：" + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
             Log.e(TAG, "startForegroundService error", e);
         }
     }

@@ -13,7 +13,6 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 import android.content.SharedPreferences;
-import android.widget.Toast;
 
 import com.baidu.location.LocationClient;
 import com.example.test_filesync.api.dto.UserInfo;
@@ -294,7 +293,7 @@ public class StudentApplication extends Application {
         != PackageManager.PERMISSION_GRANTED &&
         ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION)
           != PackageManager.PERMISSION_GRANTED) {
-        Toast.makeText(context, "请先授予定位权限", Toast.LENGTH_LONG).show();
+        LogUtils.w(context, TAG, "请先授予定位权限");
         return;
       }
     }
@@ -311,10 +310,8 @@ public class StudentApplication extends Application {
       } else {
         context.startService(intent);
       }
-      Toast.makeText(context, "定位服务已启动", Toast.LENGTH_SHORT).show();
       LogUtils.i(context, TAG, "定位服务已启动");
     } catch (Exception e) {
-      Toast.makeText(context, "启动定位服务失败: " + e.getMessage(), Toast.LENGTH_LONG).show();
       LogUtils.e(context, TAG, "启动定位服务失败: " + e.getMessage());
     }
   }

@@ -41,6 +41,7 @@ import com.example.test_filesync.R;
 import com.example.test_filesync.api.ApiCallback;
 import com.example.test_filesync.api.ApiConfig;
 import com.example.test_filesync.util.FileUpload;
+import com.example.test_filesync.util.LogUtils;
 
 import java.util.List;
 
@@ -56,13 +57,11 @@ public class MediaProjectionService extends Service {
     private int frameCounter = 0;
     private final int targetFrames = 60 * 60; // 60fps × 半小时一次,但是只有在画面有变动的时候才是最短半小时,所以除去晚上睡觉时间,一天大概10-20张截图左右(10小时手机时间)
 
-    // 必须放在这里
     // MediaProjection回调（处理投影生命周期）
     private final MediaProjection.Callback mediaProjCallback = new MediaProjection.Callback() {
         @Override
         public void onStop() {
-            // Toast.makeText(MediaProjectionService.this, "当用户主动停止屏幕捕获（如关闭录屏/投屏）",
-            // Toast.LENGTH_LONG).show()
+            LogUtils.i(MediaProjectionService.this, "当用户主动停止屏幕捕获（如关闭录屏/投屏）");
         }
     };
 
@@ -70,14 +69,12 @@ public class MediaProjectionService extends Service {
     private final VirtualDisplay.Callback virtualDisplayCallback = new VirtualDisplay.Callback() {
         @Override
         public void onPaused() {
-            // Toast.makeText(MediaProjectionService.this, "虚拟显示器内容暂停渲染（如应用退到后台）",
-            // Toast.LENGTH_LONG).show()
+            LogUtils.i(MediaProjectionService.this, "虚拟显示器内容暂停渲染（如应用退到后台）");
         }
 
         @Override
         public void onResumed() {
-            // Toast.makeText(MediaProjectionService.this, "虚拟显示器恢复渲染（如应用回到前台）",
-            // Toast.LENGTH_LONG).show()
+            LogUtils.i(MediaProjectionService.this, "虚拟显示器恢复渲染（如应用回到前台）");
         }
     };
 
@@ -91,7 +88,7 @@ public class MediaProjectionService extends Service {
         try {
             startForegroundService(); // 创建通知渠道并启动服务
         } catch (Exception e) {
-            Toast.makeText(this, "onCreate 错误：\n" + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            LogUtils.e(MediaProjectionService.this, "onCreate 错误：\n" + e.getLocalizedMessage());
         }
     }
 
@@ -102,7 +99,7 @@ public class MediaProjectionService extends Service {
             if (intent != null && intent.getExtras() != null) {
                 // Log.d("IntentDebug", it.toString())
             } else {
-                Toast.makeText(this, "Intent为空", Toast.LENGTH_LONG).show();
+                LogUtils.e(MediaProjectionService.this, "Intent为空");
                 return START_STICKY;
             }
 
@@ -127,14 +124,11 @@ public class MediaProjectionService extends Service {
                       PixelFormat.RGBA_8888, 2);
               if (mImageReader != null && mImageReader.getSurface() != null
                       && mImageReader.getSurface().isValid()) {
-                  // width 1224 height 2700
-                  // Toast.makeText(this, "width " + width + " height " + height,
-                  // Toast.LENGTH_LONG).show()
               } else {
                   stopSelf(); // 主动停止服务避免崩溃
-                  Toast.makeText(this, "Surface初始化失败", Toast.LENGTH_LONG).show();
+                  LogUtils.e(MediaProjectionService.this, "Surface初始化失败");
               }
-
+              LogUtils.i(MediaProjectionService.this, "Surface初始化成功");
               // 创建虚拟显示层
               // 创建回调
               projection.registerCallback(
@@ -148,11 +142,7 @@ public class MediaProjectionService extends Service {
                       virtualDisplayCallback,
                       null);
               if (virtualDisplay == null) {
-                  Toast.makeText(this, "VirtualDisplay创建失败", Toast.LENGTH_LONG).show();
-              } else {
-                  // width 1224 height 2700
-                  // Toast.makeText(this, "VirtualDisplay width " + width + " height " + height,
-                  // Toast.LENGTH_LONG).show()
+                  LogUtils.e(MediaProjectionService.this, "VirtualDisplay创建失败");
               }
 
               // 创建监听器 - 实际测试,这个回调并不是按照帧率进行触发,如果屏幕画面没有变化则不会进行触发...
@@ -209,10 +199,7 @@ public class MediaProjectionService extends Service {
                                           try {
                                               saveImageToGallery(bitmap);
                                           } catch (Exception e) {
-                                              Toast.makeText(
-                                                      MediaProjectionService.this,
-                                                      "保存图片到相册失败: " + e.getMessage(),
-                                                      Toast.LENGTH_SHORT).show();
+                                              LogUtils.e(MediaProjectionService.this, "保存图片到相册失败: " + e.getMessage());
                                           }
 
                                           ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -222,10 +209,7 @@ public class MediaProjectionService extends Service {
                                           outputStream.close();
                                           bitmap.recycle();
 
-                                          Toast.makeText(
-                                                  MediaProjectionService.this,
-                                                  "获取到了图片数据,开始进行上传逻辑",
-                                                  Toast.LENGTH_LONG).show();
+                                          LogUtils.i(MediaProjectionService.this, "获取到了图片数据,开始进行上传逻辑");
                                           // 使用 FileUpload 上传
                                           FileUpload fileUpload = new FileUpload(MediaProjectionService.this);
                                           fileUpload.uploadImage(
@@ -235,15 +219,12 @@ public class MediaProjectionService extends Service {
                                                   new ApiCallback() {
                                                       @Override
                                                       public void onSuccess(String res) {
-                                                          Toast.makeText(MediaProjectionService.this,
-                                                                  "截图上传成功", Toast.LENGTH_SHORT).show();
+                                                          LogUtils.i(MediaProjectionService.this, "截图上传成功");
                                                       }
 
                                                       @Override
                                                       public void onFailure(Exception e) {
-                                                          Toast.makeText(MediaProjectionService.this,
-                                                                  "上传失败: " + e.getMessage(), Toast.LENGTH_SHORT)
-                                                                  .show();
+                                                          LogUtils.e(MediaProjectionService.this, "上传失败: " + e.getMessage());
                                                       }
                                                   });
                                       }
@@ -252,15 +233,13 @@ public class MediaProjectionService extends Service {
                               image.close(); // 防止没有释放
                           }
                       } catch (Exception e) {
-                          Toast.makeText(MediaProjectionService.this, "监听器错误：\n" + e.getLocalizedMessage(),
-                                  Toast.LENGTH_LONG).show();
+                          LogUtils.e(MediaProjectionService.this, "监听器错误：\n" + e.getLocalizedMessage());
                       }
                   }
               }, new Handler(Looper.getMainLooper()));
-              // Toast.makeText(this, "创建监听器 OK", Toast.LENGTH_LONG).show()
           }
         } catch (Exception e) {
-            Toast.makeText(this, "onStartCommand 错误：\n" + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            LogUtils.e(MediaProjectionService.this, "onStartCommand 错误：\n" + e.getLocalizedMessage());
         }
         return START_STICKY;
     }
@@ -291,10 +270,7 @@ public class MediaProjectionService extends Service {
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(
-                                MediaProjectionService.this,
-                                "图片已保存到相册",
-                                Toast.LENGTH_SHORT).show();
+                        LogUtils.i(MediaProjectionService.this, "图片已保存到相册");
                     }
                 });
                 return uri;
@@ -332,9 +308,9 @@ public class MediaProjectionService extends Service {
             } else {
                 startForeground(2, once_Notification("截屏服务服务运行中"));
             }
-            Toast.makeText(this, "通知渠道创建成功,截屏服务服务已启动", Toast.LENGTH_SHORT).show();
+            LogUtils.i(MediaProjectionService.this, "通知渠道创建成功,截屏服务服务已启动");
         } catch (Exception e) {
-            Toast.makeText(this, "错误：" + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            LogUtils.e(MediaProjectionService.this, "错误：" + e.getLocalizedMessage());
         }
     }
 
