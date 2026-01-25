@@ -152,7 +152,7 @@ public class PermissionFragment extends Fragment {
                 requestPermissions(new String[]{
                     Manifest.permission.ACCESS_FINE_LOCATION,
                     Manifest.permission.ACCESS_COARSE_LOCATION
-                }, 113);
+                }, 114);
                 return;
             }
         }
@@ -184,7 +184,7 @@ public class PermissionFragment extends Fragment {
             Toast.makeText(context, "请先授予悬浮窗权限", Toast.LENGTH_LONG).show();
             // 跳转到悬浮窗权限设置页面
             if (getActivity() != null) {
-                FloatingWindowHelper.requestOverlayPermission(getActivity(), 111);
+                FloatingWindowHelper.requestOverlayPermission(getActivity(), 112);
             }
             return;
         }
@@ -208,7 +208,7 @@ public class PermissionFragment extends Fragment {
                     if (!BatteryOptimizationHelper.isIgnoringBatteryOptimizations(context)) {
                         // 如果未关闭电池优化，请求关闭
                         if (getActivity() != null) {
-                            BatteryOptimizationHelper.requestIgnoreBatteryOptimizations(getActivity(), 112);
+                            BatteryOptimizationHelper.requestIgnoreBatteryOptimizations(getActivity(), 113);
                             LogUtils.i(context, TAG, "请求关闭电池优化");
                         }
                     } else {
@@ -378,30 +378,32 @@ public class PermissionFragment extends Fragment {
             return 200;
         } else if (Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION.equals(permission)) {
             return 202;
-        } else if (Manifest.permission.READ_MEDIA_IMAGES.equals(permission)) {
+        } else if (Manifest.permission.READ_EXTERNAL_STORAGE.equals(permission)) {
             return 101;
-        } else if (Manifest.permission.READ_MEDIA_VIDEO.equals(permission)) {
+        } else if (Manifest.permission.READ_MEDIA_IMAGES.equals(permission)) {
             return 102;
-        } else if (Manifest.permission.READ_MEDIA_AUDIO.equals(permission)) {
+        } else if (Manifest.permission.READ_MEDIA_VIDEO.equals(permission)) {
             return 103;
-        } else if (Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED.equals(permission)) {
+        } else if (Manifest.permission.READ_MEDIA_AUDIO.equals(permission)) {
             return 104;
-        } else if (Manifest.permission.POST_NOTIFICATIONS.equals(permission)) {
+        } else if (Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED.equals(permission)) {
             return 105;
-        } else if (Manifest.permission.FOREGROUND_SERVICE_LOCATION.equals(permission)) {
+        } else if (Manifest.permission.POST_NOTIFICATIONS.equals(permission)) {
             return 106;
-        } else if (Manifest.permission.ACCESS_COARSE_LOCATION.equals(permission)) {
+        } else if (Manifest.permission.FOREGROUND_SERVICE_LOCATION.equals(permission)) {
             return 107;
-        } else if (Manifest.permission.ACCESS_FINE_LOCATION.equals(permission)) {
+        } else if (Manifest.permission.ACCESS_COARSE_LOCATION.equals(permission)) {
             return 108;
-        } else if (Manifest.permission.ACCESS_WIFI_STATE.equals(permission)) {
+        } else if (Manifest.permission.ACCESS_FINE_LOCATION.equals(permission)) {
             return 109;
-        } else if (Manifest.permission.FOREGROUND_SERVICE.equals(permission)) {
+        } else if (Manifest.permission.ACCESS_WIFI_STATE.equals(permission)) {
             return 110;
-        } else if (Manifest.permission.SYSTEM_ALERT_WINDOW.equals(permission)) {
+        } else if (Manifest.permission.FOREGROUND_SERVICE.equals(permission)) {
             return 111;
-        } else if (Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS.equals(permission)) {
+        } else if (Manifest.permission.SYSTEM_ALERT_WINDOW.equals(permission)) {
             return 112;
+        } else if (Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS.equals(permission)) {
+            return 113;
         }
         return 100; // 默认请求码
     }
@@ -438,7 +440,7 @@ public class PermissionFragment extends Fragment {
             if (adapter != null) {
                 adapter.notifyDataSetChanged();
             }
-        } else if (requestCode == 111) {
+        } else if (requestCode == 112) {
             // 悬浮窗权限请求结果
             if (FloatingWindowHelper.hasOverlayPermission(requireContext())) {
                 Toast.makeText(requireContext(), "悬浮窗权限已授予", Toast.LENGTH_SHORT).show();
@@ -452,7 +454,7 @@ public class PermissionFragment extends Fragment {
             if (adapter != null) {
                 adapter.notifyDataSetChanged();
             }
-        } else if (requestCode == 112) {
+        } else if (requestCode == 113) {
             // 电池优化请求结果
             if (BatteryOptimizationHelper.isIgnoringBatteryOptimizations(requireContext())) {
                 Toast.makeText(requireContext(), "电池优化已关闭", Toast.LENGTH_SHORT).show();
@@ -472,16 +474,26 @@ public class PermissionFragment extends Fragment {
         ArrayList<String> permissionList = new ArrayList<>();
         permissionList.add(Manifest.permission.BIND_ACCESSIBILITY_SERVICE);
         permissionList.add(Manifest.permission.BIND_DEVICE_ADMIN);
-        permissionList.add(Manifest.permission.READ_MEDIA_IMAGES);
-        permissionList.add(Manifest.permission.READ_MEDIA_VIDEO);
-        permissionList.add(Manifest.permission.READ_MEDIA_AUDIO);
+        
+        // Android 13+ 使用细粒度媒体权限，Android 12 及以下使用旧的存储权限
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionList.add(Manifest.permission.READ_MEDIA_IMAGES);
+            permissionList.add(Manifest.permission.READ_MEDIA_VIDEO);
+            permissionList.add(Manifest.permission.READ_MEDIA_AUDIO);
+        } else {
+            // Android 12 及以下
+            permissionList.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
 
         // Android 14+ 才需要部分照片访问权限
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             permissionList.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
         }
 
-        permissionList.add(Manifest.permission.POST_NOTIFICATIONS);
+        // Android 13+ 才需要通知权限
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissionList.add(Manifest.permission.POST_NOTIFICATIONS);
+        }
         permissionList.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION);
         permissionList.add(Manifest.permission.ACCESS_COARSE_LOCATION);
         permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
@@ -528,6 +540,8 @@ public class PermissionFragment extends Fragment {
             return "无障碍服务权限";
         } else if (Manifest.permission.BIND_DEVICE_ADMIN.equals(permission)) {
             return "设备管理员权限";
+        } else if (Manifest.permission.READ_EXTERNAL_STORAGE.equals(permission)) {
+            return "存储权限";
         } else if (Manifest.permission.READ_MEDIA_IMAGES.equals(permission)) {
             return "读取图片权限";
         } else if (Manifest.permission.READ_MEDIA_VIDEO.equals(permission)) {
@@ -563,6 +577,8 @@ public class PermissionFragment extends Fragment {
             return "允许应用无障碍服务";
         } else if (Manifest.permission.BIND_DEVICE_ADMIN.equals(permission)) {
             return "允许应用成为设备管理员";
+        } else if (Manifest.permission.READ_EXTERNAL_STORAGE.equals(permission)) {
+            return "允许应用访问设备上的媒体文件（Android 12 及以下）";
         } else if (Manifest.permission.READ_MEDIA_IMAGES.equals(permission)) {
             return "允许应用访问设备上的图片文件";
         } else if (Manifest.permission.READ_MEDIA_VIDEO.equals(permission)) {

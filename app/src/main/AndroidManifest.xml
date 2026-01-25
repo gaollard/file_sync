@@ -221,10 +221,16 @@
         </intent>
     </queries>
 
-    <!-- 读取媒体视频 -->
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- 读取音频 -->
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /> <!-- 选择性媒体访问权限 -->
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" /> <!-- 定位前台服务权限 -->
+    <!-- Android 12 及以下使用的存储权限 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <!-- Android 13+ 使用的细粒度媒体权限 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- 读取图片 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" /> <!-- 读取视频 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" /> <!-- 读取音频 -->
     <uses-permission
         android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
         android:minSdkVersion="34" /> <!-- 通用前台服务权限 -->

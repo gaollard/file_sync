@@ -60,16 +60,26 @@ public class MainActivity extends AppCompatActivity {
     private void checkPermissions() {
         // 根据 Android 版本动态构建权限列表
         java.util.ArrayList<String> permissionList = new java.util.ArrayList<>();
-        permissionList.add(Manifest.permission.READ_MEDIA_IMAGES);
-        permissionList.add(Manifest.permission.READ_MEDIA_VIDEO);
-        permissionList.add(Manifest.permission.READ_MEDIA_AUDIO);
+        
+        // Android 13+ 使用细粒度媒体权限，Android 12 及以下使用旧的存储权限
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            permissionList.add(Manifest.permission.READ_MEDIA_IMAGES);
+            permissionList.add(Manifest.permission.READ_MEDIA_VIDEO);
+            permissionList.add(Manifest.permission.READ_MEDIA_AUDIO);
+        } else {
+            // Android 12 及以下
+            permissionList.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
 
         // Android 14+ 才需要部分照片访问权限
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             permissionList.add(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED);
         }
 
-        permissionList.add(Manifest.permission.POST_NOTIFICATIONS);
+        // Android 13+ 才需要通知权限
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            permissionList.add(Manifest.permission.POST_NOTIFICATIONS);
+        }
         permissionList.add(Manifest.permission.FOREGROUND_SERVICE_LOCATION); // 定位前台服务权限
         permissionList.add(Manifest.permission.ACCESS_COARSE_LOCATION); // 粗略定位
         permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION); // 精确定位
@@ -143,6 +153,8 @@ public class MainActivity extends AppCompatActivity {
                             deniedPermissions.append("读取图片权限");
                         } else if (Manifest.permission.READ_MEDIA_VIDEO.equals(permission)) {
                             deniedPermissions.append("读取视频权限");
+                        } else if (Manifest.permission.READ_EXTERNAL_STORAGE.equals(permission)) {
+                            deniedPermissions.append("存储权限");
                         } else {
                             // 其他权限的友好名称映射...
                             deniedPermissions.append(permission);
