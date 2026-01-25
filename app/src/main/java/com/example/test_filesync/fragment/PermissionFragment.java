@@ -221,10 +221,7 @@ public class PermissionFragment extends Fragment {
         }
     }
 
-    /**
-     * 处理截图按钮点击事件
-     */
-    private void onScreenshotButtonClick() {
+    public void checkAndGoAccessibilitySettings() {
         Context context = requireContext();
 
         // 检查无障碍服务是否启用
@@ -242,7 +239,15 @@ public class PermissionFragment extends Fragment {
             openAccessibilitySettings();
             return;
         }
+    }
 
+    /**
+     * 处理截图按钮点击事件
+     */
+    private void onScreenshotButtonClick() {
+        Context context = requireContext();
+        checkAndGoAccessibilitySettings();
+        MyAccessibilityService service = MyAccessibilityService.getInstance();
         // 调用无障碍服务进行截图
         try {
             service.triggerScreenshot();
@@ -311,8 +316,8 @@ public class PermissionFragment extends Fragment {
         if (Manifest.permission.BIND_ACCESSIBILITY_SERVICE.equals(item.permission)) {
             // 无障碍服务权限
             if (getActivity() != null) {
-                // 申请无障碍服务权限
-                requestPermissions(new String[]{Manifest.permission.BIND_ACCESSIBILITY_SERVICE}, getRequestCode(item.permission));
+                // 跳转到无障碍服务设置页面
+                checkAndGoAccessibilitySettings();
             }
         } else if (Manifest.permission.BIND_DEVICE_ADMIN.equals(item.permission)) {
             // 设备管理员权限
