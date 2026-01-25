@@ -8,9 +8,7 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
-    <string name="lorem_ipsum">
-        手机管理
-    </string>
+    <string name="lorem_ipsum">手机管理</string>
     
     <!-- Bottom Navigation Tab Labels -->
     <string name="tab_home">首页</string>
