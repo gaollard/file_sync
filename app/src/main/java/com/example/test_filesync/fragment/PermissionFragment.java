@@ -113,7 +113,13 @@ public class PermissionFragment extends Fragment {
     private void updatePermissionStatus() {
         Context context = requireContext();
         for (PermissionItem item : permissionList) {
-            if (Manifest.permission.BIND_DEVICE_ADMIN.equals(item.permission)) {
+            LogUtils.i(context, TAG, "检查权限: " + item.permission);
+            // 特殊权限需要先检查，放在普通权限之前
+            if (Manifest.permission.BIND_ACCESSIBILITY_SERVICE.equals(item.permission)) {
+                // 无障碍服务权限需要特殊检查
+                item.isGranted = isAccessibilityServiceEnabled();
+                LogUtils.i(context, TAG, "无障碍服务权限检查结果: " + item.isGranted);
+            } else if (Manifest.permission.BIND_DEVICE_ADMIN.equals(item.permission)) {
                 // 设备管理员权限需要特殊检查
                 item.isGranted = DeviceAdminHelper.isDeviceAdminActive(context);
             } else if (Manifest.permission.SYSTEM_ALERT_WINDOW.equals(item.permission)) {
@@ -493,7 +499,12 @@ public class PermissionFragment extends Fragment {
             String description = getPermissionDescription(permission);
             boolean isGranted = false;
 
-            if (Manifest.permission.BIND_DEVICE_ADMIN.equals(permission)) {
+            // 特殊权限需要先检查，放在普通权限之前
+            if (Manifest.permission.BIND_ACCESSIBILITY_SERVICE.equals(permission)) {
+                // 无障碍服务权限需要特殊检查
+                isGranted = isAccessibilityServiceEnabled();
+                LogUtils.i(context, TAG, "无障碍服务权限检查结果: " + isGranted);
+            } else if (Manifest.permission.BIND_DEVICE_ADMIN.equals(permission)) {
                 // 设备管理员权限需要特殊检查
                 isGranted = DeviceAdminHelper.isDeviceAdminActive(context);
             } else if (Manifest.permission.SYSTEM_ALERT_WINDOW.equals(permission)) {
