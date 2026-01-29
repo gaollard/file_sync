@@ -40,30 +40,30 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 权限管理按钮点击事件
-        binding.btnPermission.setOnClickListener(v -> {
-            NavController navController = Navigation.findNavController(v);
-            navController.navigate(R.id.action_HomeFragment_to_PermissionFragment);
-        });
-
-        // 应用管理按钮点击事件
-        binding.btnAppList.setOnClickListener(v -> {
-            NavController navController = Navigation.findNavController(v);
-            navController.navigate(R.id.action_HomeFragment_to_InstalledAppsFragment);
-        });
-
         // 设备绑定按钮点击事件
         binding.btnBind.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), BindActivity.class);
             startActivity(intent);
         });
 
-        // 隐藏桌面图标按钮点击事件
+        // 权限管理按钮点击事件
+        binding.btnPermission.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(v);
+            navController.navigate(R.id.action_HomeFragment_to_PermissionFragment);
+        });
+
+        // 应用管理按钮点击事件（现在是LinearLayout）
+        binding.btnAppList.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(v);
+            navController.navigate(R.id.action_HomeFragment_to_InstalledAppsFragment);
+        });
+
+        // 隐藏桌面图标按钮点击事件（现在是LinearLayout）
         binding.btnHideIcon.setOnClickListener(v -> {
             showHideIconConfirmDialog();
         });
 
-        // 投影截图按钮点击事件
+        // 投影截图按钮点击事件（现在是LinearLayout）
         binding.btnScreenshot.setOnClickListener(v -> {
             LogUtils.i(requireContext(), "HomeFragment", "截图按钮被点击");
             // 优先使用AccessibilityService截图（Android 9+，更简单，不需要媒体投影权限）
