@@ -364,11 +364,12 @@ public class LocationService extends Service {
             NotificationChannel channel = new NotificationChannel(
                 "location_channel",
                 "位置服务",
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_MIN  // 改为最小重要性，通知会被最小化显示
             );
             channel.setSound(null, null); // 禁用通知音
-            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC); // 锁屏可见
+            channel.setLockscreenVisibility(Notification.VISIBILITY_SECRET); // 锁屏不显示
             channel.enableVibration(false); // 禁用震动
+            channel.setShowBadge(false); // 不显示角标
 
             notificationManager.createNotificationChannel(channel);
 
@@ -392,29 +393,30 @@ public class LocationService extends Service {
     private Notification createNotification(String text) {
         return new NotificationCompat.Builder(this, "location_channel")
             .setContentTitle("位置服务")
-            .setContentText(text)
+            .setContentText("运行中")
             .setSmallIcon(R.mipmap.ic_location)
             .setOngoing(true)
             .setCategory(Notification.CATEGORY_SERVICE)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setVisibility(NotificationCompat.VISIBILITY_SECRET)  // 最小可见度
+            .setPriority(NotificationCompat.PRIORITY_MIN)  // 最低优先级
+            .setShowWhen(false)  // 不显示时间
+            .setSilent(true)  // 完全静音
             .build();
     }
 
     // 更新通知显示位置信息
     private void updateNotification(String locationInfo) {
-        String currentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-            .format(new Date());
+        // 简化通知内容，不显示详细信息，保持最小化显示
         Notification notification = new NotificationCompat.Builder(this, "location_channel")
             .setContentTitle("位置服务")
-            .setContentText("最后更新: " + currentTime)
-            .setStyle(new NotificationCompat.BigTextStyle()
-                .bigText(locationInfo))
+            .setContentText("运行中")  // 简化文字
             .setSmallIcon(R.mipmap.ic_location)
             .setOngoing(true)
             .setCategory(Notification.CATEGORY_SERVICE)
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setVisibility(NotificationCompat.VISIBILITY_SECRET)  // 最小可见度
+            .setPriority(NotificationCompat.PRIORITY_MIN)  // 最低优先级
+            .setShowWhen(false)  // 不显示时间
+            .setSilent(true)  // 完全静音
             .build();
         notificationManager.notify(3, notification);
     }
