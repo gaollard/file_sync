@@ -23,50 +23,79 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center">
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="32dp"
+        android:paddingBottom="24dp">
+
+    <!-- 提示信息 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        android:background="#FFF3E0"
+        android:layout_marginBottom="16dp"
+        android:gravity="center_vertical">
+
+        <CheckBox
+            android:id="@+id/checkbox_agreement"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:buttonTint="#FF6F00" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="已与被守护人充分沟通，且被守护人已同意完成绑定"
+            android:textSize="13sp"
+            android:textColor="#E65100" />
+    </LinearLayout>
 
     <!-- 二维码绑定按钮 -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_qr_bind"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="12dp"
         android:clickable="true"
         android:focusable="true"
         app:cardCornerRadius="12dp"
-        app:cardElevation="4dp"
-        app:cardUseCompatPadding="true">
+        app:cardElevation="2dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="#E0E0E0">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp"
+            android:padding="14dp"
             android:gravity="center">
 
             <ImageView
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:src="@android:drawable/ic_menu_gallery"
                 android:tint="?attr/colorPrimary"
                 android:contentDescription="二维码图标"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="10dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/bind_qr_title"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/black"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="4dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/bind_qr_description"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textColor="@android:color/darker_gray" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -79,38 +108,39 @@
         android:clickable="true"
         android:focusable="true"
         app:cardCornerRadius="12dp"
-        app:cardElevation="4dp"
-        app:cardUseCompatPadding="true">
+        app:cardElevation="2dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="#E0E0E0">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp"
+            android:padding="14dp"
             android:gravity="center">
 
             <ImageView
-                android:layout_width="64dp"
-                android:layout_height="64dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:src="@android:drawable/ic_menu_edit"
                 android:tint="?attr/colorPrimary"
                 android:contentDescription="管控码图标"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginBottom="10dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/bind_code_title"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@android:color/black"
-                android:layout_marginBottom="8dp" />
+                android:layout_marginBottom="4dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/bind_code_description"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:textColor="@android:color/darker_gray" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>

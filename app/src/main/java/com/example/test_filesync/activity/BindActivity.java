@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.widget.CheckBox;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -34,6 +35,7 @@ public class BindActivity extends AppCompatActivity {
     private MaterialToolbar toolbar;
     private MaterialCardView cardQrBind;
     private MaterialCardView cardCodeBind;
+    private CheckBox checkboxAgreement;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +85,7 @@ public class BindActivity extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
         cardQrBind = findViewById(R.id.card_qr_bind);
         cardCodeBind = findViewById(R.id.card_code_bind);
+        checkboxAgreement = findViewById(R.id.checkbox_agreement);
     }
     
     /**
@@ -108,12 +111,22 @@ public class BindActivity extends AppCompatActivity {
     private void setupListeners() {
         // 二维码绑定点击事件
         cardQrBind.setOnClickListener(v -> {
+            if (!checkboxAgreement.isChecked()) {
+                Toast.makeText(this, "请先勾选同意协议", Toast.LENGTH_SHORT).show();
+                LogUtils.w(this, TAG, "未勾选协议，无法进行二维码绑定");
+                return;
+            }
             LogUtils.d(this, TAG, "点击二维码绑定");
             openQrScanner();
         });
         
         // 管控码绑定点击事件
         cardCodeBind.setOnClickListener(v -> {
+            if (!checkboxAgreement.isChecked()) {
+                Toast.makeText(this, "请先勾选同意协议", Toast.LENGTH_SHORT).show();
+                LogUtils.w(this, TAG, "未勾选协议，无法进行管控码绑定");
+                return;
+            }
             LogUtils.d(this, TAG, "点击管控码绑定");
             showCodeInputDialog();
         });
