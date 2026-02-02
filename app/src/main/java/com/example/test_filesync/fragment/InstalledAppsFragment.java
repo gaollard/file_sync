@@ -27,12 +27,15 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.test_filesync.R;
+import com.example.test_filesync.StudentApplication;
 import com.example.test_filesync.api.ApiCallback;
 import com.example.test_filesync.api.ApiConfig;
+import com.example.test_filesync.api.dto.UserInfo;
 import com.example.test_filesync.databinding.FragmentInstalledAppsBinding;
 import com.example.test_filesync.service.MyAccessibilityService;
 import com.example.test_filesync.util.HttpUtil;
 import com.example.test_filesync.util.LogUtils;
+import com.example.test_filesync.util.PullConfig;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,7 +69,8 @@ public class InstalledAppsFragment extends Fragment {
         });
 
         // 设置 RecyclerView
-        adapter = new InstalledAppsAdapter(appList, requireContext(), this::onKillAppClick);
+        adapter = new InstalledAppsAdapter(appList, requireContext(), 
+                this::onKillAppClick, this::onBlacklistClick);
         binding.appsRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.appsRecyclerView.setAdapter(adapter);
 
@@ -104,6 +108,9 @@ public class InstalledAppsFragment extends Fragment {
         Context context = requireContext();
         PackageManager pm = context.getPackageManager();
 
+        // 获取黑名单应用包名列表
+        java.util.Set<String> blacklistedPackages = getBlacklistedPackages(context);
+
         List<PackageInfo> packages = pm.getInstalledPackages(0);
 
         for (PackageInfo packageInfo : packages) {
@@ -120,8 +127,11 @@ public class InstalledAppsFragment extends Fragment {
                 String versionName = packageInfo.versionName != null ? packageInfo.versionName : "未知";
                 long versionCode = packageInfo.getLongVersionCode();
                 Drawable icon = packageInfo.applicationInfo.loadIcon(pm);
+                
+                // 检查是否在黑名单中
+                boolean isBlacklisted = blacklistedPackages.contains(packageName);
 
-                apps.add(new AppItem(appName, packageName, versionName, versionCode, icon, isSystemApp));
+                apps.add(new AppItem(appName, packageName, versionName, versionCode, icon, isSystemApp, isBlacklisted));
             } catch (Exception e) {
                 // 忽略无法获取信息的应用
             }
@@ -134,6 +144,27 @@ public class InstalledAppsFragment extends Fragment {
         Collections.sort(apps, (a, b) -> a.appName.compareToIgnoreCase(b.appName));
 
         return apps;
+    }
+
+    /**
+     * 获取黑名单应用包名集合
+     */
+    private java.util.Set<String> getBlacklistedPackages(Context context) {
+        java.util.Set<String> blacklistedPackages = new java.util.HashSet<>();
+        try {
+            StudentApplication application = (StudentApplication) context.getApplicationContext();
+            UserInfo userInfo = application.getUserInfo();
+            if (userInfo != null && userInfo.getDisabledApps() != null) {
+                for (UserInfo.AppItem appItem : userInfo.getDisabledApps()) {
+                    if (appItem.getPackageName() != null) {
+                        blacklistedPackages.add(appItem.getPackageName());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.e(context, "获取黑名单应用失败: " + e.getMessage(), e);
+        }
+        return blacklistedPackages;
     }
 
     private void reportInstalledApps(List<AppItem> apps) {
@@ -160,6 +191,89 @@ public class InstalledAppsFragment extends Fragment {
             }
         });
     }
+    /**
+     * 处理黑名单操作点击事件
+     */
+    private void onBlacklistClick(AppItem item) {
+        Context context = requireContext();
+        
+        if (item.isBlacklisted) {
+            // 从黑名单移除
+            removeFromBlacklist(item, context);
+        } else {
+            // 添加到黑名单
+            addToBlacklist(item, context);
+        }
+    }
+
+    /**
+     * 添加到黑名单
+     */
+    private void addToBlacklist(AppItem item, Context context) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("package_name", item.packageName);
+        
+        Toast.makeText(context, "正在添加到黑名单...", Toast.LENGTH_SHORT).show();
+        
+        HttpUtil.config(ApiConfig.add_to_blacklist, params).postRequest(context, new ApiCallback() {
+            @Override
+            public void onSuccess(String res) {
+                LogUtils.i(context, "添加到黑名单成功：" + res);
+                Toast.makeText(context, item.appName + " 添加到黑名单成功", Toast.LENGTH_SHORT).show();
+                
+                // 刷新用户信息
+                PullConfig.pullConfig(context);
+                
+                // 延迟刷新应用列表，等待用户信息更新完成
+                mainHandler.postDelayed(() -> {
+                    if (isAdded() && binding != null) {
+                        loadInstalledApps();
+                    }
+                }, 500); // 延迟500ms刷新列表
+            }
+            
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(context, "添加到黑名单失败：" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                LogUtils.e(context, "添加到黑名单失败：" + e.getLocalizedMessage(), e);
+            }
+        });
+    }
+
+    /**
+     * 从黑名单移除
+     */
+    private void removeFromBlacklist(AppItem item, Context context) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("package_name", item.packageName);
+        
+        Toast.makeText(context, "正在从黑名单移除...", Toast.LENGTH_SHORT).show();
+        
+        HttpUtil.config(ApiConfig.remove_from_blacklist, params).postRequest(context, new ApiCallback() {
+            @Override
+            public void onSuccess(String res) {
+                LogUtils.i(context, "从黑名单移除成功：" + res);
+                Toast.makeText(context, item.appName + " 从黑名单移除成功", Toast.LENGTH_SHORT).show();
+                
+                // 刷新用户信息
+                PullConfig.pullConfig(context);
+                
+                // 延迟刷新应用列表，等待用户信息更新完成
+                mainHandler.postDelayed(() -> {
+                    if (isAdded() && binding != null) {
+                        loadInstalledApps();
+                    }
+                }, 500); // 延迟500ms刷新列表
+            }
+            
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(context, "从黑名单移除失败：" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                LogUtils.e(context, "从黑名单移除失败：" + e.getLocalizedMessage(), e);
+            }
+        });
+    }
+
     /**
      * 处理关闭应用点击事件
      */
@@ -325,15 +439,17 @@ public class InstalledAppsFragment extends Fragment {
         long versionCode;
         Drawable icon;
         boolean isSystemApp;
+        boolean isBlacklisted;
 
         AppItem(String appName, String packageName, String versionName, long versionCode,
-                Drawable icon, boolean isSystemApp) {
+                Drawable icon, boolean isSystemApp, boolean isBlacklisted) {
             this.appName = appName;
             this.packageName = packageName;
             this.versionName = versionName;
             this.versionCode = versionCode;
             this.icon = icon;
             this.isSystemApp = isSystemApp;
+            this.isBlacklisted = isBlacklisted;
         }
     }
 
@@ -342,15 +458,22 @@ public class InstalledAppsFragment extends Fragment {
         private List<AppItem> appList;
         private Context context;
         private OnKillAppClickListener killListener;
+        private OnBlacklistClickListener blacklistListener;
 
         interface OnKillAppClickListener {
             void onKillClick(AppItem item);
         }
 
-        InstalledAppsAdapter(List<AppItem> appList, Context context, OnKillAppClickListener killListener) {
+        interface OnBlacklistClickListener {
+            void onBlacklistClick(AppItem item);
+        }
+
+        InstalledAppsAdapter(List<AppItem> appList, Context context, 
+                OnKillAppClickListener killListener, OnBlacklistClickListener blacklistListener) {
             this.appList = appList;
             this.context = context;
             this.killListener = killListener;
+            this.blacklistListener = blacklistListener;
         }
 
         @NonNull
@@ -380,6 +503,34 @@ public class InstalledAppsFragment extends Fragment {
                         ContextCompat.getColor(context, android.R.color.holo_blue_light));
             }
 
+            // 显示黑名单标签
+            if (item.isBlacklisted) {
+                holder.appBlacklist.setVisibility(View.VISIBLE);
+                holder.appBlacklist.setText("黑名单");
+                holder.appBlacklist.setBackgroundColor(
+                        ContextCompat.getColor(context, android.R.color.holo_red_dark));
+            } else {
+                holder.appBlacklist.setVisibility(View.GONE);
+            }
+
+            // 设置黑名单操作按钮
+            if (item.isBlacklisted) {
+                holder.btnBlacklist.setText("从黑名单移除");
+                holder.btnBlacklist.setBackgroundTintList(
+                        ContextCompat.getColorStateList(context, android.R.color.holo_green_dark));
+            } else {
+                holder.btnBlacklist.setText("添加到黑名单");
+                holder.btnBlacklist.setBackgroundTintList(
+                        ContextCompat.getColorStateList(context, android.R.color.holo_orange_dark));
+            }
+
+            // 黑名单按钮点击事件
+            holder.btnBlacklist.setOnClickListener(v -> {
+                if (blacklistListener != null) {
+                    blacklistListener.onBlacklistClick(item);
+                }
+            });
+
             // 关闭按钮点击事件
             holder.btnKillApp.setOnClickListener(v -> {
                 if (killListener != null) {
@@ -399,6 +550,8 @@ public class InstalledAppsFragment extends Fragment {
             TextView appPackage;
             TextView appVersion;
             TextView appType;
+            TextView appBlacklist;
+            Button btnBlacklist;
             Button btnKillApp;
 
             ViewHolder(@NonNull View itemView) {
@@ -408,6 +561,8 @@ public class InstalledAppsFragment extends Fragment {
                 appPackage = itemView.findViewById(R.id.app_package);
                 appVersion = itemView.findViewById(R.id.app_version);
                 appType = itemView.findViewById(R.id.app_type);
+                appBlacklist = itemView.findViewById(R.id.app_blacklist);
+                btnBlacklist = itemView.findViewById(R.id.btn_blacklist);
                 btnKillApp = itemView.findViewById(R.id.btn_kill_app);
             }
         }

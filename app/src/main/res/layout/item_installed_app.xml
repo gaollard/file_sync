@@ -79,6 +79,30 @@
                 android:background="@android:color/holo_blue_light"
                 android:textColor="@android:color/white" />
 
+            <TextView
+                android:id="@+id/app_blacklist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="黑名单"
+                android:textSize="12sp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:background="@android:color/holo_red_dark"
+                android:textColor="@android:color/white"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/btn_blacklist"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginTop="4dp"
+                android:text="添加到黑名单"
+                android:textSize="12sp"
+                android:minWidth="80dp"
+                android:paddingHorizontal="8dp"
+                android:backgroundTint="@android:color/holo_orange_dark" />
+
             <Button
                 android:id="@+id/btn_kill_app"
                 android:layout_width="wrap_content"

@@ -11,4 +11,6 @@ public class ApiConfig {
   public static final String report_location = "/app/report/report_location";  // 上报位置信息
   public static final String report_installed_app = "/app/report/report_installed_app";  // 上报已安装应用列表
   public static final String report_screenshot = "/app/report/report_screenshot";  // 上报截图
+  public static final String add_to_blacklist = "/app/control/add_to_blacklist";  // 添加到黑名单
+  public static final String remove_from_blacklist = "/app/control/remove_from_blacklist";  // 从黑名单移除
 }
