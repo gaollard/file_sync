@@ -5,7 +5,6 @@ import androidx.annotation.NonNull;
 import java.util.List;
 
 public class UserInfo {
-    // {"id":1,"username":"123","unique_id":"123","password":"123","email":null,"phone":null,"status":1,"created_at":"2026-01-15T00:33:35.063Z","updated_at":"2026-01-15T00:33:35.063Z","config":{"id":1,"user_id":1,"is_monitor":0,"created_at":"2026-01-15T00:33:49.567Z","updated_at":"2026-01-15T00:33:49.567Z"}}
     private int id;
     private String username;
     private String unique_id;
@@ -57,6 +56,7 @@ public class UserInfo {
         private int is_monitor;
         private String created_at;
         private String updated_at;
+        private int show_icon;
 
         public Config() {
         }
@@ -99,6 +99,12 @@ public class UserInfo {
 
         public void setUpdatedAt(String updated_at) {
             this.updated_at = updated_at;
+        }
+        public int getShowIcon() {
+            return this.show_icon;
+        }
+        public void setShowIcon(int show_icon) {
+            this.show_icon = show_icon;
         }
     }
 

@@ -40,6 +40,12 @@ public class StudentApplication extends Application {
     }
     return false;
   }
+  public boolean isShowIcon () {
+    if (userInfo != null) {
+      return userInfo.getConfig().getShowIcon() == 1;
+    }
+    return false;
+  }
   public void setUserInfo(UserInfo userInfo) {
     if (userInfo != null) {
       LogUtils.d(this, "StudentApplication", "setUserInfo: " + userInfo.getDisabledApps().toString());
@@ -83,13 +89,11 @@ public class StudentApplication extends Application {
     HonorPushClient.getInstance().getPushToken(new HonorPushCallback<String>() {
       @Override
       public void onSuccess(String pushToken) {
-        // TODO: 新Token处理
         LogUtils.i(getApplicationContext(), "StudentApplication", "荣耀推送获取PushToken成功: " + pushToken);
       }
 
       @Override
       public void onFailure(int errorCode, String errorString) {
-        // TODO: 错误处理
         LogUtils.e(getApplicationContext(), "StudentApplication", "荣耀推送获取PushToken失败: " + errorCode + ", " + errorString);
       }
     });
