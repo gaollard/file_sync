@@ -34,18 +34,24 @@ public class StudentApplication extends Application {
   public UserInfo getUserInfo() {
     return userInfo;
   }
+
+  // 是否开启监控
+  // 开启监控后，黑名单中的应用无法使用
   public boolean isMonitor () {
     if (userInfo != null) {
       return userInfo.getConfig().getIsMonitor() == 1;
     }
     return false;
   }
+
+  // 是否显示桌面图标
   public boolean isShowIcon () {
     if (userInfo != null) {
       return userInfo.getConfig().getShowIcon() == 1;
     }
     return false;
   }
+
   public void setUserInfo(UserInfo userInfo) {
     if (userInfo != null) {
       LogUtils.d(this, "StudentApplication", "setUserInfo: " + userInfo.getDisabledApps().toString());
