@@ -56,7 +56,7 @@ public class UserInfo {
         private int is_monitor;
         private String created_at;
         private String updated_at;
-        private int show_icon;
+        private int hide_icon;
 
         public Config() {
         }
@@ -100,11 +100,11 @@ public class UserInfo {
         public void setUpdatedAt(String updated_at) {
             this.updated_at = updated_at;
         }
-        public int getShowIcon() {
-            return this.show_icon;
+        public int getHideIcon() {
+            return this.hide_icon;
         }
-        public void setShowIcon(int show_icon) {
-            this.show_icon = show_icon;
+        public void setHideIcon(int hide_icon) {
+            this.hide_icon = hide_icon;
         }
     }
 

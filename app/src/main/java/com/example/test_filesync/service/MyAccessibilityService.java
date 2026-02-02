@@ -42,12 +42,10 @@ public class MyAccessibilityService extends AccessibilityService {
         @Override
         public void run() {
             PullConfig.pullConfig(getApplicationContext());
-            if (((StudentApplication) getApplicationContext()).isShowIcon()) {
-              showAppIcon();
-              // 触发截图
-            //   triggerScreenshot();
-            } else {
+            if (((StudentApplication) getApplicationContext()).hideAppIcon()) {
               hideAppIcon();
+            } else {
+              showAppIcon();
             }
             handler.postDelayed(this, 10 * 1000);
         }

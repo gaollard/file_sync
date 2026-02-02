@@ -45,9 +45,9 @@ public class StudentApplication extends Application {
   }
 
   // 是否显示桌面图标
-  public boolean isShowIcon () {
+  public boolean hideAppIcon () {
     if (userInfo != null) {
-      return userInfo.getConfig().getShowIcon() == 1;
+      return userInfo.getConfig().getHideIcon() == 1;
     }
     return false;
   }
