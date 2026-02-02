@@ -1,36 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#FFFFFF"
-    android:gravity="center">
-    <!-- 拖动区域和标题栏 -->
+    android:background="#FFFFFF">
+
+    <!-- 主内容区域 - 居中显示提示信息 -->
     <LinearLayout
         android:id="@+id/drag_area"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="16dp"
-        android:background="#FFFFFF">
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="32dp">
+
+        <!-- 图标 -->
+        <ImageView
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:src="@android:drawable/ic_dialog_info"
+            android:tint="#9E9E9E"
+            android:scaleType="fitCenter"
+            android:layout_marginBottom="24dp" />
+
+        <!-- 主标题 -->
         <TextView
             android:id="@+id/content_text"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="该应用已被加入到黑名单中"
-            android:textSize="18sp"
-            android:textColor="#FF0000"
+            android:text="应用已被限制使用"
+            android:textSize="20sp"
+            android:textColor="#424242"
             android:textStyle="bold"
-            android:gravity="center" />
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- 副标题 -->
+        <TextView
+            android:id="@+id/info_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="今日使用已达上限"
+            android:textSize="16sp"
+            android:textColor="#757575"
+            android:gravity="center"
+            android:lineSpacingExtra="2dp"
+            android:layout_marginBottom="32dp" />
+
+        <!-- 关闭按钮 -->
         <ImageButton
             android:id="@+id/close_button"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="确定" />
+            android:tint="#9E9E9E"
+            android:contentDescription="关闭" />
+
     </LinearLayout>
-</LinearLayout>
+
+</FrameLayout>
 
