@@ -86,28 +86,42 @@ public class FloatingWindowHelper {
                 layoutParams.type = WindowManager.LayoutParams.TYPE_PHONE;
             }
             
-            layoutParams.format = PixelFormat.TRANSLUCENT;
-            layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                    | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
+            // 背景不透明
+            layoutParams.format = PixelFormat.OPAQUE;
             
-            // 设置悬浮窗位置和大小
-            layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
-            layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-            layoutParams.gravity = Gravity.TOP | Gravity.END;
+            // 设置标志：全屏显示（包括状态栏）
+            layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                    | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                    | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                    | WindowManager.LayoutParams.FLAG_FULLSCREEN;
+            
+            // 获取屏幕实际尺寸（包括状态栏区域）
+            android.util.DisplayMetrics displayMetrics = new android.util.DisplayMetrics();
+            windowManager.getDefaultDisplay().getRealMetrics(displayMetrics);
+            int screenWidth = displayMetrics.widthPixels;
+            int screenHeight = displayMetrics.heightPixels;
+            int statusBarHeight = getStatusBarHeight(context);
+            
+            // 设置悬浮窗位置和大小 - 全屏显示（包括状态栏）
+            layoutParams.width = screenWidth;
+            // 高度设置为屏幕高度+状态栏高度，y设为负的状态栏高度，确保完全覆盖状态栏
+            layoutParams.height = screenHeight + statusBarHeight;
+            layoutParams.gravity = Gravity.TOP | Gravity.START;
+            // 使用负值偏移以覆盖状态栏
             layoutParams.x = 0;
-            layoutParams.y = 100;
+            layoutParams.y = -statusBarHeight;
             
             // 添加悬浮窗
             windowManager.addView(floatingView, layoutParams);
             
             // 设置关闭按钮点击事件
-            // View closeButton = floatingView.findViewById(R.id.close_button);
-            // if (closeButton != null) {
-            //     closeButton.setOnClickListener(v -> hideFloatingWindow(context));
-            // }
+            View closeButton = floatingView.findViewById(R.id.close_button);
+            if (closeButton != null) {
+                closeButton.setOnClickListener(v -> hideFloatingWindow(context));
+            }
             
-            // 设置悬浮窗可拖动
-            setupDragListener();
+            // 全屏模式下不需要拖动功能，注释掉
+            // setupDragListener();
             
             LogUtils.i(context, TAG, "悬浮窗已显示");
             return true;
@@ -175,6 +189,20 @@ public class FloatingWindowHelper {
         if (contentView != null) {
             contentView.setText(text);
         }
+    }
+    
+    /**
+     * 获取状态栏高度
+     * @param context 上下文
+     * @return 状态栏高度（像素）
+     */
+    private static int getStatusBarHeight(Context context) {
+        int result = 0;
+        int resourceId = context.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = context.getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 }
 
