@@ -46,6 +46,37 @@ public class UserInfo {
     return disabled_apps;
   }
 
+  private BindInfo bind_info;
+
+  public BindInfo getBindInfo() {
+    return bind_info;
+  }
+
+  public void setBindInfo(BindInfo bind_info) {
+    this.bind_info = bind_info;
+  }
+
+  public class BindInfo {
+    private int user_id;
+    private String create_at;
+
+    public int getUserId() {
+      return user_id;
+    }
+
+    public void setUserId(int user_id) {
+      this.user_id = user_id;
+    }
+
+    public String getCreateAt() {
+      return create_at;
+    }
+
+    public void setCreateAt(String create_at) {
+      this.create_at = create_at;
+    }
+  }
+
     public Config getConfig() {
         return this.config;
     }

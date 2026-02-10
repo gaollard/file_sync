@@ -19,7 +19,9 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import com.example.test_filesync.R;
+import com.example.test_filesync.StudentApplication;
 import com.example.test_filesync.activity.BindActivity;
+import com.example.test_filesync.api.dto.UserInfo;
 import com.example.test_filesync.databinding.FragmentHomeBinding;
 import com.example.test_filesync.service.MediaProjectionService;
 import com.example.test_filesync.util.LogUtils;
@@ -39,6 +41,8 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        updateBindStatus();
 
         // 设备绑定按钮点击事件
         binding.btnBind.setOnClickListener(v -> {
@@ -306,6 +310,26 @@ public class HomeFragment extends Fragment {
                 }
             }
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateBindStatus();
+    }
+
+    /**
+     * 根据 UserInfo.bind_info 更新首页设备绑定状态展示：已绑定时显示「已绑定」
+     */
+    private void updateBindStatus() {
+        if (binding == null) return;
+        UserInfo userInfo = null;
+        if (getActivity() != null && getActivity().getApplication() instanceof StudentApplication) {
+            userInfo = ((StudentApplication) getActivity().getApplication()).getUserInfo();
+        }
+        boolean isBound = userInfo != null && userInfo.getBindInfo() != null;
+        binding.tvBindStatus.setText(isBound ? "已绑定" : "扫码或输入管控码绑定设备");
+        binding.btnBind.setText(isBound ? "已绑定" : "设置");
     }
 
     @Override
