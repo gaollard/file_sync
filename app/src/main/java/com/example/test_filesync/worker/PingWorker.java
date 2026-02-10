@@ -44,7 +44,7 @@ public class PingWorker extends Worker {
     try {
       // 延迟20秒执行
       Thread.sleep(20 * 1000);
-      PullConfig.pullConfig(context);
+      PullConfig.pullConfig(context, null);
       pingCount++;
       // 更新上次的值
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {

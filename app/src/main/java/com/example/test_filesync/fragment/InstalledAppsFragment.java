@@ -222,7 +222,7 @@ public class InstalledAppsFragment extends Fragment {
                 Toast.makeText(context, item.appName + " 添加到黑名单成功", Toast.LENGTH_SHORT).show();
                 
                 // 刷新用户信息
-                PullConfig.pullConfig(context);
+                PullConfig.pullConfig(context, null);
                 
                 // 延迟刷新应用列表，等待用户信息更新完成
                 mainHandler.postDelayed(() -> {
@@ -256,7 +256,7 @@ public class InstalledAppsFragment extends Fragment {
                 Toast.makeText(context, item.appName + " 从黑名单移除成功", Toast.LENGTH_SHORT).show();
                 
                 // 刷新用户信息
-                PullConfig.pullConfig(context);
+                PullConfig.pullConfig(context, null);
                 
                 // 延迟刷新应用列表，等待用户信息更新完成
                 mainHandler.postDelayed(() -> {

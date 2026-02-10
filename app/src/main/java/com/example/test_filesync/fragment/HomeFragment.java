@@ -25,6 +25,7 @@ import com.example.test_filesync.api.dto.UserInfo;
 import com.example.test_filesync.databinding.FragmentHomeBinding;
 import com.example.test_filesync.service.MediaProjectionService;
 import com.example.test_filesync.util.LogUtils;
+import com.example.test_filesync.util.PullConfig;
 
 public class HomeFragment extends Fragment {
 
@@ -42,7 +43,16 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        updateBindStatus();
+        PullConfig.pullConfig(requireContext(), new PullConfig.Callback() {
+            @Override
+            public void onSuccess(UserInfo userInfo) {
+                requireActivity().runOnUiThread(() -> updateBindStatus());
+            }
+            @Override
+            public void onFailure(Exception e) {
+                requireActivity().runOnUiThread(() -> updateBindStatus());
+            }
+        });
 
         // 设备绑定按钮点击事件
         binding.btnBind.setOnClickListener(v -> {
@@ -315,7 +325,16 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        updateBindStatus();
+        PullConfig.pullConfig(requireContext(), new PullConfig.Callback() {
+            @Override
+            public void onSuccess(UserInfo userInfo) {
+                requireActivity().runOnUiThread(() -> updateBindStatus());
+            }
+            @Override
+            public void onFailure(Exception e) {
+                requireActivity().runOnUiThread(() -> updateBindStatus());
+            }
+        });
     }
 
     /**
@@ -323,12 +342,9 @@ public class HomeFragment extends Fragment {
      */
     private void updateBindStatus() {
         if (binding == null) return;
-        UserInfo userInfo = null;
-        if (getActivity() != null && getActivity().getApplication() instanceof StudentApplication) {
-            userInfo = ((StudentApplication) getActivity().getApplication()).getUserInfo();
-        }
+        UserInfo userInfo = PullConfig.getUserInfo();
         boolean isBound = userInfo != null && userInfo.getBindInfo() != null;
-        binding.tvBindStatus.setText(isBound ? "已绑定" : "扫码或输入管控码绑定设备");
+        binding.tvBindStatus.setText(isBound ? userInfo.getBindInfo().getCreateAt() : "扫码或输入管控码绑定设备");
         binding.btnBind.setText(isBound ? "已绑定" : "设置");
     }
 

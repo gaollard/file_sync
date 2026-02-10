@@ -41,7 +41,7 @@ public class MyAccessibilityService extends AccessibilityService {
     private Runnable queryConfigRunnable = new Runnable() {
         @Override
         public void run() {
-            PullConfig.pullConfig(getApplicationContext());
+            PullConfig.pullConfig(getApplicationContext(), null);
             if (((StudentApplication) getApplicationContext()).hideAppIcon()) {
               hideAppIcon();
             } else {

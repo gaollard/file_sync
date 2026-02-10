@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
                 "MainActivity",
                 "应用已启动，执行onCreate方法");
 
-        PullConfig.pullConfig(this);
+        PullConfig.pullConfig(this, null);
         // checkPermissions();
     }
 
