@@ -24,10 +24,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-
 import java.util.HashMap;
-
-import okhttp3.Response;
 
 /**
  * 设备绑定页面

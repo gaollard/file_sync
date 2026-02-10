@@ -63,9 +63,14 @@ public class InstalledAppsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 设置返回按钮点击事件
-        binding.backButton.setOnClickListener(v -> {
+        // 设置 Toolbar 返回按钮
+        binding.toolbar.setNavigationOnClickListener(v -> {
             requireActivity().getOnBackPressedDispatcher().onBackPressed();
+        });
+
+        // 设置上报应用列表按钮点击事件
+        binding.reportAppListButton.setOnClickListener(v -> {
+            getInstalledApps();
         });
 
         // 设置 RecyclerView
@@ -182,6 +187,9 @@ public class InstalledAppsFragment extends Fragment {
         HttpUtil.config(ApiConfig.report_installed_app, params).postRequest(context, new ApiCallback() {
             @Override
             public void onSuccess(String res) {
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(context, "上报应用列表成功", Toast.LENGTH_SHORT).show();
+                });
                 LogUtils.i(context, "上报已安装应用列表成功：" + res);
             }
             @Override
@@ -212,32 +220,66 @@ public class InstalledAppsFragment extends Fragment {
     private void addToBlacklist(AppItem item, Context context) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("package_name", item.packageName);
-        
-        Toast.makeText(context, "正在添加到黑名单...", Toast.LENGTH_SHORT).show();
-        
+
         HttpUtil.config(ApiConfig.add_to_blacklist, params).postRequest(context, new ApiCallback() {
             @Override
             public void onSuccess(String res) {
-                LogUtils.i(context, "添加到黑名单成功：" + res);
-                Toast.makeText(context, item.appName + " 添加到黑名单成功", Toast.LENGTH_SHORT).show();
-                
-                // 刷新用户信息
-                PullConfig.pullConfig(context, null);
-                
-                // 延迟刷新应用列表，等待用户信息更新完成
-                mainHandler.postDelayed(() -> {
-                    if (isAdded() && binding != null) {
-                        loadInstalledApps();
+                refresh();
+                if (res != null && res.startsWith("{")) {
+                    try {
+                        org.json.JSONObject jsonObject = new org.json.JSONObject(res);
+                        String retCode = jsonObject.optString("code", "");
+                        String msg = jsonObject.optString("msg", "");
+                        if ("0".equals(retCode)) {
+                            LogUtils.i(context, "添加到黑名单成功：" + res);
+                            requireActivity().runOnUiThread(() -> {
+                                Toast.makeText(context, item.appName + " 添加到黑名单成功", Toast.LENGTH_SHORT).show();
+                            });
+                        } else {
+                            LogUtils.e(context, "添加到黑名单失败：" + msg, new Exception(msg));
+                        }
+                    } catch (Exception e) {
+                        LogUtils.e(context, "添加到黑名单失败：" + e.getLocalizedMessage(), e);
+                        requireActivity().runOnUiThread(() -> {
+                            Toast.makeText(context, "添加到黑名单失败：" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                        });
                     }
-                }, 500); // 延迟500ms刷新列表
+                } else {
+                    LogUtils.e(context, "添加到黑名单失败：" + res, new Exception(res));
+                    requireActivity().runOnUiThread(() -> {
+                        Toast.makeText(context, "添加到黑名单失败：" + res, Toast.LENGTH_SHORT).show();
+                    });
+                }
             }
             
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(context, "添加到黑名单失败：" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                refresh();
                 LogUtils.e(context, "添加到黑名单失败：" + e.getLocalizedMessage(), e);
+                requireActivity().runOnUiThread(() -> {
+                    loadInstalledApps();
+                    Toast.makeText(context, "添加到黑名单失败：" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                });
             }
         });
+    }
+
+    private void refresh () {
+       // 刷新用户信息
+       PullConfig.pullConfig(requireContext(), new PullConfig.Callback() {
+        @Override
+        public void onSuccess(UserInfo userInfo) {
+            requireActivity().runOnUiThread(() -> {
+                loadInstalledApps();
+            });
+        }
+        @Override
+        public void onFailure(Exception e) {
+            requireActivity().runOnUiThread(() -> {
+                loadInstalledApps();
+            });
+        }
+    });
     }
 
     /**
@@ -246,30 +288,23 @@ public class InstalledAppsFragment extends Fragment {
     private void removeFromBlacklist(AppItem item, Context context) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("package_name", item.packageName);
-        
-        Toast.makeText(context, "正在从黑名单移除...", Toast.LENGTH_SHORT).show();
-        
         HttpUtil.config(ApiConfig.remove_from_blacklist, params).postRequest(context, new ApiCallback() {
             @Override
             public void onSuccess(String res) {
-                LogUtils.i(context, "从黑名单移除成功：" + res);
-                Toast.makeText(context, item.appName + " 从黑名单移除成功", Toast.LENGTH_SHORT).show();
-                
-                // 刷新用户信息
-                PullConfig.pullConfig(context, null);
-                
-                // 延迟刷新应用列表，等待用户信息更新完成
-                mainHandler.postDelayed(() -> {
-                    if (isAdded() && binding != null) {
-                        loadInstalledApps();
-                    }
-                }, 500); // 延迟500ms刷新列表
+                requireActivity().runOnUiThread(() -> {
+                    LogUtils.i(context, "从黑名单移除成功：" + res);
+                    Toast.makeText(context, item.appName + " 从黑名单移除成功", Toast.LENGTH_SHORT).show();
+                    refresh();
+                });
             }
             
             @Override
             public void onFailure(Exception e) {
-                Toast.makeText(context, "从黑名单移除失败：" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-                LogUtils.e(context, "从黑名单移除失败：" + e.getLocalizedMessage(), e);
+                refresh();
+                requireActivity().runOnUiThread(() -> {
+                    Toast.makeText(context, "从黑名单移除失败：" + e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+                    LogUtils.e(context, "从黑名单移除失败：" + e.getLocalizedMessage(), e);
+                });
             }
         });
     }
