@@ -2,9 +2,9 @@ package com.example.test_filesync.api;
 
 public class ApiConfig {
   public static final int PAGE_SIZE = 10;
-  // public static final String BASE_URl = "https://7de27a4c312b.ngrok-free.app/api";
+  public static final String BASE_URl = "http://10.127.214.213:3000/api";
 
-  public static final String BASE_URl = "https://admin.airtlab.com/api";
+  // public static final String BASE_URl = "https://admin.airtlab.com/api";
   public static final String LOGIN = "/app/login"; //登录
   public static final String REGISTER = "/app/register";//注册
   public static final String user_userInfo = "/app/account/get_user_info";  // 获取用户信息
@@ -13,4 +13,5 @@ public class ApiConfig {
   public static final String report_screenshot = "/app/report/report_screenshot";  // 上报截图
   public static final String add_to_blacklist = "/app/control/add_to_blacklist";  // 添加到黑名单
   public static final String remove_from_blacklist = "/app/control/remove_from_blacklist";  // 从黑名单移除
+  public static final String bind_parent = "/app/account/bind_parent"; // 绑定家长端账号
 }

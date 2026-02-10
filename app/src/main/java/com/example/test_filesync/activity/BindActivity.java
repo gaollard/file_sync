@@ -1,5 +1,6 @@
 package com.example.test_filesync.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,11 +16,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import com.example.test_filesync.R;
+import com.example.test_filesync.api.ApiCallback;
+import com.example.test_filesync.api.ApiConfig;
+import com.example.test_filesync.util.HttpUtil;
 import com.example.test_filesync.util.LogUtils;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+
+import java.util.HashMap;
+
+import okhttp3.Response;
 
 /**
  * 设备绑定页面
@@ -203,15 +211,42 @@ public class BindActivity extends AppCompatActivity {
      */
     private void handleControlCodeBind(String code) {
         LogUtils.i(this, TAG, "管控码绑定: " + code);
-        
-        // 这里先模拟绑定成功
-        Toast.makeText(this, R.string.bind_in_progress + code, Toast.LENGTH_SHORT).show();
-        
-        // 模拟网络请求
-        new android.os.Handler().postDelayed(() -> {
-            // 绑定成功后的处理
-            onBindSuccess(code);
-        }, 1000);
+        Context context = this;
+        HashMap<String, Object> params = new HashMap<String, Object>();
+        params.put("bind_code", code);
+
+        // 调用后端API进行绑定
+        HttpUtil.config(ApiConfig.bind_parent, params)
+        .postRequest(context, new ApiCallback() {
+            @Override
+            public void onSuccess(String res) {
+                runOnUiThread(() -> {
+                    if (res != null && res.startsWith("{")) {
+                        try {
+                            org.json.JSONObject jsonObject = new org.json.JSONObject(res);
+                            LogUtils.d(context, "绑定结果", res);
+                            String retCode = jsonObject.optString("code", "");
+                            String msg = jsonObject.optString("msg", "");
+                            if ("0".equals(retCode)) {
+                                onBindSuccess(retCode);
+                            } else {
+                                Toast.makeText(context, "绑定失败: " + msg, Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception ex) {
+                            Toast.makeText(context, "绑定失败: " + ex.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        onBindSuccess(res);
+                    }
+                });
+            }
+            @Override
+            public void onFailure(Exception e) {
+                LogUtils.e(context, TAG, "绑定失败: " + e.getMessage());
+                runOnUiThread(() ->
+                    Toast.makeText(context, "绑定失败: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+            }
+        });
     }
     
     /**
